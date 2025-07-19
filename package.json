@@ -1,0 +1,50 @@
+{
+  "name": "promptdial",
+  "version": "1.0.0",
+  "description": "AI Prompt Optimization Engine - Transform basic prompts into optimized, model-specific queries",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/promptdial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/promptdial/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/promptdial#readme",
+  "scripts": {
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsc",
+    "dev": "tsx watch src/demo.ts",
+    "prepublishOnly": "npm run build && npm test",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "ai",
+    "prompt",
+    "optimization",
+    "gpt",
+    "claude",
+    "gemini",
+    "prompt-engineering"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
