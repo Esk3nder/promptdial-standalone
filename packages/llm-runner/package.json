@@ -1,0 +1,39 @@
+{
+  "name": "@promptdial/llm-runner",
+  "version": "2.0.0",
+  "description": "Multi-provider LLM execution service for PromptDial 2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "promptdial",
+    "llm",
+    "openai",
+    "anthropic",
+    "google-ai",
+    "streaming"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0",
+    "@google/generative-ai": "^0.24.1",
+    "@promptdial/shared": "workspace:*",
+    "dotenv": "^17.2.0",
+    "express": "^4.21.2",
+    "openai": "^5.10.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

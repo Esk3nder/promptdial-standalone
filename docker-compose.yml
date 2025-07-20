@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./packages/api-gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CLASSIFIER_URL=http://classifier:3001
+      - TELEMETRY_URL=http://telemetry:3002
+      - TECHNIQUE_URL=http://technique:3003
+      - RETRIEVAL_URL=http://retrieval:3004
+      - EVALUATOR_URL=http://evaluator:3005
+      - SAFETY_URL=http://safety:3006
+      - OPTIMIZER_URL=http://optimizer:3007
+      - RATE_LIMIT=60
+    depends_on:
+      - classifier
+      - telemetry
+      - technique
+      - retrieval
+      - evaluator
+      - safety
+      - optimizer
+    networks:
+      - promptdial
+
+  # Task Classifier
+  classifier:
+    build:
+      context: .
+      dockerfile: ./packages/classifier/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    networks:
+      - promptdial
+
+  # Telemetry
+  telemetry:
+    build:
+      context: .
+      dockerfile: ./packages/telemetry/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+    volumes:
+      - telemetry-data:/app/data
+    networks:
+      - promptdial
+
+  # Technique Engine
+  technique:
+    build:
+      context: .
+      dockerfile: ./packages/technique-engine/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+    networks:
+      - promptdial
+
+  # Retrieval Hub
+  retrieval:
+    build:
+      context: .
+      dockerfile: ./packages/retrieval-hub/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - VECTOR_STORE_TYPE=memory
+    networks:
+      - promptdial
+
+  # Evaluator
+  evaluator:
+    build:
+      context: .
+      dockerfile: ./packages/evaluator/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+    networks:
+      - promptdial
+
+  # Safety Guard
+  safety:
+    build:
+      context: .
+      dockerfile: ./packages/safety-guard/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+    networks:
+      - promptdial
+
+  # Optimizer
+  optimizer:
+    build:
+      context: .
+      dockerfile: ./packages/optimizer/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+    networks:
+      - promptdial
+
+  # LLM Runner (example for OpenAI)
+  llm-runner-openai:
+    build:
+      context: .
+      dockerfile: ./packages/llm-runner/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - PROVIDER=openai
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - promptdial
+
+networks:
+  promptdial:
+    driver: bridge
+
+volumes:
+  telemetry-data:

@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import 'dotenv/config'
+import { MockOptimizer } from './mock-optimizer.js'
 
 // Types
 export interface OptimizationRequest {
@@ -36,6 +37,54 @@ const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: proces
 const googleAI = process.env.GOOGLE_AI_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY) : null
 
 export class AIMetaPromptDesigner {
+  private mockOptimizer = new MockOptimizer()
+  
+  // Helper to clean and parse JSON from LLM responses
+  private parseJsonResponse(text: string): any {
+    try {
+      // First try direct parsing
+      return JSON.parse(text)
+    } catch (e) {
+      // Extract JSON object from text
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('No JSON found in response')
+      
+      let jsonStr = jsonMatch[0]
+      
+      // More robust cleaning approach
+      // 1. First, handle string literals properly
+      const stringLiterals: string[] = []
+      let cleanedJson = jsonStr.replace(/"(?:[^"\\]|\\.)*"/g, (match, offset) => {
+        const index = stringLiterals.length
+        stringLiterals.push(match)
+        return `"__STRING_${index}__"`
+      })
+      
+      // 2. Clean control characters outside strings
+      cleanedJson = cleanedJson.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      
+      // 3. Restore string literals with proper escaping
+      cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (match, index) => {
+        let str = stringLiterals[parseInt(index)]
+        // Ensure newlines are properly escaped within the string
+        str = str.slice(1, -1) // Remove quotes
+        str = str.replace(/\\/g, '\\\\')
+        str = str.replace(/"/g, '\\"')
+        str = str.replace(/\n/g, '\\n')
+        str = str.replace(/\r/g, '\\r')
+        str = str.replace(/\t/g, '\\t')
+        return '"' + str + '"'
+      })
+      
+      try {
+        return JSON.parse(cleanedJson)
+      } catch (e2) {
+        console.error('Failed to parse cleaned JSON:', cleanedJson)
+        throw new Error(`JSON parsing failed: ${e2.message}`)
+      }
+    }
+  }
+  
   private systemPrompts = {
     basic: `You are an expert prompt engineer. Your task is to optimize the given prompt to be clearer and more effective. Make minimal changes while improving clarity and specificity.`,
     
@@ -60,6 +109,12 @@ export class AIMetaPromptDesigner {
   }
 
   async generateVariants(request: OptimizationRequest): Promise<OptimizedVariant[]> {
+    console.log('\n🎯 AIMetaPromptDesigner.generateVariants called with:', {
+      prompt: request.prompt.substring(0, 50) + '...',
+      targetModel: request.targetModel,
+      optimizationLevel: request.optimizationLevel
+    })
+    
     this.validateInput(request)
     
     const variantCount = this.getVariantCount(request.optimizationLevel)
@@ -71,29 +126,39 @@ export class AIMetaPromptDesigner {
         case 'gpt-4':
         case 'gpt-3.5-turbo':
           if (!openai) throw new Error('OpenAI API key not configured')
+          console.log('🟢 Using OpenAI API for optimization')
           return await this.generateOpenAIVariants(request, variantCount)
           
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
           if (!anthropic) throw new Error('Anthropic API key not configured')
+          console.log('🟣 Using Anthropic Claude API for optimization')
           return await this.generateClaudeVariants(request, variantCount)
           
         case 'gemini-pro':
           if (!googleAI) throw new Error('Google AI API key not configured')
+          console.log('🔵 Using Google Gemini API for optimization')
           return await this.generateGeminiVariants(request, variantCount)
           
         default:
-          // Use OpenAI as default if available
-          if (openai) {
+          // Try available providers in order (Claude first now as requested)
+          if (anthropic) {
+            console.log('🟣 Using Anthropic Claude as default provider')
+            return await this.generateClaudeVariants(request, variantCount)
+          } else if (googleAI) {
+            console.log('🔵 Using Google AI as fallback provider')
+            return await this.generateGeminiVariants(request, variantCount)
+          } else if (openai) {
+            console.log('🟢 Using OpenAI as fallback provider')
             return await this.generateOpenAIVariants(request, variantCount)
           }
           throw new Error('No AI API keys configured')
       }
     } catch (error) {
-      console.error('AI optimization error:', error)
-      // Fallback to basic optimization if AI fails
-      return this.generateFallbackVariants(request, variantCount)
+      console.error('❌ AI optimization error:', error)
+      console.log('⚠️  FALLING BACK TO MOCK OPTIMIZER - This is NOT using real AI!')
+      return await this.mockOptimizer.generateVariants(request)
     }
   }
 
@@ -179,6 +244,7 @@ Provide your response in this exact JSON format:
 }`
 
       try {
+        console.log(`🟣 Calling Claude API for variant ${i + 1}/${count}...`)
         const response = await anthropic!.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1000,
@@ -193,11 +259,9 @@ Provide your response in this exact JSON format:
         const content = response.content[0]
         if (content.type !== 'text') continue
 
-        // Claude sometimes adds extra text, so extract JSON
-        const jsonMatch = content.text.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) continue
-
-        const result = JSON.parse(jsonMatch[0])
+        console.log(`✅ Claude API response received for variant ${i + 1}`)
+        // Parse the response using our helper
+        const result = this.parseJsonResponse(content.text)
         
         variants.push({
           id: `claude-${Date.now()}-${i}`,
@@ -208,11 +272,21 @@ Provide your response in this exact JSON format:
           estimatedTokens: this.estimateTokens(result.optimizedPrompt),
           score: 85 + Math.random() * 15
         })
+        console.log(`✅ Successfully created Claude variant ${i + 1}`)
       } catch (error) {
-        console.error(`Error generating Claude variant ${i}:`, error)
+        console.error(`❌ Error generating Claude variant ${i}:`, error)
+        if (error instanceof Error && error.message.includes('JSON')) {
+          console.error('Raw Claude response:', response?.content[0]?.type === 'text' ? response.content[0].text : 'No text content')
+        }
       }
     }
     
+    if (variants.length === 0) {
+      console.error('❌ Failed to generate any Claude variants')
+      throw new Error('Failed to generate any Claude variants')
+    }
+    
+    console.log(`✅ Generated ${variants.length} Claude variants successfully`)
     return variants
   }
 
@@ -243,11 +317,8 @@ Return ONLY a JSON object with this structure:
         const result = await model.generateContent(prompt)
         const text = result.response.text()
         
-        // Extract JSON from response
-        const jsonMatch = text.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) continue
-
-        const parsed = JSON.parse(jsonMatch[0])
+        // Parse the response using our helper
+        const parsed = this.parseJsonResponse(text)
         
         variants.push({
           id: `gemini-${Date.now()}-${i}`,

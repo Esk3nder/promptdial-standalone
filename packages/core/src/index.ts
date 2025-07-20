@@ -39,11 +39,14 @@ export class PromptDial {
     
     // Use AI designer if enabled and API keys are available
     if (this.options.useAI && this.hasAPIKeys()) {
+      console.log('🤖 PromptDial: Using AI-powered optimization (AIMetaPromptDesigner)')
+      console.log('Available AI providers:', this.getAvailableProviders())
       this.designer = new AIMetaPromptDesigner()
     } else {
+      console.log('📝 PromptDial: Using basic optimization (MetaPromptDesigner)')
       this.designer = new MetaPromptDesigner()
       if (this.options.useAI) {
-        console.warn('AI optimization requested but no API keys found. Falling back to mock optimization.')
+        console.warn('AI optimization requested but no API keys found. Falling back to basic optimization.')
       }
     }
     
@@ -115,6 +118,14 @@ export class PromptDial {
   
   private hasAPIKeys(): boolean {
     return !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY)
+  }
+  
+  private getAvailableProviders(): string[] {
+    const providers = []
+    if (process.env.OPENAI_API_KEY) providers.push('OpenAI')
+    if (process.env.ANTHROPIC_API_KEY) providers.push('Anthropic')
+    if (process.env.GOOGLE_AI_API_KEY) providers.push('Google AI')
+    return providers
   }
 }
 

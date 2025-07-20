@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import 'dotenv/config'  // Load environment variables
 import { PromptDial } from './index.js'
 import type { OptimizationRequest } from './meta-prompt-designer.js'
+import { generateMockVariants } from './simple-mock.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,6 +26,12 @@ app.post('/api/optimize', async (req, res) => {
   try {
     const request: OptimizationRequest = req.body
     
+    console.log('\n🚀 New optimization request received:', {
+      prompt: request.prompt?.substring(0, 50) + '...',
+      targetModel: request.targetModel,
+      optimizationLevel: request.optimizationLevel
+    })
+    
     // Validate request
     if (!request.prompt || !request.targetModel || !request.optimizationLevel) {
       return res.status(400).json({
@@ -39,10 +46,29 @@ app.post('/api/optimize', async (req, res) => {
       useAI: true  // Enable AI-powered optimization
     })
     
+    console.log('⚡ Starting optimization...')
     const result = await promptDial.optimize(request)
-    res.json(result)
+    
+    // Log optimization result
+    console.log(`✅ Optimization complete:`, {
+      variantsGenerated: result.variants.length,
+      bestScore: result.summary.bestScore,
+      averageScore: result.summary.averageScore,
+      firstVariantChanges: result.variants[0]?.changes?.length || 0
+    })
+    
+    // Add metadata to response
+    const enhancedResult = {
+      ...result,
+      metadata: {
+        optimizedUsing: result.variants[0]?.id?.includes('mock') ? 'mock-optimizer' : 'ai-powered',
+        timestamp: new Date().toISOString()
+      }
+    }
+    
+    res.json(enhancedResult)
   } catch (error) {
-    console.error('Optimization error:', error)
+    console.error('❌ Optimization error:', error)
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed'
     })

@@ -1,0 +1,58 @@
+# Template Dockerfile for microservices
+# Usage: docker build -f Dockerfile.service --build-arg SERVICE=classifier .
+
+ARG SERVICE
+
+# Build stage
+FROM node:18-alpine AS builder
+
+ARG SERVICE
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/${SERVICE}/package.json ./packages/${SERVICE}/
+
+# Install dependencies
+RUN npm ci --workspace=@promptdial/shared --workspace=@promptdial/${SERVICE}
+
+# Copy source code
+COPY packages/shared ./packages/shared
+COPY packages/${SERVICE} ./packages/${SERVICE}
+COPY tsconfig.json ./
+
+# Build
+RUN npm run build --workspace=@promptdial/shared
+RUN npm run build --workspace=@promptdial/${SERVICE}
+
+# Runtime stage
+FROM node:18-alpine
+
+ARG SERVICE
+WORKDIR /app
+
+# Copy built files
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/${SERVICE}/dist ./packages/${SERVICE}/dist
+COPY --from=builder /app/packages/${SERVICE}/package.json ./packages/${SERVICE}/
+COPY --from=builder /app/package*.json ./
+
+# Install production dependencies only
+RUN npm ci --production --workspace=@promptdial/shared --workspace=@promptdial/${SERVICE}
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+USER nodejs
+
+# Expose port (will be overridden by docker-compose)
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + process.env.PORT + '/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
+
+# Start server
+CMD ["sh", "-c", "node packages/${SERVICE}/dist/index.js"]

@@ -13,44 +13,135 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f9fafb;
-            color: #111827;
-            line-height: 1.5;
+            background-color: #f8f9fb;
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
         }
         
-        .container {
-            max-width: 1200px;
+        /* Navigation */
+        .nav-container {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-items {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+        
+        .nav-link:hover {
+            color: #1a1a1a;
+        }
+        
+        .sign-in-btn {
+            background: #1e3a8a;
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: background-color 0.15s;
+        }
+        
+        .sign-in-btn:hover {
+            background: #1e40af;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 64px);
         }
         
-        header {
+        /* Input Panel */
+        .input-panel {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            height: fit-content;
+        }
+        
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
             text-align: center;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            color: #111827;
-        }
-        
-        .tagline {
+            font-size: 0.875rem;
+            font-weight: 500;
             color: #6b7280;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
         }
         
-        .form-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
+        .tab.active {
+            color: #1e3a8a;
+            border-bottom-color: #1e3a8a;
         }
         
+        .tab:hover:not(.active) {
+            color: #374151;
+        }
+        
+        /* Form Elements */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -58,64 +149,144 @@
         label {
             display: block;
             font-weight: 500;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
             color: #374151;
+            font-size: 0.875rem;
         }
         
         textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             font-size: 0.875rem;
             resize: vertical;
-            min-height: 150px;
+            min-height: 200px;
             font-family: inherit;
+            transition: border-color 0.15s;
         }
         
         textarea:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
         }
         
-        .config-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        textarea::placeholder {
+            color: #9ca3af;
+        }
+        
+        .config-section {
+            display: flex;
+            flex-direction: column;
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
         
         select {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.625rem 0.75rem;
             border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             font-size: 0.875rem;
             background: white;
+            cursor: pointer;
+            transition: border-color 0.15s;
         }
         
         select:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .toggle-label span {
+            font-weight: 500;
+        }
+        
+        .toggle-label .badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toggle-switch.active {
+            background: #1e3a8a;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(20px);
         }
         
         .button {
             width: 100%;
             padding: 0.75rem 1.5rem;
-            background-color: #2563eb;
+            background-color: #1e3a8a;
             color: white;
             font-weight: 500;
             font-size: 0.875rem;
             border: none;
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             cursor: pointer;
             transition: background-color 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
         
         .button:hover {
-            background-color: #1d4ed8;
+            background-color: #1e40af;
         }
         
         .button:disabled {
@@ -123,20 +294,58 @@
             cursor: not-allowed;
         }
         
-        .results-section {
+        .button svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Output Panel */
+        .output-panel {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+        
+        .ready-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+        
+        .ready-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+        }
+        
+        .ready-state h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ready-state p {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .result-container {
             display: none;
         }
         
-        .results-section.show {
+        .result-container.show {
             display: block;
-        }
-        
-        .result-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
         }
         
         .result-header {
@@ -146,40 +355,85 @@
             margin-bottom: 1rem;
         }
         
-        .score {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .score-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: #f3f4f6;
+            border-radius: 9999px;
+            font-size: 0.875rem;
         }
         
-        .score.high { color: #10b981; }
-        .score.medium { color: #f59e0b; }
-        .score.low { color: #ef4444; }
+        .score-badge.high { background: #d1fae5; color: #065f46; }
+        .score-badge.medium { background: #fed7aa; color: #92400e; }
+        .score-badge.low { background: #fee2e2; color: #991b1b; }
         
-        .prompt-text {
+        .prompt-display {
             background: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.375rem;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
             margin-bottom: 1rem;
             white-space: pre-wrap;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
         }
         
         .copy-button {
+            flex: 1;
             padding: 0.5rem 1rem;
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 0.375rem;
             cursor: pointer;
             font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
         }
         
         .copy-button:hover {
             background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        
+        .copy-button svg {
+            width: 14px;
+            height: 14px;
         }
         
         .loading {
-            text-align: center;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
             color: #6b7280;
+        }
+        
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #1e3a8a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         .error {
@@ -187,100 +441,185 @@
             border: 1px solid #fecaca;
             color: #dc2626;
             padding: 1rem;
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
         }
         
         @media (max-width: 768px) {
-            .config-row {
-                grid-template-columns: 1fr;
+            .nav-items {
+                gap: 1rem;
+            }
+            
+            .nav-link:not(.sign-in-btn) {
+                display: none;
+            }
+            
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .input-panel,
+            .output-panel {
+                padding: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>PromptDial</h1>
-            <p class="tagline">Transform your prompts into optimized, model-specific queries</p>
-        </header>
-        
-        <div class="form-section">
+    <!-- Navigation -->
+    <div class="nav-container">
+        <nav>
+            <a href="/" class="logo">prompt dial</a>
+            <div class="nav-items">
+                <a href="#" class="nav-link">How it Works</a>
+                <a href="#" class="nav-link">Docs</a>
+                <a href="#" class="sign-in-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                    Sign In
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Input Panel -->
+        <div class="input-panel">
+            <h2 class="panel-title">Your Prompt</h2>
+            
             <form id="optimizeForm">
                 <div class="form-group">
-                    <label for="prompt">Enter your prompt</label>
                     <textarea 
                         id="prompt" 
                         name="prompt" 
-                        placeholder="Enter the prompt you want to optimize..."
+                        placeholder="Enter your prompt here... (e.g., 'Create a 3-day travel itinerary for Paris focused on art museums')"
                         required
                     ></textarea>
                 </div>
                 
-                <div class="config-row">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button type="button" class="tab active" data-tab="instant">Instant Prompt</button>
+                    <button type="button" class="tab" data-tab="deep">Deep Prompting</button>
+                </div>
+                
+                <!-- Configuration -->
+                <div class="config-section">
                     <div class="form-group">
-                        <label for="model">Target Model</label>
+                        <label for="model">Target AI Model Provider</label>
                         <select id="model" name="model">
-                            <option value="gpt-4">GPT-4</option>
+                            <option value="gemini-pro">Gemini</option>
                             <option value="claude-3-opus">Claude 3 Opus</option>
-                            <option value="gemini-pro">Gemini Pro</option>
+                            <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="level">Optimization Level</label>
-                        <select id="level" name="level">
-                            <option value="basic">Basic</option>
-                            <option value="advanced">Advanced</option>
-                            <option value="expert">Expert</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="taskType">Task Type</label>
-                        <select id="taskType" name="taskType">
-                            <option value="">Auto-detect</option>
-                            <option value="creative">Creative</option>
-                            <option value="analytical">Analytical</option>
-                            <option value="coding">Coding</option>
-                            <option value="general">General</option>
+                        <label for="outputFormat">Output Format</label>
+                        <select id="outputFormat" name="outputFormat">
+                            <option value="markdown">Markdown</option>
+                            <option value="json">JSON</option>
+                            <option value="plain">Plain Text</option>
                         </select>
                     </div>
                 </div>
                 
+                <!-- Toggle Switch -->
+                <div class="toggle-group">
+                    <div class="toggle-label">
+                        <span>Chain-of-Thought</span>
+                        <span class="badge">Advanced</span>
+                    </div>
+                    <div class="toggle-switch" id="toggleCot">
+                        <input type="checkbox" id="chainOfThought" name="chainOfThought">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                
                 <button type="submit" class="button" id="optimizeBtn">
-                    Optimize Prompt
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611l-3.98.793a3 3 0 01-2.31-2.31l-.793-3.98c-.293-1.717 1.379-2.299 2.611-1.067l1.402 1.402M5 14.5l-1.402 1.402c-1.232 1.232-.65 3.318 1.067 3.611l3.98.793a3 3 0 002.31-2.31l.793-3.98c.293-1.717-1.379-2.299-2.611-1.067L5 14.5" />
+                    </svg>
+                    Refine Prompt
                 </button>
             </form>
         </div>
         
-        <div id="results" class="results-section"></div>
+        <!-- Output Panel -->
+        <div class="output-panel">
+            <h2 class="panel-title">Refined Prompt</h2>
+            
+            <!-- Ready State -->
+            <div class="ready-state" id="readyState">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <h3>Ready to refine</h3>
+                <p>Enter your prompt in the control panel and click "Refine Prompt"<br>to get started</p>
+            </div>
+            
+            <!-- Results Container -->
+            <div id="results" class="result-container"></div>
+        </div>
     </div>
     
     <script>
         const form = document.getElementById('optimizeForm');
         const resultsDiv = document.getElementById('results');
+        const readyState = document.getElementById('readyState');
         const optimizeBtn = document.getElementById('optimizeBtn');
+        const toggleSwitch = document.getElementById('toggleCot');
+        const cotCheckbox = document.getElementById('chainOfThought');
         
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+        
+        // Toggle switch
+        toggleSwitch.addEventListener('click', () => {
+            toggleSwitch.classList.toggle('active');
+            cotCheckbox.checked = !cotCheckbox.checked;
+        });
+        
+        // Form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const formData = new FormData(form);
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            
             const request = {
                 prompt: formData.get('prompt'),
                 targetModel: formData.get('model'),
-                optimizationLevel: formData.get('level'),
+                optimizationLevel: activeTab === 'deep' ? 'expert' : 'advanced',
+                outputFormat: formData.get('outputFormat'),
+                chainOfThought: formData.get('chainOfThought') === 'on'
             };
-            
-            const taskType = formData.get('taskType');
-            if (taskType) {
-                request.taskType = taskType;
-            }
             
             // Show loading state
             optimizeBtn.disabled = true;
-            optimizeBtn.textContent = 'Optimizing...';
-            resultsDiv.innerHTML = '<div class="loading">Optimizing your prompt...</div>';
+            optimizeBtn.innerHTML = `<svg class="loading-spinner" style="width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg> Refining...`;
+            readyState.style.display = 'none';
+            resultsDiv.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Optimizing your prompt...</div>';
             resultsDiv.classList.add('show');
             
             try {
@@ -304,63 +643,54 @@
                 resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
             } finally {
                 optimizeBtn.disabled = false;
-                optimizeBtn.textContent = 'Optimize Prompt';
+                optimizeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611l-3.98.793a3 3 0 01-2.31-2.31l-.793-3.98c-.293-1.717 1.379-2.299 2.611-1.067l1.402 1.402M5 14.5l-1.402 1.402c-1.232 1.232-.65 3.318 1.067 3.611l3.98.793a3 3 0 002.31-2.31l.793-3.98c.293-1.717-1.379-2.299-2.611-1.067L5 14.5" /></svg> Refine Prompt`;
             }
         });
         
         function displayResults(result) {
-            const { variants, summary } = result;
+            const { variants } = result;
             
-            let html = '<h2 style="margin-bottom: 1.5rem;">Optimization Results</h2>';
+            // For simplicity, we'll show the best variant
+            const bestVariant = variants[0];
+            const score = bestVariant.quality?.score || 0;
+            const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
             
-            if (summary.bestScore) {
-                html += `<p style="margin-bottom: 2rem; color: #6b7280;">
-                    Generated ${variants.length} variant${variants.length > 1 ? 's' : ''} 
-                    • Best score: ${summary.bestScore}/100
-                </p>`;
-            }
+            // Check if using AI or mock
+            const isAIPowered = result.metadata?.optimizedUsing === 'ai-powered';
+            const optimizationBadge = isAIPowered 
+                ? '<span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">🤖 AI-Powered</span>'
+                : '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">⚡ Basic Mode</span>';
             
-            variants.forEach((variant, index) => {
-                const score = variant.quality?.score || 0;
-                const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
-                
-                html += `
-                    <div class="result-card">
-                        <div class="result-header">
-                            <div>
-                                <span class="score ${scoreClass}">${score}/100</span>
-                                <span style="margin-left: 1rem; color: #6b7280;">
-                                    Variant ${index + 1}
-                                </span>
-                            </div>
-                            <button class="copy-button" onclick="copyToClipboard('${variant.optimizedPrompt.replace(/'/g, "\\'")}', this)">
-                                Copy
-                            </button>
-                        </div>
-                        <div class="prompt-text">${variant.optimizedPrompt}</div>
-                        ${variant.changes && variant.changes.length > 0 ? `
-                            <div style="margin-top: 1rem;">
-                                <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Improvements:</h4>
-                                <ul style="font-size: 0.875rem; color: #4b5563;">
-                                    ${variant.changes.map(change => 
-                                        `<li>${change.type}: ${change.description}</li>`
-                                    ).join('')}
-                                </ul>
-                            </div>
-                        ` : ''}
+            let html = `
+                <div class="result-header">
+                    <h3 style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">Optimized Result ${optimizationBadge}</h3>
+                    <div class="score-badge ${scoreClass}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                        </svg>
+                        Score: ${score}/100
                     </div>
-                `;
-            });
+                </div>
+                <div class="prompt-display">${bestVariant.optimizedPrompt}</div>
+                <div class="action-buttons">
+                    <button class="copy-button" onclick="copyToClipboard('${bestVariant.optimizedPrompt.replace(/'/g, "\\'")}', this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+            `;
             
             resultsDiv.innerHTML = html;
         }
         
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
-                const originalText = button.textContent;
-                button.textContent = '✓ Copied';
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg> Copied!';
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    button.innerHTML = originalHTML;
                 }, 2000);
             });
         }

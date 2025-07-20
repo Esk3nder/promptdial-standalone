@@ -1,0 +1,24 @@
+{
+  "name": "@promptdial/shared",
+  "version": "2.0.0",
+  "description": "Shared types, constants, and utilities for PromptDial 2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest"
+  },
+  "keywords": [
+    "promptdial",
+    "shared",
+    "types"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

@@ -1,18 +1,29 @@
 {
   "name": "promptdial-monorepo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
+  "dependencies": {},
   "scripts": {
     "test": "npm run test --workspaces",
     "build": "npm run build --workspaces",
+    "build:shared": "cd packages/shared && npm run build",
     "dev:core": "npm run dev -w promptdial",
     "dev:ui": "npm run dev -w promptdial-ui",
+    "dev:classifier": "cd packages/classifier && npm run dev",
+    "dev:telemetry": "cd packages/telemetry && npm run dev",
+    "dev:technique": "cd packages/technique-engine && npm run dev",
+    "dev:retrieval": "cd packages/retrieval-hub && npm run dev",
+    "dev:llm-runner": "cd packages/llm-runner && npm run dev",
+    "dev:evaluator": "cd packages/evaluator && npm run dev",
+    "dev:safety": "cd packages/safety-guard && npm run dev",
+    "dev:optimizer": "cd packages/optimizer && npm run dev",
     "install:all": "npm install",
     "start": "cd packages/core && npm run server:ui",
-    "server": "cd packages/core && npm run server:ui"
+    "server": "cd packages/core && npm run server:ui",
+    "start:services": "npm run dev:classifier & npm run dev:telemetry & npm run dev:technique & npm run dev:retrieval & npm run dev:llm-runner & npm run dev:evaluator & npm run dev:safety & npm run dev:optimizer"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

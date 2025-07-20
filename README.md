@@ -1,161 +1,335 @@
-# PromptDial 🚀
+# PromptDial 2.0 🚀 - Autonomous Prompt Optimization Engine
 
-> Transform your basic prompts into optimized, model-specific queries with AI-powered intelligence
+> Enterprise-grade microservices platform for automatic prompt enhancement using advanced techniques and multi-objective optimization
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Microservices](https://img.shields.io/badge/Architecture-Microservices-green.svg)](docs/ARCHITECTURE.md)
 
 ## Overview
 
-PromptDial is an advanced prompt optimization engine that transforms simple prompts into professionally crafted, model-specific queries. It analyzes your input and generates multiple optimized variants tailored for different AI models (GPT-4, Claude, Gemini) with quality scoring and improvement suggestions.
+PromptDial 2.0 is a complete rewrite featuring a microservices architecture that automatically optimizes prompts using state-of-the-art techniques like Few-Shot Chain-of-Thought, Self-Consistency, ReAct, and Tree of Thoughts. It provides Pareto-optimal selection balancing quality, cost, and latency with enterprise-grade security and monitoring.
 
-## ✨ Features
+## ✨ Key Features
 
-- **Multi-Level Optimization**: Basic, Advanced, and Expert optimization levels
-- **Model-Specific Tailoring**: Optimizations for GPT-4, Claude 3, and Gemini Pro
-- **Quality Validation**: Comprehensive scoring across 7 quality dimensions
-- **Task Detection**: Automatic detection of prompt type (creative, analytical, coding, general)
-- **Safety Filtering**: Built-in harmful content detection
-- **Detailed Metrics**: Token estimation, improvement tracking, and quality factors
+### Core Capabilities
+- **🧠 Intelligent Classification**: Automatic task type, domain, and complexity detection
+- **🎯 Advanced Techniques**: 6+ optimization strategies (Few-Shot CoT, Self-Consistency, ReAct, Tree of Thought, IRCoT, DSPy)
+- **🔍 Retrieval-Augmented**: Vector store integration for example retrieval and context enhancement
+- **⚖️ Multi-Objective Optimization**: Pareto-optimal selection balancing quality, cost, and latency
+- **🛡️ Security First**: 30+ security patterns for prompt injection and jailbreak prevention
+- **📊 Calibrated Evaluation**: G-EVAL, ChatEval, Role-Debate, and Self-Consistency with drift detection
+
+### Architecture Benefits
+- **Microservices Design**: 8 specialized services for scalability and reliability
+- **Multi-Provider Support**: OpenAI, Anthropic, Google AI, Cohere, and custom models
+- **Enterprise Ready**: Production-grade monitoring, telemetry, and deployment options
+- **API Gateway**: Unified interface with rate limiting and health monitoring
+
+## 🏗️ Architecture
+
+PromptDial 2.0 consists of 8 microservices:
+
+```
+┌─────────────────┐
+│   API Gateway   │ Port 3000 - Central orchestration
+└────────┬────────┘
+         │
+    ┌────┴─────────────────────────────────────┐
+    │                                           │
+┌───▼────┐ ┌──────────┐ ┌──────────┐ ┌────────▼──┐
+│Classifier│ │Technique │ │Retrieval │ │SafetyGuard│
+│Port 3001 │ │Port 3003 │ │Port 3004 │ │Port 3006  │
+└─────────┘ └──────────┘ └──────────┘ └───────────┘
+                                          
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐
+│Telemetry │ │Evaluator │ │Optimizer │ │LLM Runner │
+│Port 3002 │ │Port 3005 │ │Port 3007 │ │Port 400x  │
+└──────────┘ └──────────┘ └──────────┘ └───────────┘
+```
 
 ## 🚀 Quick Start
 
-### One-Command Setup with Web UI
+### Prerequisites
 
-```bash
-npm install
-npm start
-```
-
-This starts the PromptDial server with a web UI at `http://localhost:3000`. No additional setup needed!
-
-For more options, see [QUICK_START.md](QUICK_START.md).
-
-### Original Quick Start (Library Usage)
+- Node.js 18+
+- npm or yarn
+- API keys for at least one LLM provider
 
 ### Installation
 
 ```bash
-npm install promptdial
+# Clone the repository
+git clone https://github.com/yourusername/promptdial-standalone.git
+cd promptdial-standalone
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env and add your API keys
 ```
 
-### Basic Usage
+### Start Services
 
-```typescript
-import { PromptDial } from 'promptdial'
+```bash
+# Option 1: Start all services locally
+./scripts/start-services.sh
 
-const promptDial = new PromptDial()
+# Option 2: Start with Docker
+docker-compose up
 
-// Optimize a basic prompt
-const result = await promptDial.optimize({
-  prompt: 'Write about artificial intelligence',
-  targetModel: 'gpt-4',
-  optimizationLevel: 'advanced'
-})
-
-console.log(result.variants[0].optimizedPrompt)
-// Output: Professionally optimized prompt with structure, context, and model-specific enhancements
+# Option 3: Start services individually
+npm run dev:classifier  # Task classifier
+npm run dev:technique   # Technique engine
+npm run dev:safety      # Safety guard
+# ... etc
 ```
 
-### Advanced Usage
+### Basic API Usage
+
+```bash
+# Optimize a prompt
+curl -X POST http://localhost:3000/api/optimize \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Write a Python function to sort a list",
+    "options": {
+      "max_variants": 5,
+      "cost_cap_usd": 0.10
+    }
+  }'
+
+# Check system health
+curl http://localhost:3000/health
+```
+
+### Node.js/TypeScript Usage
 
 ```typescript
-// With constraints and task type
-const result = await promptDial.optimize({
-  prompt: 'Create a Python function to sort a list',
-  targetModel: 'claude-3-opus',
-  optimizationLevel: 'expert',
-  taskType: 'coding',
-  constraints: {
-    maxLength: 500,
-    tone: 'professional',
-    format: 'structured'
+import axios from 'axios'
+
+const result = await axios.post('http://localhost:3000/api/optimize', {
+  prompt: 'Explain quantum computing',
+  options: {
+    max_variants: 3,
+    preferences: {
+      quality: 0.7,
+      cost: 0.2,
+      latency: 0.1
+    }
   }
 })
 
-// Get quality scores
-result.variants.forEach(variant => {
-  console.log(`Score: ${variant.quality.score}/100`)
-  console.log(`Improvements: ${variant.changes.length}`)
-})
+console.log(result.data.result.recommended_variant)
 ```
 
-## 📊 Quality Dimensions
+## 🎯 Optimization Techniques
 
-PromptDial evaluates prompts across 7 key dimensions:
+PromptDial 2.0 implements cutting-edge prompt optimization strategies:
 
-1. **Clarity** - Clear instructions and action verbs
-2. **Specificity** - Detailed requirements and constraints  
-3. **Structure** - Organization with sections and lists
-4. **Completeness** - Appropriate length and detail
-5. **Efficiency** - Balanced comprehensiveness
-6. **Model Alignment** - Model-specific optimizations
-7. **Safety** - Content appropriateness
+### 1. **Few-Shot Chain-of-Thought (CoT)**
+- Adds step-by-step reasoning examples
+- Improves accuracy on complex tasks
+- Best for: Math, reasoning, analysis
 
-## 🛠️ API Reference
+### 2. **Self-Consistency**
+- Generates multiple reasoning paths
+- Uses voting for robust answers
+- Best for: High-stakes decisions
 
-### PromptDial.optimize(request)
+### 3. **ReAct (Reasoning + Acting)**
+- Interleaves reasoning and actions
+- Structured thought process
+- Best for: Multi-step tasks
 
-Optimizes a prompt and returns scored variants.
+### 4. **Tree of Thoughts**
+- Explores multiple reasoning branches
+- Backtracks when needed
+- Best for: Creative problem solving
 
-**Parameters:**
-- `prompt` (string, required): The prompt to optimize
-- `targetModel` (string, required): Target AI model ('gpt-4', 'claude-3-opus', 'gemini-pro')
-- `optimizationLevel` (string, required): Optimization level ('basic', 'advanced', 'expert')
-- `taskType` (string, optional): Task type ('creative', 'analytical', 'coding', 'general')
-- `constraints` (object, optional): Additional constraints
-  - `maxLength` (number): Maximum prompt length
-  - `tone` (string): Desired tone
-  - `format` (string): Output format
+### 5. **IRCoT (Interleaved Retrieval CoT)**
+- Retrieves relevant examples dynamically
+- Enhances with external knowledge
+- Best for: Knowledge-intensive tasks
 
-**Returns:**
-```typescript
+### 6. **DSPy Automatic Prompt Engineering**
+- Learns optimal prompts from data
+- Self-improving optimization
+- Best for: Repeated similar tasks
+
+## 📡 API Reference
+
+### POST /api/optimize
+
+Main optimization endpoint that orchestrates all services.
+
+**Request Body:**
+```json
 {
-  variants: Array<{
-    id: string
-    originalPrompt: string
-    optimizedPrompt: string
-    changes: Array<{type: string, description: string}>
-    quality: {
-      score: number
-      factors: QualityFactors
-      suggestions: string[]
-      improvementPercentage: number
-    }
-    modelSpecificFeatures: string[]
-    estimatedTokens: number
-  }>
+  "prompt": "Your prompt text",
+  "options": {
+    "max_variants": 5,
+    "cost_cap_usd": 0.20,
+    "latency_cap_ms": 5000,
+    "security_level": "strict",
+    "preferences": {
+      "quality": 0.6,
+      "cost": 0.3,
+      "latency": 0.1
+    },
+    "task_type": "code_generation",
+    "examples": ["optional examples"],
+    "reference_output": "optional expected output"
+  }
 }
 ```
+
+**Response:**
+```json
+{
+  "success": true,
+  "trace_id": "unique-trace-id",
+  "result": {
+    "task_classification": {
+      "task_type": "code_generation",
+      "domain": "programming",
+      "complexity": 0.7,
+      "safety_risk": "low"
+    },
+    "variants": [
+      {
+        "id": "v1",
+        "technique": "FewShot_CoT",
+        "prompt": "optimized prompt text",
+        "cost_usd": 0.02,
+        "latency_ms": 1200,
+        "score": 0.92
+      }
+    ],
+    "recommended_variant": { /* best variant */ },
+    "optimization_metadata": {
+      "techniques_used": ["FewShot_CoT", "ReAct"],
+      "pareto_frontier_size": 3,
+      "safety_modifications": false
+    }
+  }
+}
+```
+
+### Health & Monitoring
+
+- `GET /health` - System health status
+- `GET /health/:service` - Individual service health
+- `GET /metrics` - Performance metrics
+- `GET /services` - Service discovery
+
+## 🛡️ Security Features
+
+PromptDial 2.0 includes comprehensive security:
+
+### Threat Detection
+- **Prompt Injection**: 15+ patterns including instruction override, role hijacking
+- **Jailbreaks**: DAN mode, pretend scenarios, hypotheticals
+- **Data Exfiltration**: Training data probes, API key fishing
+- **Evasion Techniques**: Base64 encoding, Unicode tricks, leetspeak
+
+### Protection Mechanisms
+- Real-time prompt sanitization
+- Content filtering and PII redaction
+- Risk scoring (0-1 scale)
+- Configurable blocking thresholds
+- Complete audit trail
 
 ## 🧪 Testing
 
 ```bash
-# Run tests
+# Run all tests
 npm test
 
-# Coverage report
-npm run test:coverage
+# Test specific service
+cd packages/classifier && npm test
+
+# Integration tests
+npm run test:integration
+
+# Test security patterns
+cd packages/safety-guard && npm run test
 ```
 
-## 📄 License
+## 📊 Monitoring & Telemetry
 
-MIT License - see [LICENSE](LICENSE) file for details
+The telemetry service tracks:
+- Request latencies and throughput
+- Token usage and costs
+- Optimization patterns
+- Error rates and retry attempts
+- Technique effectiveness
+- Security violations
+
+Access metrics at `http://localhost:3000/metrics`
+
+## 🚢 Production Deployment
+
+### Docker Deployment
+
+```bash
+# Build and start all services
+docker-compose up --build
+
+# Scale specific services
+docker-compose up --scale evaluator=3 --scale classifier=2
+```
+
+### Kubernetes
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Kubernetes manifests and production configuration.
+
+### Configuration
+
+Key environment variables:
+```env
+# LLM Providers
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_AI_API_KEY=...
+
+# Service Config
+RATE_LIMIT=60
+LOG_LEVEL=info
+NODE_ENV=production
+
+# Vector Store (optional)
+VECTOR_STORE_TYPE=chroma
+CHROMA_URL=http://localhost:8000
+```
+
+## 📚 Documentation
+
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
+- [Architecture](docs/ARCHITECTURE.md) - System design
+- [API Reference](docs/API.md) - Complete API docs
+- [Security](docs/SECURITY.md) - Security implementation
+- [Contributing](CONTRIBUTING.md) - Contribution guidelines
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-Built with TypeScript and love by the PromptDial team.
+Built on research from:
+- [Chain-of-Thought Prompting](https://arxiv.org/abs/2201.11903)
+- [Self-Consistency](https://arxiv.org/abs/2203.11171)
+- [ReAct Framework](https://arxiv.org/abs/2210.03629)
+- [Tree of Thoughts](https://arxiv.org/abs/2305.10601)
+- [DSPy](https://github.com/stanfordnlp/dspy)
 
 ---
 
-**Note**: This project is under active development. APIs may change in future versions.
+**PromptDial 2.0** - Enterprise-grade prompt optimization at scale. 🎯
