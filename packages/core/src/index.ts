@@ -5,11 +5,13 @@
  */
 
 import { MetaPromptDesigner, OptimizationRequest, OptimizedVariant } from './meta-prompt-designer'
+import { AIMetaPromptDesigner } from './ai-meta-prompt-designer'
 import { QualityValidator, ValidationResult } from './quality-validator'
 
 export interface PromptDialOptions {
   autoValidate?: boolean
   sortByQuality?: boolean
+  useAI?: boolean  // New option to enable AI-powered optimization
 }
 
 export interface OptimizedResult {
@@ -23,18 +25,29 @@ export interface OptimizedResult {
 }
 
 export class PromptDial {
-  private designer: MetaPromptDesigner
+  private designer: MetaPromptDesigner | AIMetaPromptDesigner
   private validator: QualityValidator
   private options: PromptDialOptions
 
   constructor(options: PromptDialOptions = {}) {
-    this.designer = new MetaPromptDesigner()
-    this.validator = new QualityValidator()
     this.options = {
       autoValidate: true,
       sortByQuality: true,
+      useAI: true,  // Default to AI-powered optimization
       ...options
     }
+    
+    // Use AI designer if enabled and API keys are available
+    if (this.options.useAI && this.hasAPIKeys()) {
+      this.designer = new AIMetaPromptDesigner()
+    } else {
+      this.designer = new MetaPromptDesigner()
+      if (this.options.useAI) {
+        console.warn('AI optimization requested but no API keys found. Falling back to mock optimization.')
+      }
+    }
+    
+    this.validator = new QualityValidator()
   }
 
   /**
@@ -98,6 +111,10 @@ export class PromptDial {
       bestScore: scores.length > 0 ? Math.max(...scores) : undefined,
       averageScore: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined
     }
+  }
+  
+  private hasAPIKeys(): boolean {
+    return !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY)
   }
 }
 

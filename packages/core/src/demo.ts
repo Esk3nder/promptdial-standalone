@@ -12,7 +12,7 @@ async function runDemo() {
   const promptDial = new PromptDial()
 
   console.log('🚀 PromptDial Demo\n')
-  console.log('=''.repeat(50))
+  console.log('='.repeat(50))
 
   const examples = [
     {

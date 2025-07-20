@@ -20,19 +20,6 @@ PromptDial is an advanced prompt optimization engine that transforms simple prom
 
 ## 🚀 Quick Start
 
-### One-Command Setup with Web UI
-
-```bash
-npm install
-npm start
-```
-
-This starts the PromptDial server with a web UI at `http://localhost:3000`. No additional setup needed!
-
-For more options, see [QUICK_START.md](QUICK_START.md).
-
-### Original Quick Start (Library Usage)
-
 ### Installation
 
 ```bash

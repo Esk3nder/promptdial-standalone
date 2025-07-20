@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptDial - AI Prompt Optimizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+        
+        .tagline {
+            color: #6b7280;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 150px;
+            font-family: inherit;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .config-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            background: white;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        
+        .button:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .score {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .score.high { color: #10b981; }
+        .score.medium { color: #f59e0b; }
+        .score.low { color: #ef4444; }
+        
+        .prompt-text {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+        }
+        
+        .copy-button {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .copy-button:hover {
+            background: #f9fafb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .config-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PromptDial</h1>
+            <p class="tagline">Transform your prompts into optimized, model-specific queries</p>
+        </header>
+        
+        <div class="form-section">
+            <form id="optimizeForm">
+                <div class="form-group">
+                    <label for="prompt">Enter your prompt</label>
+                    <textarea 
+                        id="prompt" 
+                        name="prompt" 
+                        placeholder="Enter the prompt you want to optimize..."
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="config-row">
+                    <div class="form-group">
+                        <label for="model">Target Model</label>
+                        <select id="model" name="model">
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="claude-3-opus">Claude 3 Opus</option>
+                            <option value="gemini-pro">Gemini Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="level">Optimization Level</label>
+                        <select id="level" name="level">
+                            <option value="basic">Basic</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskType">Task Type</label>
+                        <select id="taskType" name="taskType">
+                            <option value="">Auto-detect</option>
+                            <option value="creative">Creative</option>
+                            <option value="analytical">Analytical</option>
+                            <option value="coding">Coding</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="button" id="optimizeBtn">
+                    Optimize Prompt
+                </button>
+            </form>
+        </div>
+        
+        <div id="results" class="results-section"></div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('optimizeForm');
+        const resultsDiv = document.getElementById('results');
+        const optimizeBtn = document.getElementById('optimizeBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const request = {
+                prompt: formData.get('prompt'),
+                targetModel: formData.get('model'),
+                optimizationLevel: formData.get('level'),
+            };
+            
+            const taskType = formData.get('taskType');
+            if (taskType) {
+                request.taskType = taskType;
+            }
+            
+            // Show loading state
+            optimizeBtn.disabled = true;
+            optimizeBtn.textContent = 'Optimizing...';
+            resultsDiv.innerHTML = '<div class="loading">Optimizing your prompt...</div>';
+            resultsDiv.classList.add('show');
+            
+            try {
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(request),
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Optimization failed');
+                }
+                
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                optimizeBtn.disabled = false;
+                optimizeBtn.textContent = 'Optimize Prompt';
+            }
+        });
+        
+        function displayResults(result) {
+            const { variants, summary } = result;
+            
+            let html = '<h2 style="margin-bottom: 1.5rem;">Optimization Results</h2>';
+            
+            if (summary.bestScore) {
+                html += `<p style="margin-bottom: 2rem; color: #6b7280;">
+                    Generated ${variants.length} variant${variants.length > 1 ? 's' : ''} 
+                    • Best score: ${summary.bestScore}/100
+                </p>`;
+            }
+            
+            variants.forEach((variant, index) => {
+                const score = variant.quality?.score || 0;
+                const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
+                
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div>
+                                <span class="score ${scoreClass}">${score}/100</span>
+                                <span style="margin-left: 1rem; color: #6b7280;">
+                                    Variant ${index + 1}
+                                </span>
+                            </div>
+                            <button class="copy-button" onclick="copyToClipboard('${variant.optimizedPrompt.replace(/'/g, "\\'")}', this)">
+                                Copy
+                            </button>
+                        </div>
+                        <div class="prompt-text">${variant.optimizedPrompt}</div>
+                        ${variant.changes && variant.changes.length > 0 ? `
+                            <div style="margin-top: 1rem;">
+                                <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Improvements:</h4>
+                                <ul style="font-size: 0.875rem; color: #4b5563;">
+                                    ${variant.changes.map(change => 
+                                        `<li>${change.type}: ${change.description}</li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ Copied';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
