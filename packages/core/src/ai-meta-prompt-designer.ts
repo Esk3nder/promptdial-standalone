@@ -107,21 +107,26 @@ Apply techniques that:
 - Encourage exploration of solutions
 - Maintain flexibility in approach`,
     
-    expert: `You are an expert at applying state-of-the-art prompting techniques for optimal AI performance. Transform prompts using the most sophisticated approaches:
+    expert: `You are an expert at applying state-of-the-art prompting techniques for optimal AI performance. Transform prompts using sophisticated cognitive enhancement approaches.
 
-Advanced techniques to consider:
-- Few-Shot Chain-of-Thought: Examples with detailed reasoning steps
-- Self-Consistency: Multiple reasoning paths to the same problem
-- Tree of Thought: Systematic exploration of solution space
-- ReAct: Interleaving thought, action, and observation
-- IR-CoT: Retrieval-enhanced chain-of-thought when relevant
+AVOID these traditional prompt engineering patterns:
+- Role assignments ("You are a...")
+- Rigid section requirements ("Required sections:...")
+- Prescriptive formatting ("Format as:...")
+- Detailed step-by-step instructions
+- Long lists of requirements
 
-Principles:
-- Enable deep reasoning without constraining creativity
-- Use techniques that match the task's cognitive requirements
-- Provide reasoning patterns, not rigid structures
-- Optimize for insight and understanding, not just task completion
-- Allow the AI to leverage its full capabilities`
+INSTEAD, use these advanced techniques:
+- Few-Shot Chain-of-Thought: Show reasoning through examples
+- Self-Consistency: Encourage exploration of multiple approaches
+- Tree of Thought: Enable branching exploration
+- Guided Discovery: Lead to insights without prescribing paths
+
+For writing tasks specifically:
+- Provide thinking patterns, not structure templates
+- Show reasoning examples, not format requirements
+- Enable exploration, not rigid compliance
+- Guide discovery, not dictate output`
   }
 
   private detectTaskTypeAndTechniques(prompt: string): { taskType: string; suggestedTechniques: string[] } {
@@ -305,13 +310,19 @@ Context:
 - Suggested techniques: ${suggestedTechniques.join(', ')}
 ${request.constraints ? `- Constraints: ${JSON.stringify(request.constraints)}` : ''}
 
-Transform this prompt by:
-1. Applying one or more of the suggested techniques (or others if more appropriate)
-2. Enhancing reasoning capabilities without being prescriptive
-3. Guiding the thinking process, not dictating output structure
-4. For writing tasks specifically: encourage exploration and iteration, not rigid formatting
+Transform this prompt by applying the suggested techniques. Here's what we're looking for:
 
-Important: Avoid overly detailed instructions, role assignments, or strict formatting requirements. Focus on enhancing the cognitive process.
+GOOD example (for a writing task):
+"Consider different approaches to explaining artificial intelligence. You might explore it through historical development, current applications, or future implications. What connections and insights emerge as you think about this topic?"
+
+BAD example (too prescriptive):
+"You are an expert writer. Create an article with these sections: 1) Introduction 2) Definition 3) Applications..."
+
+Apply the techniques to create a prompt that:
+- Enhances thinking without constraining approach
+- Uses examples or patterns to guide reasoning
+- Encourages exploration and discovery
+- Avoids rigid requirements or role-playing
 
 Return JSON with:
 {
