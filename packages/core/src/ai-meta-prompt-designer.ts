@@ -86,26 +86,91 @@ export class AIMetaPromptDesigner {
   }
   
   private systemPrompts = {
-    basic: `You are an expert prompt engineer. Your task is to optimize the given prompt to be clearer and more effective. Make minimal changes while improving clarity and specificity.`,
+    basic: `You are an expert at enhancing prompts to elicit better reasoning and understanding. Your goal is to transform the given prompt to encourage deeper thinking without being prescriptive.
+
+Focus on:
+- Clarifying intent without over-specifying
+- Encouraging step-by-step reasoning where helpful
+- Making the task clear while allowing creative approaches`,
     
-    advanced: `You are a world-class prompt engineering expert. Optimize the given prompt using advanced techniques:
-- Add clear structure and formatting
-- Include specific instructions and constraints
-- Define expected output format
-- Add context and examples where helpful
-- Use techniques like few-shot learning when appropriate`,
+    advanced: `You are an expert at applying advanced prompting techniques that enhance AI reasoning capabilities. Transform the given prompt using sophisticated approaches:
+
+Available techniques:
+- Few-Shot Chain-of-Thought: Provide examples that show reasoning process
+- Self-Consistency: Encourage exploring multiple reasoning paths
+- ReAct: Combine reasoning with action steps
+- Tree of Thought: Enable exploration of different solution branches
+
+Apply techniques that:
+- Guide thinking process, not output format
+- Enhance reasoning capability
+- Encourage exploration of solutions
+- Maintain flexibility in approach`,
     
-    expert: `You are the world's leading prompt engineering expert. Create a highly optimized prompt using all available techniques:
-- Chain of thought reasoning
-- Role-based prompting
-- Clear task decomposition
-- Specific output formatting
-- Constraint specification
-- Few-shot examples
-- Meta-prompting techniques
-- Model-specific optimizations
-- Token efficiency
-- Error handling instructions`
+    expert: `You are an expert at applying state-of-the-art prompting techniques for optimal AI performance. Transform prompts using the most sophisticated approaches:
+
+Advanced techniques to consider:
+- Few-Shot Chain-of-Thought: Examples with detailed reasoning steps
+- Self-Consistency: Multiple reasoning paths to the same problem
+- Tree of Thought: Systematic exploration of solution space
+- ReAct: Interleaving thought, action, and observation
+- IR-CoT: Retrieval-enhanced chain-of-thought when relevant
+
+Principles:
+- Enable deep reasoning without constraining creativity
+- Use techniques that match the task's cognitive requirements
+- Provide reasoning patterns, not rigid structures
+- Optimize for insight and understanding, not just task completion
+- Allow the AI to leverage its full capabilities`
+  }
+
+  private detectTaskTypeAndTechniques(prompt: string): { taskType: string; suggestedTechniques: string[] } {
+    const lowerPrompt = prompt.toLowerCase()
+    
+    // Writing tasks - benefit from examples and structured thinking
+    if (lowerPrompt.includes('write') || lowerPrompt.includes('article') || lowerPrompt.includes('essay') || lowerPrompt.includes('story')) {
+      return {
+        taskType: 'creative_writing',
+        suggestedTechniques: ['Few-Shot Examples', 'Guided Exploration', 'Iterative Refinement']
+      }
+    }
+    
+    // Analysis tasks - benefit from systematic reasoning
+    if (lowerPrompt.includes('analyze') || lowerPrompt.includes('explain') || lowerPrompt.includes('compare')) {
+      return {
+        taskType: 'analysis',
+        suggestedTechniques: ['Chain-of-Thought', 'Self-Consistency', 'Multi-perspective Analysis']
+      }
+    }
+    
+    // Problem solving - benefit from exploration
+    if (lowerPrompt.includes('solve') || lowerPrompt.includes('calculate') || lowerPrompt.includes('determine')) {
+      return {
+        taskType: 'problem_solving',
+        suggestedTechniques: ['Tree of Thought', 'Step-by-step Reasoning', 'Multiple Solution Paths']
+      }
+    }
+    
+    // Code generation - benefit from examples and patterns
+    if (lowerPrompt.includes('code') || lowerPrompt.includes('function') || lowerPrompt.includes('implement')) {
+      return {
+        taskType: 'coding',
+        suggestedTechniques: ['Few-Shot Code Examples', 'ReAct Pattern', 'Test-Driven Approach']
+      }
+    }
+    
+    // Research tasks - benefit from retrieval and synthesis
+    if (lowerPrompt.includes('research') || lowerPrompt.includes('find') || lowerPrompt.includes('discover')) {
+      return {
+        taskType: 'research',
+        suggestedTechniques: ['IR-CoT', 'Evidence-based Reasoning', 'Source Integration']
+      }
+    }
+    
+    return {
+      taskType: 'general',
+      suggestedTechniques: ['Adaptive Reasoning', 'Context-aware Optimization']
+    }
   }
 
   async generateVariants(request: OptimizationRequest): Promise<OptimizedVariant[]> {
@@ -193,7 +258,7 @@ Generate an optimized version of this prompt. Return your response in the follow
             { role: 'system', content: systemPrompt },
             { role: 'user', content: variantPrompt }
           ],
-          temperature: 0.7 + (i * 0.1), // Vary temperature for diversity
+          temperature: Math.min(0.7 + (i * 0.1), 1.0), // Cap at 1.0 // Vary temperature for diversity
           max_tokens: 1000,
           response_format: { type: "json_object" }
         })
@@ -224,23 +289,37 @@ Generate an optimized version of this prompt. Return your response in the follow
     const variants: OptimizedVariant[] = []
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
     
+    // Detect task type and suggested techniques
+    const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
+    console.log(`📊 Detected task type: ${taskType}, Suggested techniques: ${suggestedTechniques.join(', ')}`)
+    
     for (let i = 0; i < count; i++) {
-      const userPrompt = `Please optimize this prompt for ${request.targetModel}:
+      const userPrompt = `Transform this prompt to enhance reasoning and performance:
 
 "${request.prompt}"
 
-Requirements:
-- Task type: ${request.taskType || 'general'}
+Context:
+- Detected task type: ${taskType}
 - Optimization level: ${request.optimizationLevel}
+- Target model: ${request.targetModel}
+- Suggested techniques: ${suggestedTechniques.join(', ')}
 ${request.constraints ? `- Constraints: ${JSON.stringify(request.constraints)}` : ''}
 
-Provide your response in this exact JSON format:
+Transform this prompt by:
+1. Applying one or more of the suggested techniques (or others if more appropriate)
+2. Enhancing reasoning capabilities without being prescriptive
+3. Guiding the thinking process, not dictating output structure
+4. For writing tasks specifically: encourage exploration and iteration, not rigid formatting
+
+Important: Avoid overly detailed instructions, role assignments, or strict formatting requirements. Focus on enhancing the cognitive process.
+
+Return JSON with:
 {
-  "optimizedPrompt": "the optimized prompt",
+  "optimizedPrompt": "the transformed prompt using appropriate techniques",
   "changes": [
-    {"type": "change_type", "description": "what was changed"}
+    {"type": "technique_name", "description": "how it enhances reasoning"}
   ],
-  "modelSpecificFeatures": ["feature1", "feature2"]
+  "modelSpecificFeatures": ["leveraged capabilities"]
 }`
 
       try {
@@ -248,7 +327,7 @@ Provide your response in this exact JSON format:
         const response = await anthropic!.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1000,
-          temperature: 0.7 + (i * 0.1),
+          temperature: Math.min(0.7 + (i * 0.1), 1.0), // Cap at 1.0
           system: systemPrompt,
           messages: [{
             role: 'user',

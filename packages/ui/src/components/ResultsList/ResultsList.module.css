@@ -147,19 +147,6 @@
   height: 14px;
 }
 
-/* Remove old styles */
-.header,
-.title,
-.subtitle,
-.requestInfo,
-.infoItem,
-.summary,
-.stat,
-.statLabel,
-.statValue,
-.variantsList {
-  display: none;
-}
 
 @media (max-width: 768px) {
   .emptyState {

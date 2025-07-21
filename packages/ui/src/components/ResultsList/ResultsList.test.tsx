@@ -28,31 +28,31 @@ describe('ResultsList', () => {
   it('should display empty state when no results', () => {
     render(<ResultsList isLoading={false} results={null} onCopy={mockOnCopy} />)
     
-    expect(screen.getByText('Enter a prompt above and click "Optimize" to get started')).toBeInTheDocument()
+    expect(screen.getByText('Ready to refine')).toBeInTheDocument()
+    expect(screen.getByText(/Enter your prompt in the control panel/)).toBeInTheDocument()
   })
 
-  it('should display results when available', () => {
-    const results = createMockOptimizationResult(3)
+  it('should display optimized result when available', () => {
+    const results = createMockOptimizationResult(1)
     render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
     
-    expect(screen.getByText('Optimization Results')).toBeInTheDocument()
-    expect(screen.getByText('3 variants generated')).toBeInTheDocument()
-    expect(screen.getAllByRole('article')).toHaveLength(3)
+    expect(screen.getByText('Optimized Result')).toBeInTheDocument()
+    expect(screen.getByText(/Score: \d+\/100/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument()
   })
 
-  it('should display summary statistics', () => {
-    const results = createMockOptimizationResult(3)
+  it('should display quality score with appropriate styling', () => {
+    const results = createMockOptimizationResult(1)
     render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
     
-    expect(screen.getByText('Best Score:')).toBeInTheDocument()
-    expect(screen.getByText('85/100')).toBeInTheDocument()
-    expect(screen.getByText('Average:')).toBeInTheDocument()
-    expect(screen.getByText('80/100')).toBeInTheDocument()
+    const scoreElement = screen.getByText(/Score: \d+\/100/)
+    expect(scoreElement.parentElement).toHaveClass('scoreBadge')
   })
 
-  it('should pass copy handler to variant cards', async () => {
+  it('should handle copy action', async () => {
     const user = userEvent.setup()
     const results = createMockOptimizationResult(1)
+    
     render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
     
     const copyButton = screen.getByRole('button', { name: /copy/i })
@@ -61,44 +61,10 @@ describe('ResultsList', () => {
     expect(mockOnCopy).toHaveBeenCalledWith(results.variants[0].optimizedPrompt)
   })
 
-  it('should announce results to screen readers', () => {
-    const results = createMockOptimizationResult(3)
-    render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
-    
-    expect(screen.getByRole('status')).toHaveTextContent('3 optimized variants ready')
-  })
-
-  it('should display request information', () => {
+  it('should display the optimized prompt text', () => {
     const results = createMockOptimizationResult(1)
     render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
     
-    expect(screen.getByText('Model: gpt-4')).toBeInTheDocument()
-    expect(screen.getByText('Level: basic')).toBeInTheDocument()
-  })
-
-  it('should handle single variant result', () => {
-    const results = createMockOptimizationResult(1)
-    render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
-    
-    expect(screen.getByText('1 variant generated')).toBeInTheDocument()
-  })
-
-  it('should not display summary when no scores available', () => {
-    const results = createMockOptimizationResult(1)
-    results.summary.bestScore = undefined
-    results.summary.averageScore = undefined
-    
-    render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
-    
-    expect(screen.queryByText('Best Score:')).not.toBeInTheDocument()
-    expect(screen.queryByText('Average:')).not.toBeInTheDocument()
-  })
-
-  it('should have proper heading hierarchy', () => {
-    const results = createMockOptimizationResult(1)
-    render(<ResultsList isLoading={false} results={results} onCopy={mockOnCopy} />)
-    
-    const heading = screen.getByRole('heading', { level: 2 })
-    expect(heading).toHaveTextContent('Optimization Results')
+    expect(screen.getByText(results.variants[0].optimizedPrompt)).toBeInTheDocument()
   })
 })

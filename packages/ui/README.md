@@ -40,6 +40,16 @@ npm run dev
 # The UI will be available at http://localhost:5173
 ```
 
+### Test Dashboard
+
+A separate test dashboard is available for development testing:
+
+```bash
+# Access the test dashboard at http://localhost:5173/test-dashboard.html
+```
+
+This dashboard includes additional testing components not used in the main UI.
+
 ### Testing
 
 ```bash
@@ -78,8 +88,7 @@ The UI is built with:
 src/
 ├── components/
 │   ├── PromptForm/      # Input form with configuration
-│   ├── ResultsList/     # Results container with states
-│   ├── VariantCard/     # Individual result display
+│   ├── ResultsList/     # Results display with optimized prompt
 │   └── common/          # Shared accessible components
 ├── hooks/               # Custom React hooks
 ├── types/               # TypeScript type definitions
@@ -95,14 +104,10 @@ src/
    - Keyboard shortcut support
 
 2. **ResultsList**: Displays optimization results
-   - Loading, error, and empty states
-   - Summary statistics
-   - Responsive grid layout
-
-3. **VariantCard**: Shows individual optimized variants
-   - Quality score with color coding
-   - List of improvements
-   - Model-specific features
+   - Loading, error, and empty states  
+   - "Ready to refine" state with visual indicator
+   - Single optimized prompt display
+   - Quality score badge with color coding
    - Copy functionality
 
 ## Accessibility

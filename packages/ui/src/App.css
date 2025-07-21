@@ -129,15 +129,3 @@
   }
 }
 
-/* Remove old styles */
-.app-header {
-  display: none;
-}
-
-.app-section {
-  margin-bottom: 0;
-}
-
-.app-tagline {
-  display: none;
-}
