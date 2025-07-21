@@ -1,6 +1,5 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "outputDirectory": "."
+  "buildCommand": "./build-vercel.sh",
+  "outputDirectory": "vercel-build/dist",
+  "installCommand": "echo 'Skipping install - handled by build script'"
 }
