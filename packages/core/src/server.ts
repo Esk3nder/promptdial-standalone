@@ -1,14 +1,12 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import 'dotenv/config'  // Load environment variables
 import { PromptDial } from './index.js'
 import type { OptimizationRequest } from './meta-prompt-designer.js'
-import { generateMockVariants } from './simple-mock.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+// Get directory path in CommonJS
+const __dirname = path.resolve()
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -66,22 +64,22 @@ app.post('/api/optimize', async (req, res) => {
       }
     }
     
-    res.json(enhancedResult)
+    return res.json(enhancedResult)
   } catch (error) {
     console.error('❌ Optimization error:', error)
-    res.status(500).json({
+    return res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed'
     })
   }
 })
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'promptdial-server' })
 })
 
 // Serve index.html for all other routes (SPA support)
-app.get('*', (req, res) => {
+app.get('*', (_req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'))
 })
 
@@ -107,11 +105,15 @@ Ready to optimize prompts!
   
   // Open browser automatically (optional)
   if (process.env.NODE_ENV !== 'production') {
-    import('open').then(({ default: open }) => {
-      open(`http://localhost:${PORT}`)
-    }).catch(() => {
-      // Ignore if open package is not available
-    })
+    // Dynamic import for optional dependency
+    ;(async () => {
+      try {
+        const open = await import('open')
+        open.default(`http://localhost:${PORT}`)
+      } catch {
+        // Ignore if open package is not available
+      }
+    })()
   }
 })
 

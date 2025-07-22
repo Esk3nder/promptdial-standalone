@@ -218,7 +218,7 @@ export class MetaPromptDesigner {
     }
   }
 
-  private addSpecificity(prompt: string, taskType: string): { type: string; changes: Array<{ suggestion: string }>; suggestions: string[]; taskType: string } {
+  private addSpecificity(_prompt: string, taskType: string): { type: string; changes: Array<{ suggestion: string }>; suggestions: string[]; taskType: string } {
     const suggestions = []
 
     switch (taskType) {
@@ -277,7 +277,7 @@ export class MetaPromptDesigner {
     }
   }
 
-  private optimizeForModel(prompt: string, strategy: ModelStrategy): { type: string; optimizations: string[] } {
+  private optimizeForModel(_prompt: string, strategy: ModelStrategy): { type: string; optimizations: string[] } {
     return {
       type: 'model_optimization',
       optimizations: strategy.optimizations,
@@ -305,7 +305,7 @@ export class MetaPromptDesigner {
 
   private createVariant(
     originalPrompt: string, 
-    improvements: { clarity: unknown; specificity: { taskType?: string; suggestions?: string[] }; taskType?: string }, 
+    improvements: { clarity: unknown; specificity: { taskType?: string; suggestions?: string[] }; taskType?: string; modelOptimization?: { type: string; optimizations: string[] } }, 
     strategy: ModelStrategy,
     index: number,
     request?: OptimizationRequest
@@ -380,11 +380,13 @@ export class MetaPromptDesigner {
     }
 
     // Always apply model optimization
-    optimizedPrompt = this.applyModelOptimization(optimizedPrompt, improvements.modelOptimization, index)
-    changes.push({
-      type: 'model_optimization',
-      description: `Applied ${strategy.model} specific optimizations`,
-    })
+    if (improvements.modelOptimization) {
+      optimizedPrompt = this.applyModelOptimization(optimizedPrompt, improvements.modelOptimization, index)
+      changes.push({
+        type: 'model_optimization',
+        description: `Applied ${strategy.model} specific optimizations`,
+      })
+    }
 
     return {
       id: crypto.randomUUID(),

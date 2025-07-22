@@ -2,7 +2,6 @@ import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import 'dotenv/config'
-import { MockOptimizer } from './mock-optimizer.js'
 
 // Types
 export interface OptimizationRequest {
@@ -37,7 +36,6 @@ const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: proces
 const googleAI = process.env.GOOGLE_AI_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY) : null
 
 export class AIMetaPromptDesigner {
-  private mockOptimizer = new MockOptimizer()
   
   // Helper to clean and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
@@ -54,7 +52,7 @@ export class AIMetaPromptDesigner {
       // More robust cleaning approach
       // 1. First, handle string literals properly
       const stringLiterals: string[] = []
-      let cleanedJson = jsonStr.replace(/"(?:[^"\\]|\\.)*"/g, (match, offset) => {
+      let cleanedJson = jsonStr.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
         const index = stringLiterals.length
         stringLiterals.push(match)
         return `"__STRING_${index}__"`
@@ -64,7 +62,7 @@ export class AIMetaPromptDesigner {
       cleanedJson = cleanedJson.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
       
       // 3. Restore string literals with proper escaping
-      cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (match, index) => {
+      cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (_match, index) => {
         let str = stringLiterals[parseInt(index)]
         // Ensure newlines are properly escaped within the string
         str = str.slice(1, -1) // Remove quotes
@@ -80,7 +78,7 @@ export class AIMetaPromptDesigner {
         return JSON.parse(cleanedJson)
       } catch (e2) {
         console.error('Failed to parse cleaned JSON:', cleanedJson)
-        throw new Error(`JSON parsing failed: ${e2.message}`)
+        throw new Error(`JSON parsing failed: ${e2 instanceof Error ? e2.message : String(e2)}`)
       }
     }
   }
@@ -188,7 +186,6 @@ For writing tasks specifically:
     this.validateInput(request)
     
     const variantCount = this.getVariantCount(request.optimizationLevel)
-    const variants: OptimizedVariant[] = []
     
     try {
       // Generate variants based on target model
@@ -227,8 +224,7 @@ For writing tasks specifically:
       }
     } catch (error) {
       console.error('❌ AI optimization error:', error)
-      console.log('⚠️  FALLING BACK TO MOCK OPTIMIZER - This is NOT using real AI!')
-      return await this.mockOptimizer.generateVariants(request)
+      throw new Error(`Failed to generate AI-optimized variants: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -365,9 +361,6 @@ Return JSON with:
         console.log(`✅ Successfully created Claude variant ${i + 1}`)
       } catch (error) {
         console.error(`❌ Error generating Claude variant ${i}:`, error)
-        if (error instanceof Error && error.message.includes('JSON')) {
-          console.error('Raw Claude response:', response?.content[0]?.type === 'text' ? response.content[0].text : 'No text content')
-        }
       }
     }
     
@@ -427,38 +420,6 @@ Return ONLY a JSON object with this structure:
     return variants
   }
 
-  private generateFallbackVariants(request: OptimizationRequest, count: number): OptimizedVariant[] {
-    // Basic fallback if AI APIs fail
-    const variants: OptimizedVariant[] = []
-    
-    for (let i = 0; i < count; i++) {
-      let optimized = request.prompt
-      const changes = []
-      
-      // Add basic improvements
-      if (!optimized.endsWith('.') && !optimized.endsWith('?')) {
-        optimized += '.'
-        changes.push({ type: 'punctuation', description: 'Added proper punctuation' })
-      }
-      
-      if (request.taskType === 'coding') {
-        optimized = `${optimized} Please provide code with comments and error handling.`
-        changes.push({ type: 'specificity', description: 'Added coding requirements' })
-      }
-      
-      variants.push({
-        id: `fallback-${Date.now()}-${i}`,
-        originalPrompt: request.prompt,
-        optimizedPrompt: optimized,
-        changes,
-        modelSpecificFeatures: [],
-        estimatedTokens: this.estimateTokens(optimized),
-        score: 60 + Math.random() * 20
-      })
-    }
-    
-    return variants
-  }
 
   private validateInput(request: OptimizationRequest): void {
     if (!request.prompt || request.prompt.trim().length === 0) {
@@ -469,13 +430,13 @@ Return ONLY a JSON object with this structure:
     }
   }
 
-  private getVariantCount(level: string): number {
+  private getVariantCount(level: 'basic' | 'advanced' | 'expert'): number {
     const counts = {
       basic: 1,
       advanced: 3,
       expert: 5
     }
-    return counts[level] || 1
+    return counts[level]
   }
 
   private estimateTokens(text: string): number {

@@ -41,7 +41,8 @@ app.post('/api/test', async (req, res) => {
   const { prompt, targetModel, optimizationLevel } = req.body
 
   if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' })
+    res.status(400).json({ error: 'Prompt is required' })
+    return
   }
 
   const runner = new StreamingTestRunner()
@@ -57,6 +58,8 @@ app.post('/api/test', async (req, res) => {
 
   // Return test ID immediately
   res.json({ testId, streamUrl: `/api/test-stream/${testId}` })
+  
+  // Important: Don't return here, as we need to run the test in background
 
   // Run test in background
   try {
@@ -91,7 +94,7 @@ app.post('/api/test', async (req, res) => {
 })
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date() })
 })
 
@@ -106,7 +109,7 @@ app.get('/api/test/:testId', (req, res) => {
     return res.status(404).json({ error: 'Test not found' })
   }
   
-  res.json(result)
+  return res.json(result)
 })
 
 // Start server

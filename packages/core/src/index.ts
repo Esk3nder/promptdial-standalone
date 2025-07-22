@@ -68,7 +68,11 @@ export class PromptDial {
 
     // Sort by quality if enabled
     if (this.options.sortByQuality && this.options.autoValidate) {
-      enhancedVariants.sort((a, b) => (b.quality?.score || 0) - (a.quality?.score || 0))
+      enhancedVariants.sort((a, b) => {
+        const aScore = (a as any).quality?.score || 0
+        const bScore = (b as any).quality?.score || 0
+        return bScore - aScore
+      })
     }
 
     // Calculate summary statistics
@@ -132,13 +136,14 @@ export class PromptDial {
 // Export all types and classes
 export {
   MetaPromptDesigner,
-  QualityValidator,
   OptimizationRequest,
-  OptimizedVariant,
+  OptimizedVariant
+} from './meta-prompt-designer'
+export {
+  QualityValidator,
   ValidationResult,
   QualityFactors
-} from './meta-prompt-designer'
-export type { QualityFactors } from './quality-validator'
+} from './quality-validator'
 
 // Default export
 export default PromptDial

@@ -19,14 +19,18 @@ export class StreamingTestRunner {
     this.testId = uuidv4()
   }
 
-  private emit(event: Omit<PerformanceTestEvent, 'timestamp' | 'testId'>) {
+  private emit<T extends PerformanceTestEvent['type']>(
+    type: T,
+    data: Omit<Extract<PerformanceTestEvent, { type: T }>, 'timestamp' | 'testId' | 'type'>
+  ) {
     const fullEvent = {
-      ...event,
+      ...data,
+      type,
       timestamp: new Date(),
       testId: this.testId
     } as PerformanceTestEvent
     
-    this.emitter.emit(fullEvent.type, fullEvent)
+    this.emitter.emit(type, fullEvent)
   }
 
   onEvent(listener: (event: PerformanceTestEvent) => void) {
@@ -53,8 +57,7 @@ export class StreamingTestRunner {
 
     try {
       // Emit test started
-      this.emit({
-        type: 'test_started',
+      this.emit('test_started', {
         prompt,
         targetModel,
         optimizationLevel
@@ -65,8 +68,7 @@ export class StreamingTestRunner {
       const originalResults: Record<ModelProvider, TestResult> = {} as any
 
       for (const provider of providers) {
-        this.emit({
-          type: 'provider_test_started',
+        this.emit('provider_test_started', {
           provider,
           variant: 'original'
         })
@@ -74,8 +76,7 @@ export class StreamingTestRunner {
         const result = await testPrompt(provider, prompt)
         originalResults[provider] = result
 
-        this.emit({
-          type: 'provider_test_completed',
+        this.emit('provider_test_completed', {
           provider,
           variant: 'original',
           result
@@ -83,7 +84,7 @@ export class StreamingTestRunner {
       }
 
       // Optimize prompt
-      this.emit({ type: 'optimization_started' })
+      this.emit('optimization_started', {})
       
       const promptDial = new PromptDial()
       const optimizationResult = await promptDial.optimize({
@@ -92,21 +93,23 @@ export class StreamingTestRunner {
         optimizationLevel
       })
 
-      this.emit({
-        type: 'optimization_completed',
+      this.emit('optimization_completed', {
         variantCount: optimizationResult.variants.length
       })
 
       // Test optimized variants
-      const optimizedResults = []
+      const optimizedResults: Array<{
+        variant: string
+        results: Record<ModelProvider, TestResult>
+        quality: number
+      }> = []
       
       for (let i = 0; i < optimizationResult.variants.length; i++) {
         const variant = optimizationResult.variants[i]
         const variantResults: Record<ModelProvider, TestResult> = {} as any
 
         for (const provider of providers) {
-          this.emit({
-            type: 'provider_test_started',
+          this.emit('provider_test_started', {
             provider,
             variant: i
           })
@@ -114,8 +117,7 @@ export class StreamingTestRunner {
           const result = await testPrompt(provider, variant.optimizedPrompt)
           variantResults[provider] = result
 
-          this.emit({
-            type: 'provider_test_completed',
+          this.emit('provider_test_completed', {
             provider,
             variant: i,
             result
@@ -134,8 +136,7 @@ export class StreamingTestRunner {
       const bestVariantIndex = optimizedResults.reduce((best, current, index) => 
         current.quality > optimizedResults[best].quality ? index : best, 0)
 
-      this.emit({
-        type: 'test_completed',
+      this.emit('test_completed', {
         summary: {
           bestVariantIndex,
           averageImprovement: improvements
@@ -153,8 +154,7 @@ export class StreamingTestRunner {
       }
 
     } catch (error) {
-      this.emit({
-        type: 'test_error',
+      this.emit('test_error', {
         error: error instanceof Error ? error.message : 'Unknown error'
       })
       throw error

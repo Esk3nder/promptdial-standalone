@@ -655,11 +655,8 @@
             const score = bestVariant.quality?.score || 0;
             const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low';
             
-            // Check if using AI or mock
-            const isAIPowered = result.metadata?.optimizedUsing === 'ai-powered';
-            const optimizationBadge = isAIPowered 
-                ? '<span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">🤖 AI-Powered</span>'
-                : '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">⚡ Basic Mode</span>';
+            // Always show AI-Powered badge since mock optimization is removed
+            const optimizationBadge = '<span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">🤖 AI-Powered</span>';
             
             let html = `
                 <div class="result-header">
