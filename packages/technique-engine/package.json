@@ -23,7 +23,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@promptdial/shared": "workspace:*",
+    "@promptdial/shared": "file:../shared",
     "express": "^4.21.2"
   },
   "devDependencies": {

@@ -51,6 +51,45 @@ PromptDial 2.0 consists of 8 microservices:
 ## 🚀 Quick Start
 
 ### Prerequisites
+- Node.js 18 or higher
+- npm 7 or higher
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd promptdial-standalone
+
+# Run the setup script (recommended)
+./install.sh
+
+# OR manual installation
+npm run setup
+```
+
+### Starting the Server
+
+```bash
+# Start the standalone mock server (quick testing)
+npm start
+
+# Start the full development server
+npm run dev
+
+# Start with UI development server
+npm run start:ui
+```
+
+The server will be available at `http://localhost:3000`
+
+### Troubleshooting
+
+If you encounter any issues, please refer to [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions to common problems.
+
+## 🚀 Original Quick Start
+
+### Prerequisites
 
 - Node.js 18+
 - npm or yarn
