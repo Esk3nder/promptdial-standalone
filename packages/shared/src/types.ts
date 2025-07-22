@@ -9,37 +9,52 @@
 export interface PromptVariant {
   id: string
   technique: string
-  prompt: string
-  est_tokens: number
+  prompt: string  // The optimized prompt text
+  optimized_prompt?: string  // Legacy field for compatibility
   temperature: number
+  est_tokens: number
   cost_usd: number
-  latency_ms?: number
-  score?: number
-  ci?: [number, number]  // Confidence interval [low, high]
-  safety?: 'safe' | 'unsafe' | 'redacted'
+  model?: string
+  model_params?: {
+    temperature?: number
+    max_tokens?: number
+    top_p?: number
+  }
+  estimated_cost?: number
+  estimated_latency_ms?: number
+  metadata?: Record<string, any>
 }
 
 export interface OptimizationRequest {
-  base_prompt: string
-  task_hint?: TaskType
-  max_variants: number
-  cost_cap_usd: number
-  latency_cap_ms: number
-  security_level: SecurityLevel
-  trace_id?: string
+  prompt: string
+  task_type?: TaskType
+  domain?: Domain
+  constraints?: {
+    max_variants?: number
+    cost_cap_usd?: number
+    latency_cap_ms?: number
+    security_level?: SecurityLevel
+  }
+  context?: {
+    examples?: string[]
+    reference_output?: string
+    style_guide?: string
+  }
+  preferences?: Record<string, any>
 }
 
 export interface OptimizationResponse {
   trace_id: string
+  original_prompt: string
+  task_classification: TaskClassification
   variants: PromptVariant[]
-  frontier: Array<{
-    id: string
-    score: number
-    cost_usd: number
-  }>
-  metadata?: {
-    total_time_ms: number
+  recommended_variant: PromptVariant
+  evaluation_results: EvaluationResult[]
+  optimization_metadata: {
+    total_variants_generated: number
+    pareto_frontier_size: number
     techniques_used: string[]
+    safety_modifications: boolean
   }
 }
 
@@ -53,6 +68,8 @@ export type TaskType =
   | 'general_qa'
   | 'summarization'
   | 'translation'
+  | 'classification'
+  | 'general'
 
 export type Domain = 
   | 'academic'
@@ -61,7 +78,7 @@ export type Domain =
   | 'creative'
   | 'general'
 
-export type SecurityLevel = 'strict' | 'moderate' | 'relaxed'
+export type SecurityLevel = 'standard' | 'high' | 'strict'
 
 export interface TaskClassification {
   task_type: TaskType
@@ -206,11 +223,21 @@ export interface LLMProviderConfig {
   provider: 'openai' | 'anthropic' | 'google' | 'cohere'
   api_key: string
   base_url?: string
-  default_model: string
-  rate_limit: {
+  default_model?: string
+  model?: string
+  rate_limit?: {
     requests_per_minute: number
     tokens_per_minute: number
   }
+}
+
+export interface ServiceHealth {
+  healthy: boolean
+  service: string
+  version: string
+  uptime: number
+  details?: Record<string, any>
+  timestamp?: Date
 }
 
 // ============= Vector Store Types =============

@@ -19,8 +19,9 @@
     "setup": "npm run clean && npm run install:all"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "cors": "^2.8.5"
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
   },
   "engines": {
     "node": ">=18.0.0"

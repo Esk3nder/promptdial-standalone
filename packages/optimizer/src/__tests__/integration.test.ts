@@ -2,6 +2,7 @@
  * PromptDial 2.0 - Optimizer Integration Tests
  */
 
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { OptimizerService } from '../index'
 import { 
   OptimizationRequest,
@@ -9,10 +10,31 @@ import {
 } from '../types'
 import { PromptVariant, EvaluationResult } from '@promptdial/shared'
 
+// Mock dependencies
+vi.mock('@promptdial/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@promptdial/shared')>()
+  return {
+    ...actual,
+    createLogger: () => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
+    }),
+    getTelemetryService: () => ({
+      recordMetric: vi.fn(),
+      recordLatency: vi.fn(),
+      recordCounter: vi.fn(),
+      incrementCounter: vi.fn()
+    })
+  }
+})
+
 describe('OptimizerService Integration', () => {
   let optimizer: OptimizerService
   
   beforeEach(() => {
+    vi.clearAllMocks()
     optimizer = new OptimizerService()
   })
   

@@ -256,8 +256,13 @@ async function startServer() {
   })
 }
 
-// Start the server
-startServer().catch(err => {
-  logger.error('Failed to start server', err)
-  process.exit(1)
-})
+// Export app for testing
+export { app }
+
+// Start the server only if this is the main module
+if (require.main === module) {
+  startServer().catch(err => {
+    logger.error('Failed to start server', err)
+    process.exit(1)
+  })
+}

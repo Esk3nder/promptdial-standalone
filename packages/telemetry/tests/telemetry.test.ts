@@ -2,14 +2,29 @@
  * Tests for Telemetry Service
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { TelemetryService } from '../src'
 import { TelemetryEvent, createTelemetryEvent } from '@promptdial/shared'
+
+// Mock dependencies
+vi.mock('@promptdial/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@promptdial/shared')>()
+  return {
+    ...actual,
+    createLogger: () => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
+    })
+  }
+})
 
 describe('TelemetryService', () => {
   let telemetryService: TelemetryService
   
   beforeEach(() => {
+    vi.clearAllMocks()
     telemetryService = new TelemetryService()
   })
   
@@ -63,6 +78,9 @@ describe('TelemetryService', () => {
         await telemetryService.logEvent(event)
       }
       
+      // Force flush any remaining events in the batch
+      await (telemetryService as any).flushEvents()
+      
       // Query should return all events
       const results = await telemetryService.queryEvents({ trace_id: 'batch-test' })
       expect(results).toHaveLength(150)
@@ -96,6 +114,9 @@ describe('TelemetryService', () => {
       for (const event of events) {
         await telemetryService.logEvent(event)
       }
+      
+      // Force flush to ensure events are in the store for querying
+      await (telemetryService as any).flushEvents()
     })
     
     it('should query events by trace ID', async () => {

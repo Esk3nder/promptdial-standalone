@@ -195,7 +195,7 @@ export class InMemoryVectorStore implements VectorStore {
 
 export type VectorStoreType = 'memory' | 'pinecone' | 'weaviate' | 'pgvector'
 
-export function createVectorStore(type: VectorStoreType): VectorStore {
+export function createVectorStore(type: VectorStoreType = 'memory'): VectorStore {
   switch (type) {
     case 'memory':
       return new InMemoryVectorStore()

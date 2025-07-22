@@ -246,6 +246,39 @@ export function findParetoFrontier(points: ParetoPoint[]): ParetoPoint[] {
   return frontier
 }
 
+// ============= Telemetry Service =============
+
+interface TelemetryService {
+  trackEvent(event: TelemetryEvent): void
+  trackMetric(name: string, value: number, tags?: Record<string, string>): void
+  trackError(error: Error, context?: Record<string, any>): void
+  flush(): Promise<void>
+}
+
+// Singleton telemetry service
+let telemetryService: TelemetryService | null = null
+
+export function getTelemetryService(): TelemetryService {
+  if (!telemetryService) {
+    // Simple console-based telemetry for now
+    telemetryService = {
+      trackEvent: (event: TelemetryEvent) => {
+        console.log('[Telemetry] Event:', event)
+      },
+      trackMetric: (name: string, value: number, tags?: Record<string, string>) => {
+        console.log('[Telemetry] Metric:', { name, value, tags })
+      },
+      trackError: (error: Error, context?: Record<string, any>) => {
+        console.error('[Telemetry] Error:', error, context)
+      },
+      flush: async () => {
+        // No-op for console telemetry
+      }
+    }
+  }
+  return telemetryService
+}
+
 // ============= Retry Logic =============
 
 export async function retryWithBackoff<T>(

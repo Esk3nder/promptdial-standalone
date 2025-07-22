@@ -12,3 +12,6 @@ export * from './constants'
 
 // Export all utilities
 export * from './utils'
+
+// Export test utilities (only in test environments)
+export * from './test-utils'

@@ -1,0 +1,7 @@
+
+> promptdial-monorepo@1.0.0 start
+> node index.js
+
+🚀 PromptDial running at http://localhost:3000
+📝 API: POST http://localhost:3000/api/optimize
+🌐 Test UI: http://localhost:3000

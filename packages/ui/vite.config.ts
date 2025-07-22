@@ -15,6 +15,14 @@ export default defineConfig({
       'promptdial': resolve(__dirname, '../core/src/index.ts'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: {

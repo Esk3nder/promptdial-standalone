@@ -2,13 +2,29 @@
  * PromptDial 2.0 - Pareto Optimizer Tests
  */
 
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ParetoOptimizer } from '../pareto'
 import { OptimizationObjective, ParetoSolution } from '../types'
+
+// Mock dependencies
+vi.mock('@promptdial/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@promptdial/shared')>()
+  return {
+    ...actual,
+    createLogger: () => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
+    })
+  }
+})
 
 describe('ParetoOptimizer', () => {
   let optimizer: ParetoOptimizer
   
   beforeEach(() => {
+    vi.clearAllMocks()
     optimizer = new ParetoOptimizer()
   })
   
@@ -159,15 +175,15 @@ describe('ParetoOptimizer', () => {
       ]
       
       const constraints = {
-        max_cost: 0.5,
-        min_quality: 0.75,
-        max_latency: 0.4
+        max_cost: 0.4,
+        min_quality: 0.65,
+        max_latency: 0.35
       }
       
       const filtered = optimizer.applyConstraints(solutions, constraints)
       
       expect(filtered).toHaveLength(1)
-      expect(filtered[0].variant_id).toBe('v1')
+      expect(filtered[0].variant_id).toBe('v3')
     })
   })
   

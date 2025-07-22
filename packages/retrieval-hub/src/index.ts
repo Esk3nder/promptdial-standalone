@@ -359,7 +359,9 @@ export class RetrievalHub {
     
     for (const keyword of keywords) {
       if (keyword.length > 2) { // Skip short words
-        const regex = new RegExp(`\\b(${keyword})\\b`, 'gi')
+        // Escape special regex characters in keyword
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = new RegExp(`\\b(${escapedKeyword})\\b`, 'gi')
         highlighted = highlighted.replace(regex, '**$1**')
       }
     }
