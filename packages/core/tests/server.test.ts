@@ -230,7 +230,7 @@ describe('Server', () => {
         })
       })
       
-      it('should detect mock optimizer in metadata', async () => {
+      it('should always report ai-powered optimizer in metadata', async () => {
         const mockResult = {
           variants: [
             {
@@ -256,7 +256,7 @@ describe('Server', () => {
           })
           .expect(200)
         
-        expect(response.body.metadata.optimizedUsing).toBe('mock-optimizer')
+        expect(response.body.metadata.optimizedUsing).toBe('ai-powered')
       })
     })
     

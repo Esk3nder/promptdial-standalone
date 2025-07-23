@@ -275,8 +275,7 @@ Generate an optimized version of this prompt. Return your response in the follow
           optimizedPrompt: result.optimizedPrompt,
           changes: result.changes || [],
           modelSpecificFeatures: result.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
-          score: 85 + Math.random() * 15 // Placeholder scoring
+          estimatedTokens: this.estimateTokens(result.optimizedPrompt)
         })
       } catch (error) {
         console.error(`Error generating OpenAI variant ${i}:`, error)
@@ -355,8 +354,7 @@ Return JSON with:
           optimizedPrompt: result.optimizedPrompt,
           changes: result.changes || [],
           modelSpecificFeatures: result.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
-          score: 85 + Math.random() * 15
+          estimatedTokens: this.estimateTokens(result.optimizedPrompt)
         })
         console.log(`✅ Successfully created Claude variant ${i + 1}`)
       } catch (error) {
@@ -409,8 +407,7 @@ Return ONLY a JSON object with this structure:
           optimizedPrompt: parsed.optimizedPrompt,
           changes: parsed.changes || [],
           modelSpecificFeatures: parsed.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(parsed.optimizedPrompt),
-          score: 85 + Math.random() * 15
+          estimatedTokens: this.estimateTokens(parsed.optimizedPrompt)
         })
       } catch (error) {
         console.error(`Error generating Gemini variant ${i}:`, error)

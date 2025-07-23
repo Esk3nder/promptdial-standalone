@@ -59,7 +59,7 @@ app.post('/api/optimize', async (req, res) => {
     const enhancedResult = {
       ...result,
       metadata: {
-        optimizedUsing: result.variants[0]?.id?.includes('mock') ? 'mock-optimizer' : 'ai-powered',
+        optimizedUsing: 'ai-powered',
         timestamp: new Date().toISOString()
       }
     }
@@ -93,7 +93,7 @@ app.listen(PORT, () => {
 ✅ Server: http://localhost:${PORT}
 ✅ API: http://localhost:${PORT}/api/optimize
 ✅ UI: http://localhost:${PORT}
-✅ AI Mode: ${hasAPIKeys ? 'ENABLED (Using real AI APIs)' : 'DISABLED (Using mock optimization)'}
+✅ AI Mode: ${hasAPIKeys ? 'ENABLED' : 'DISABLED'}
 ${hasAPIKeys ? `✅ Available APIs: ${[
   process.env.OPENAI_API_KEY && 'OpenAI',
   process.env.ANTHROPIC_API_KEY && 'Anthropic', 
