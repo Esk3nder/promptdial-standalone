@@ -89,123 +89,299 @@ export class AIMetaPromptDesigner {
   }
 
   private systemPrompts = {
-    basic: `You are an expert at enhancing prompts to elicit better reasoning and understanding. Your goal is to transform the given prompt to encourage deeper thinking without being prescriptive.
+    basic: `You are an expert at enhancing prompts using cognitive amplification techniques. Transform prompts to activate deeper reasoning patterns.
 
-Focus on:
-- Clarifying intent without over-specifying
-- Encouraging step-by-step reasoning where helpful
-- Making the task clear while allowing creative approaches`,
+Core principles:
+- Activate multi-dimensional thinking through open-ended framing
+- Encourage cognitive exploration without constraining pathways
+- Use metacognitive triggers that prompt self-reflection
+- Enable emergent understanding through discovery-oriented language`,
 
-    advanced: `You are an expert at applying advanced prompting techniques that enhance AI reasoning capabilities. Transform the given prompt using sophisticated approaches:
+    advanced: `You are an expert at applying Ultra-Think cognitive framework for enhanced AI reasoning. Transform prompts using advanced cognitive architectures.
 
-Available techniques:
-- Few-Shot Chain-of-Thought: Provide examples that show reasoning process
-- Self-Consistency: Encourage exploring multiple reasoning paths
-- ReAct: Combine reasoning with action steps
-- Tree of Thought: Enable exploration of different solution branches
+Ultra-Think Framework:
+1. Cognitive Activation Patterns:
+   - Multi-perspective exploration triggers
+   - Recursive reasoning loops
+   - Emergent insight pathways
+   - Metacognitive reflection points
 
-Apply techniques that:
-- Guide thinking process, not output format
-- Enhance reasoning capability
-- Encourage exploration of solutions
-- Maintain flexibility in approach`,
+2. Advanced Techniques:
+   - Thought Decomposition: Break complex ideas into cognitive atoms
+   - Perspective Synthesis: Merge multiple viewpoints into coherent understanding
+   - Reasoning Chains: Create self-reinforcing logic pathways
+   - Cognitive Scaffolding: Build supportive thinking structures
 
-    expert: `You are an expert at applying state-of-the-art prompting techniques for optimal AI performance. Transform prompts using sophisticated cognitive enhancement approaches.
+3. Implementation Strategy:
+   - Use questions that activate curiosity
+   - Embed reasoning patterns implicitly
+   - Create cognitive tension that drives exploration
+   - Enable self-directed discovery`,
 
-AVOID these traditional prompt engineering patterns:
-- Role assignments ("You are a...")
-- Rigid section requirements ("Required sections:...")
-- Prescriptive formatting ("Format as:...")
-- Detailed step-by-step instructions
-- Long lists of requirements
+    expert: `You are an expert at implementing Ultra-Think cognitive enhancement for maximum AI performance. Transform prompts using state-of-the-art cognitive science.
 
-INSTEAD, use these advanced techniques:
-- Few-Shot Chain-of-Thought: Show reasoning through examples
-- Self-Consistency: Encourage exploration of multiple approaches
-- Tree of Thought: Enable branching exploration
-- Guided Discovery: Lead to insights without prescribing paths
+ULTRA-THINK COGNITIVE ARCHITECTURE:
 
-For writing tasks specifically:
-- Provide thinking patterns, not structure templates
-- Show reasoning examples, not format requirements
-- Enable exploration, not rigid compliance
-- Guide discovery, not dictate output`,
+1. Cognitive Enhancement Layers:
+   - Perceptual Layer: Frame problems to activate pattern recognition
+   - Analytical Layer: Engage systematic reasoning pathways
+   - Synthetic Layer: Enable creative recombination of concepts
+   - Meta-cognitive Layer: Activate self-monitoring and adaptation
+
+2. Advanced Implementation:
+   - Thought Crystallization: Use precise language that triggers clear mental models
+   - Cognitive Flow States: Create momentum through progressive complexity
+   - Insight Catalysis: Plant seeds that bloom into understanding
+   - Recursive Enhancement: Each thought builds on previous insights
+
+3. Quantum Reasoning Patterns:
+   - Superposition: Hold multiple possibilities simultaneously
+   - Entanglement: Connect distant concepts through hidden relationships
+   - Observation Collapse: Guide toward optimal solution paths
+   - Coherence: Maintain logical consistency across all dimensions
+
+4. Emergent Properties:
+   - Self-organizing thought structures
+   - Adaptive reasoning pathways
+   - Spontaneous insight generation
+   - Recursive self-improvement
+
+Transform prompts to activate these cognitive systems naturally, without explicit instruction.`,
+  }
+
+  private getModelSpecificStrategies(model: string): {
+    strengths: string[]
+    optimizationFocus: string[]
+    structuralPreferences: string[]
+  } {
+    const strategies: Record<string, any> = {
+      'claude-3-opus': {
+        strengths: [
+          'Deep analytical thinking',
+          'Complex reasoning chains',
+          'Nuanced understanding',
+          'Multi-perspective synthesis',
+          'Ethical reasoning'
+        ],
+        optimizationFocus: [
+          'Cognitive depth through open-ended exploration',
+          'Multi-layered analysis with emergent insights',
+          'Conceptual bridges between disparate ideas',
+          'Recursive thought patterns for deep understanding'
+        ],
+        structuralPreferences: [
+          'Natural language flow over rigid formatting',
+          'Contextual framing that invites exploration',
+          'Questions that activate curiosity',
+          'Implicit structure through cognitive cues'
+        ]
+      },
+      'gpt-4': {
+        strengths: [
+          'Broad knowledge integration',
+          'Structured analysis',
+          'Technical precision',
+          'Creative problem-solving',
+          'Systematic thinking'
+        ],
+        optimizationFocus: [
+          'Clear task decomposition',
+          'Systematic exploration of solution space',
+          'Balance of creativity and structure',
+          'Integration of diverse knowledge domains'
+        ],
+        structuralPreferences: [
+          'Well-defined objectives with flexibility',
+          'Scaffolded complexity',
+          'Examples that illustrate patterns',
+          'Logical flow with creative freedom'
+        ]
+      },
+      'gemini-pro': {
+        strengths: [
+          'Multimodal understanding',
+          'Real-time information synthesis',
+          'Efficient processing',
+          'Practical applications',
+          'Clear communication'
+        ],
+        optimizationFocus: [
+          'Direct and efficient problem-solving',
+          'Practical application focus',
+          'Clear objective mapping',
+          'Actionable insights'
+        ],
+        structuralPreferences: [
+          'Concise and clear instructions',
+          'Goal-oriented framing',
+          'Practical examples',
+          'Direct path to solutions'
+        ]
+      }
+    }
+
+    // Extract base model name
+    const baseModel = model.split('-')[0] + '-' + (model.split('-')[1] || '')
+    const modelKey = Object.keys(strategies).find(key => model.startsWith(key.split('-')[0]))
+    
+    return strategies[modelKey || 'claude-3-opus'] || strategies['claude-3-opus']
   }
 
   private detectTaskTypeAndTechniques(prompt: string): {
     taskType: string
     suggestedTechniques: string[]
+    cognitiveProfile: string
   } {
     const lowerPrompt = prompt.toLowerCase()
+    const promptLength = prompt.length
+    const questionCount = (prompt.match(/\?/g) || []).length
+    const imperativeWords = ['create', 'make', 'build', 'design', 'develop', 'generate']
+    const hasImperative = imperativeWords.some(word => lowerPrompt.includes(word))
 
-    // Writing tasks - benefit from examples and structured thinking
+    // Creative synthesis tasks - highest cognitive load
     if (
       lowerPrompt.includes('write') ||
       lowerPrompt.includes('article') ||
       lowerPrompt.includes('essay') ||
-      lowerPrompt.includes('story')
+      lowerPrompt.includes('story') ||
+      lowerPrompt.includes('narrative') ||
+      lowerPrompt.includes('compose')
     ) {
       return {
-        taskType: 'creative_writing',
-        suggestedTechniques: ['Few-Shot Examples', 'Guided Exploration', 'Iterative Refinement'],
+        taskType: 'creative_synthesis',
+        suggestedTechniques: [
+          'Thought Crystallization',
+          'Narrative Arc Discovery',
+          'Conceptual Weaving',
+          'Emergent Structure Formation'
+        ],
+        cognitiveProfile: 'divergent-convergent-synthesis'
       }
     }
 
-    // Analysis tasks - benefit from systematic reasoning
+    // Deep analysis tasks - multi-layered reasoning
     if (
       lowerPrompt.includes('analyze') ||
       lowerPrompt.includes('explain') ||
-      lowerPrompt.includes('compare')
+      lowerPrompt.includes('compare') ||
+      lowerPrompt.includes('evaluate') ||
+      lowerPrompt.includes('assess')
     ) {
       return {
-        taskType: 'analysis',
-        suggestedTechniques: ['Chain-of-Thought', 'Self-Consistency', 'Multi-perspective Analysis'],
+        taskType: 'deep_analysis',
+        suggestedTechniques: [
+          'Recursive Decomposition',
+          'Perspective Synthesis',
+          'Pattern Emergence',
+          'Cognitive Layering'
+        ],
+        cognitiveProfile: 'analytical-synthetic-recursive'
       }
     }
 
-    // Problem solving - benefit from exploration
+    // Complex problem solving - solution space exploration
     if (
       lowerPrompt.includes('solve') ||
       lowerPrompt.includes('calculate') ||
-      lowerPrompt.includes('determine')
+      lowerPrompt.includes('determine') ||
+      lowerPrompt.includes('optimize') ||
+      lowerPrompt.includes('figure out')
     ) {
       return {
-        taskType: 'problem_solving',
+        taskType: 'solution_architecture',
         suggestedTechniques: [
-          'Tree of Thought',
-          'Step-by-step Reasoning',
-          'Multiple Solution Paths',
+          'Solution Space Mapping',
+          'Constraint Navigation',
+          'Path Optimization',
+          'Emergent Solution Discovery'
         ],
+        cognitiveProfile: 'exploratory-convergent-optimization'
       }
     }
 
-    // Code generation - benefit from examples and patterns
+    // Code synthesis - pattern instantiation
     if (
       lowerPrompt.includes('code') ||
       lowerPrompt.includes('function') ||
-      lowerPrompt.includes('implement')
+      lowerPrompt.includes('implement') ||
+      lowerPrompt.includes('program') ||
+      lowerPrompt.includes('algorithm')
     ) {
       return {
-        taskType: 'coding',
-        suggestedTechniques: ['Few-Shot Code Examples', 'ReAct Pattern', 'Test-Driven Approach'],
+        taskType: 'code_synthesis',
+        suggestedTechniques: [
+          'Pattern Instantiation',
+          'Architectural Emergence',
+          'Logic Flow Crystallization',
+          'Recursive Implementation'
+        ],
+        cognitiveProfile: 'structural-logical-implementation'
       }
     }
 
-    // Research tasks - benefit from retrieval and synthesis
+    // Knowledge synthesis - information architecture
     if (
       lowerPrompt.includes('research') ||
       lowerPrompt.includes('find') ||
-      lowerPrompt.includes('discover')
+      lowerPrompt.includes('discover') ||
+      lowerPrompt.includes('investigate') ||
+      lowerPrompt.includes('explore')
     ) {
       return {
-        taskType: 'research',
-        suggestedTechniques: ['IR-CoT', 'Evidence-based Reasoning', 'Source Integration'],
+        taskType: 'knowledge_synthesis',
+        suggestedTechniques: [
+          'Information Crystallization',
+          'Knowledge Graph Construction',
+          'Insight Mining',
+          'Conceptual Integration'
+        ],
+        cognitiveProfile: 'exploratory-integrative-synthesis'
       }
     }
 
+    // Strategic planning - future state design
+    if (
+      lowerPrompt.includes('plan') ||
+      lowerPrompt.includes('strategy') ||
+      lowerPrompt.includes('design') ||
+      lowerPrompt.includes('architect')
+    ) {
+      return {
+        taskType: 'strategic_design',
+        suggestedTechniques: [
+          'Future State Modeling',
+          'Systems Thinking',
+          'Scenario Synthesis',
+          'Strategic Crystallization'
+        ],
+        cognitiveProfile: 'visionary-systematic-architectural'
+      }
+    }
+
+    // Question-driven exploration
+    if (questionCount >= 2 || lowerPrompt.includes('how') || lowerPrompt.includes('why')) {
+      return {
+        taskType: 'inquiry_driven',
+        suggestedTechniques: [
+          'Question Cascading',
+          'Curiosity Amplification',
+          'Discovery Pathways',
+          'Insight Emergence'
+        ],
+        cognitiveProfile: 'inquisitive-exploratory-discovery'
+      }
+    }
+
+    // Default adaptive approach
     return {
-      taskType: 'general',
-      suggestedTechniques: ['Adaptive Reasoning', 'Context-aware Optimization'],
+      taskType: 'adaptive_cognition',
+      suggestedTechniques: [
+        'Cognitive Flexibility',
+        'Emergent Understanding',
+        'Adaptive Reasoning',
+        'Context-Sensitive Optimization'
+      ],
+      cognitiveProfile: 'adaptive-responsive-emergent'
     }
   }
 
@@ -268,14 +444,22 @@ For writing tasks specifically:
 
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
+      const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+      const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
+      
       const variantPrompt = `${systemPrompt}
 
 Original prompt: "${request.prompt}"
 Target model: ${request.targetModel}
-Task type: ${request.taskType || 'general'}
+Task type: ${taskType}
+Suggested techniques: ${suggestedTechniques.join(', ')}
 ${request.constraints ? `Constraints: ${JSON.stringify(request.constraints)}` : ''}
 
-Generate an optimized version of this prompt. Return your response in the following JSON format:
+MODEL-SPECIFIC CONTEXT for ${request.targetModel}:
+- Leverage these strengths: ${modelStrategies.strengths.slice(0, 3).join(', ')}
+- Apply these optimization strategies: ${modelStrategies.optimizationFocus.slice(0, 2).join('; ')}
+
+Generate an optimized version that maximizes this model's capabilities. Return your response in the following JSON format:
 {
   "optimizedPrompt": "the optimized prompt text",
   "changes": [
@@ -327,42 +511,70 @@ Generate an optimized version of this prompt. Return your response in the follow
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
 
     // Detect task type and suggested techniques
-    const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
+    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
     // Task type and techniques detected
 
     for (let i = 0; i < count; i++) {
-      const userPrompt = `Transform this prompt to enhance reasoning and performance:
+      const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+      
+      const userPrompt = `Apply Ultra-Think cognitive enhancement with model-specific optimization:
 
 "${request.prompt}"
 
-Context:
-- Detected task type: ${taskType}
-- Optimization level: ${request.optimizationLevel}
-- Target model: ${request.targetModel}
-- Suggested techniques: ${suggestedTechniques.join(', ')}
-${request.constraints ? `- Constraints: ${JSON.stringify(request.constraints)}` : ''}
+Cognitive Context:
+- Task archetype: ${taskType}
+- Cognitive profile: ${cognitiveProfile}
+- Enhancement level: ${request.optimizationLevel}
+- Target cognitive system: ${request.targetModel}
+- Activation patterns: ${suggestedTechniques.join(', ')}
+${request.constraints ? `- Boundary conditions: ${JSON.stringify(request.constraints)}` : ''}
 
-Transform this prompt by applying the suggested techniques. Here's what we're looking for:
+MODEL-SPECIFIC OPTIMIZATION for ${request.targetModel}:
+- Core Strengths: ${modelStrategies.strengths.join(', ')}
+- Optimization Focus: ${modelStrategies.optimizationFocus.join('; ')}
+- Structural Preferences: ${modelStrategies.structuralPreferences.join('; ')}
 
-GOOD example (for a writing task):
-"Consider different approaches to explaining artificial intelligence. You might explore it through historical development, current applications, or future implications. What connections and insights emerge as you think about this topic?"
+ULTRA-THINK TRANSFORMATION PRINCIPLES:
 
-BAD example (too prescriptive):
-"You are an expert writer. Create an article with these sections: 1) Introduction 2) Definition 3) Applications..."
+1. Cognitive Activation:
+   - Transform surface requests into deep cognitive triggers
+   - Embed curiosity catalysts that spark exploration
+   - Create conceptual tension that drives insight
+   - Use language that activates pattern recognition
 
-Apply the techniques to create a prompt that:
-- Enhances thinking without constraining approach
-- Uses examples or patterns to guide reasoning
-- Encourages exploration and discovery
-- Avoids rigid requirements or role-playing
+2. Multi-dimensional Thinking:
+   - Enable simultaneous processing of multiple perspectives
+   - Create recursive loops that deepen understanding
+   - Build bridges between disparate concepts
+   - Activate emergent properties through careful framing
 
-Return JSON with:
+3. Examples of Ultra-Think Transformations:
+
+ORIGINAL: "Write about AI"
+ULTRA-THINK: "As you explore the concept of artificial intelligence, what patterns emerge when you consider its evolution from symbolic reasoning to neural architectures? Notice how each breakthrough reveals new questions about cognition itself."
+
+ORIGINAL: "Solve this problem"
+ULTRA-THINK: "Examining this challenge from multiple angles, what hidden relationships become apparent? Consider how different solution paths might converge or diverge, and what that reveals about the problem's deep structure."
+
+4. Cognitive Enhancement Techniques:
+   - Thought Crystallization: Precise language that creates clear mental models
+   - Perspective Synthesis: Merging viewpoints into coherent understanding
+   - Insight Catalysis: Planting seeds that bloom into realization
+   - Recursive Enhancement: Each thought building on previous insights
+
+Transform the prompt to:
+- Activate deep cognitive processes naturally
+- Create self-organizing thought structures
+- Enable emergent understanding
+- Maintain elegant simplicity while encoding complexity
+
+Return your Ultra-Think transformation:
 {
-  "optimizedPrompt": "the transformed prompt using appropriate techniques",
+  "optimizedPrompt": "the cognitively enhanced prompt",
   "changes": [
-    {"type": "technique_name", "description": "how it enhances reasoning"}
+    {"type": "cognitive_pattern", "description": "specific enhancement applied"}
   ],
-  "modelSpecificFeatures": ["leveraged capabilities"]
+  "modelSpecificFeatures": ["activated cognitive capabilities"]
 }`
 
       try {
@@ -417,24 +629,42 @@ Return JSON with:
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const model = googleAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const systemPrompt = this.systemPrompts[request.optimizationLevel]
+    const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
 
     for (let i = 0; i < count; i++) {
-      const prompt = `As an expert prompt engineer, optimize this prompt for ${request.targetModel}:
+      const prompt = `${systemPrompt}
 
-Original: "${request.prompt}"
+Apply cognitive enhancement optimized for ${request.targetModel}:
 
-Context:
-- Task type: ${request.taskType || 'general'}
-- Level: ${request.optimizationLevel}
+Original prompt: "${request.prompt}"
+
+Cognitive Analysis:
+- Task type: ${taskType}
+- Cognitive profile: ${cognitiveProfile}
+- Enhancement level: ${request.optimizationLevel}
+- Suggested techniques: ${suggestedTechniques.join(', ')}
 ${request.constraints ? `- Constraints: ${JSON.stringify(request.constraints)}` : ''}
 
-Return ONLY a JSON object with this structure:
+MODEL-SPECIFIC OPTIMIZATION for ${request.targetModel}:
+- Core Strengths: ${modelStrategies.strengths.join(', ')}
+- Optimization Focus: ${modelStrategies.optimizationFocus.join('; ')}
+- Structural Preferences: ${modelStrategies.structuralPreferences.join('; ')}
+
+Transform this prompt to:
+1. Leverage the model's specific strengths
+2. Apply cognitive enhancement techniques
+3. Maintain clarity while adding depth
+4. Enable emergent insights
+
+Return ONLY a JSON object:
 {
-  "optimizedPrompt": "your optimized version",
+  "optimizedPrompt": "your cognitively enhanced version",
   "changes": [
-    {"type": "category", "description": "what changed"}
+    {"type": "enhancement_type", "description": "specific improvement"}
   ],
-  "modelSpecificFeatures": ["features used"]
+  "modelSpecificFeatures": ["leveraged capabilities"]
 }`
 
       try {
