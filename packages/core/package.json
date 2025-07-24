@@ -19,7 +19,7 @@
     "start": "tsx src/server.ts",
     "build": "tsc",
     "prepublishOnly": "npm run build && npm test",
-    "dev": "tsx watch src/demo.ts"
+    "dev": "tsx watch src/start-server.ts"
   },
   "keywords": [
     "ai",
