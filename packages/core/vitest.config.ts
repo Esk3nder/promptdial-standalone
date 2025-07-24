@@ -5,11 +5,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       reporter: ['text', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        'src/demo.ts'
-      ]
-    }
-  }
+      exclude: ['node_modules/', 'tests/', 'src/demo.ts'],
+    },
+  },
 })

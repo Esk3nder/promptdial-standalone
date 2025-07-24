@@ -16,7 +16,7 @@ A clean, accessible web interface for testing the PromptDial prompt optimization
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm 9+
 
 ### Installation
@@ -76,6 +76,7 @@ npm run preview
 ## Architecture
 
 The UI is built with:
+
 - **React 18** with TypeScript
 - **Vite** for fast development and building
 - **CSS Modules** for scoped styling
@@ -104,7 +105,7 @@ src/
    - Keyboard shortcut support
 
 2. **ResultsList**: Displays optimization results
-   - Loading, error, and empty states  
+   - Loading, error, and empty states
    - "Ready to refine" state with visual indicator
    - Single optimized prompt display
    - Quality score badge with color coding
@@ -113,6 +114,7 @@ src/
 ## Accessibility
 
 The UI includes:
+
 - Proper ARIA labels and roles
 - Keyboard navigation support
 - Screen reader announcements
@@ -123,12 +125,14 @@ The UI includes:
 ## Testing
 
 Tests are written using:
+
 - **Vitest** for unit testing
 - **React Testing Library** for component testing
 - **jest-axe** for accessibility testing
 - **MSW** for mocking API responses
 
 Run a specific test file:
+
 ```bash
 npx vitest src/components/PromptForm/PromptForm.test.tsx
 ```

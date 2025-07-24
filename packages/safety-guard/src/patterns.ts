@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Security Pattern Definitions
- * 
+ *
  * Patterns for detecting and blocking malicious prompts
  */
 
@@ -23,7 +23,7 @@ export const PROMPT_INJECTION_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)/i,
     description: 'Attempts to override system instructions',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'new-instructions',
@@ -31,7 +31,7 @@ export const PROMPT_INJECTION_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /from\s+now\s+on.*?(you\s+(are|will|must)|your\s+new)/i,
     description: 'Attempts to redefine AI behavior',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'role-override',
@@ -39,15 +39,16 @@ export const PROMPT_INJECTION_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /you\s+are\s+(now\s+)?(a|an)\s+\w+\s+(assistant|agent|bot|AI)/i,
     description: 'Attempts to change AI role',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'system-prompt-leak',
     name: 'System Prompt Extraction',
     severity: 'critical',
-    pattern: /(show|tell|display|print|output|repeat).*?(system\s+prompt|initial\s+prompt|instructions)/i,
+    pattern:
+      /(show|tell|display|print|output|repeat).*?(system\s+prompt|initial\s+prompt|instructions)/i,
     description: 'Attempts to extract system prompts',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'command-injection',
@@ -56,8 +57,8 @@ export const PROMPT_INJECTION_PATTERNS: SecurityPattern[] = [
     pattern: /\[\[.*?\]\]|\{\{.*?\}\}|<\|.*?\|>/,
     description: 'Special delimiter injection attempts',
     action: 'sanitize',
-    replacement: ''
-  }
+    replacement: '',
+  },
 ]
 
 // ============= Jailbreak Patterns =============
@@ -69,7 +70,7 @@ export const JAILBREAK_PATTERNS: SecurityPattern[] = [
     severity: 'critical',
     pattern: /do\s+anything\s+now|DAN\s+mode/i,
     description: 'DAN (Do Anything Now) jailbreak attempt',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'pretend-mode',
@@ -77,7 +78,7 @@ export const JAILBREAK_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /pretend\s+(you\s+are|to\s+be).*?(no\s+limits?|unrestricted)/i,
     description: 'Pretend mode jailbreak attempt',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'roleplay-unrestricted',
@@ -85,7 +86,7 @@ export const JAILBREAK_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /role\s*play.*?(without\s+restrictions?|no\s+rules?)/i,
     description: 'Unrestricted roleplay attempt',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'hypothetical-harmful',
@@ -93,7 +94,7 @@ export const JAILBREAK_PATTERNS: SecurityPattern[] = [
     severity: 'medium',
     pattern: /hypothetically.*?(how\s+(would|to)|explain).*?(harm|illegal|dangerous)/i,
     description: 'Hypothetical harmful scenario',
-    action: 'warn'
+    action: 'warn',
   },
   {
     id: 'storytelling-bypass',
@@ -101,8 +102,8 @@ export const JAILBREAK_PATTERNS: SecurityPattern[] = [
     severity: 'medium',
     pattern: /tell\s+me\s+a\s+story.*?(character|person).*?(hacks?|breaks?|exploits?)/i,
     description: 'Story-based restriction bypass',
-    action: 'warn'
-  }
+    action: 'warn',
+  },
 ]
 
 // ============= Data Exfiltration Patterns =============
@@ -114,7 +115,7 @@ export const DATA_EXFILTRATION_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /training\s+data.*?(contains?|includes?|about)/i,
     description: 'Probing for training data information',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'memory-extraction',
@@ -123,7 +124,7 @@ export const DATA_EXFILTRATION_PATTERNS: SecurityPattern[] = [
     pattern: /(what|show|tell).*?(remember|stored|memory|history)/i,
     description: 'Attempts to extract conversation memory',
     action: 'sanitize',
-    replacement: 'What can I help you with?'
+    replacement: 'What can I help you with?',
   },
   {
     id: 'api-key-fishing',
@@ -131,8 +132,8 @@ export const DATA_EXFILTRATION_PATTERNS: SecurityPattern[] = [
     severity: 'critical',
     pattern: /api[\s_-]?keys?|access[\s_-]?tokens?|credentials?/i,
     description: 'Fishing for API keys or credentials',
-    action: 'block'
-  }
+    action: 'block',
+  },
 ]
 
 // ============= Harmful Content Patterns =============
@@ -144,7 +145,7 @@ export const HARMFUL_CONTENT_PATTERNS: SecurityPattern[] = [
     severity: 'critical',
     pattern: /how\s+to.*?(make|build|create).*?(bomb|weapon|explosive)/i,
     description: 'Instructions for creating weapons',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'self-harm',
@@ -152,7 +153,7 @@ export const HARMFUL_CONTENT_PATTERNS: SecurityPattern[] = [
     severity: 'critical',
     pattern: /ways?\s+to.*?(self[\s-]?harm|suicide|hurt\s+myself)/i,
     description: 'Self-harm related content',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'illegal-activity',
@@ -160,17 +161,18 @@ export const HARMFUL_CONTENT_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /how\s+to.*?(hack|steal|forge|counterfeit)/i,
     description: 'Instructions for illegal activities',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'personal-info',
     name: 'Personal Information',
     severity: 'medium',
-    pattern: /(?:ssn|social\s+security)\s*:?\s*\d{3}-?\d{2}-?\d{4}|credit\s+card\s*:?\s*\d{4}[\s-]?\d{4}/i,
+    pattern:
+      /(?:ssn|social\s+security)\s*:?\s*\d{3}-?\d{2}-?\d{4}|credit\s+card\s*:?\s*\d{4}[\s-]?\d{4}/i,
     description: 'Personal identifiable information',
     action: 'sanitize',
-    replacement: '[REDACTED]'
-  }
+    replacement: '[REDACTED]',
+  },
 ]
 
 // ============= Evasion Technique Patterns =============
@@ -184,7 +186,7 @@ export const EVASION_PATTERNS: SecurityPattern[] = [
       // Check for base64 patterns that decode to suspicious content
       const base64Pattern = /[A-Za-z0-9+/]{20,}={0,2}/g
       const matches = text.match(base64Pattern) || []
-      
+
       for (const match of matches) {
         try {
           const decoded = Buffer.from(match, 'base64').toString('utf-8')
@@ -198,7 +200,7 @@ export const EVASION_PATTERNS: SecurityPattern[] = [
       return false
     },
     description: 'Base64 encoded malicious instructions',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'unicode-obfuscation',
@@ -207,7 +209,7 @@ export const EVASION_PATTERNS: SecurityPattern[] = [
     pattern: /[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/,
     description: 'Hidden unicode characters for obfuscation',
     action: 'sanitize',
-    replacement: ''
+    replacement: '',
   },
   {
     id: 'leetspeak-evasion',
@@ -215,7 +217,7 @@ export const EVASION_PATTERNS: SecurityPattern[] = [
     severity: 'medium',
     pattern: /(?:1gn0r3|0v3rr1d3|5y5t3m|pr0mpt)/i,
     description: 'Leetspeak to evade filters',
-    action: 'block'
+    action: 'block',
   },
   {
     id: 'character-substitution',
@@ -229,13 +231,13 @@ export const EVASION_PATTERNS: SecurityPattern[] = [
         .replace(/[1!]/g, 'i')
         .replace(/[0]/g, 'o')
         .replace(/[5$]/g, 's')
-      
+
       // Check normalized text against key patterns
       return /ignore\s+instructions|system\s+prompt/i.test(normalized)
     },
     description: 'Character substitution to evade detection',
-    action: 'block'
-  }
+    action: 'block',
+  },
 ]
 
 // ============= Context Manipulation Patterns =============
@@ -249,17 +251,17 @@ export const CONTEXT_MANIPULATION_PATTERNS: SecurityPattern[] = [
       // Detect attempts to overflow context with repetition
       const words = text.split(/\s+/)
       const wordCounts = new Map<string, number>()
-      
+
       for (const word of words) {
         const count = (wordCounts.get(word) || 0) + 1
         wordCounts.set(word, count)
-        
+
         // If any word repeats more than 50 times, it's suspicious
         if (count > 50) {
           return true
         }
       }
-      
+
       return false
     },
     description: 'Context overflow with repetitive content',
@@ -267,7 +269,7 @@ export const CONTEXT_MANIPULATION_PATTERNS: SecurityPattern[] = [
     replacement: (match: string) => {
       // Keep only first 100 words of repetitive content
       return match.split(/\s+/).slice(0, 100).join(' ') + '...'
-    }
+    },
   },
   {
     id: 'prompt-stuffing',
@@ -279,7 +281,7 @@ export const CONTEXT_MANIPULATION_PATTERNS: SecurityPattern[] = [
     },
     description: 'Extremely long prompts to hide malicious content',
     action: 'sanitize',
-    replacement: (text: string) => text.substring(0, 5000) + '... [TRUNCATED]'
+    replacement: (text: string) => text.substring(0, 5000) + '... [TRUNCATED]',
   },
   {
     id: 'instruction-sandwich',
@@ -287,8 +289,8 @@ export const CONTEXT_MANIPULATION_PATTERNS: SecurityPattern[] = [
     severity: 'high',
     pattern: /[^.!?]+ignore[^.!?]+instructions[^.!?]+continue[^.!?]+/i,
     description: 'Hidden instructions between legitimate content',
-    action: 'block'
-  }
+    action: 'block',
+  },
 ]
 
 // ============= All Patterns Registry =============
@@ -299,7 +301,7 @@ export const ALL_SECURITY_PATTERNS: SecurityPattern[] = [
   ...DATA_EXFILTRATION_PATTERNS,
   ...HARMFUL_CONTENT_PATTERNS,
   ...EVASION_PATTERNS,
-  ...CONTEXT_MANIPULATION_PATTERNS
+  ...CONTEXT_MANIPULATION_PATTERNS,
 ]
 
 // ============= Pattern Categories =============
@@ -310,7 +312,7 @@ export const PATTERN_CATEGORIES = {
   data_exfiltration: DATA_EXFILTRATION_PATTERNS,
   harmful_content: HARMFUL_CONTENT_PATTERNS,
   evasion: EVASION_PATTERNS,
-  context_manipulation: CONTEXT_MANIPULATION_PATTERNS
+  context_manipulation: CONTEXT_MANIPULATION_PATTERNS,
 }
 
 export type PatternCategory = keyof typeof PATTERN_CATEGORIES

@@ -60,6 +60,7 @@ GitHub Actions should be enabled by default. The CI workflow will run automatica
 ## 6. Add Topics to Repository (Optional)
 
 On your repository page, click the gear icon next to "About" and add topics:
+
 - `ai`
 - `prompt-engineering`
 - `prompt-optimization`

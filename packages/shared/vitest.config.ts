@@ -9,18 +9,13 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       all: true,
       include: ['src/**/*.ts'],
-      exclude: [
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
-        'src/**/*.d.ts',
-        'src/types.ts'
-      ],
+      exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/*.d.ts', 'src/types.ts'],
       thresholds: {
         lines: 100,
         functions: 100,
         branches: 100,
-        statements: 100
-      }
-    }
-  }
+        statements: 100,
+      },
+    },
+  },
 })

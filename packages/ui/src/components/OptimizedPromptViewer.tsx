@@ -26,9 +26,7 @@ export function OptimizedPromptViewer({ variants, bestIndex }: OptimizedPromptVi
     <div className="optimized-prompt-viewer">
       <div className="header">
         <h2>🎯 Best Optimized Prompt</h2>
-        <div className="quality-badge">
-          Quality Score: {bestVariant.quality}/100
-        </div>
+        <div className="quality-badge">Quality Score: {bestVariant.quality}/100</div>
       </div>
 
       <div className="prompt-content">
@@ -42,16 +40,17 @@ export function OptimizedPromptViewer({ variants, bestIndex }: OptimizedPromptVi
       {variants.length > 1 && (
         <details className="other-variants">
           <summary>View other variants ({variants.length - 1})</summary>
-          {variants.map((variant, index) => 
-            index !== bestIndex && (
-              <div key={index} className="variant">
-                <div className="variant-header">
-                  <span>Variant {index + 1}</span>
-                  <span className="quality">Quality: {variant.quality}/100</span>
+          {variants.map(
+            (variant, index) =>
+              index !== bestIndex && (
+                <div key={index} className="variant">
+                  <div className="variant-header">
+                    <span>Variant {index + 1}</span>
+                    <span className="quality">Quality: {variant.quality}/100</span>
+                  </div>
+                  <pre>{variant.variant}</pre>
                 </div>
-                <pre>{variant.variant}</pre>
-              </div>
-            )
+              ),
           )}
         </details>
       )}

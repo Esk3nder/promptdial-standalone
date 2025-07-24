@@ -23,9 +23,10 @@ chmod +x scripts/*.sh *.sh *.js
 ```
 
 This will start:
+
 - API Gateway (port 3000) - Main entry point
 - Classifier (port 3001) - Task analysis
-- SafetyGuard (port 3006) - Security filtering  
+- SafetyGuard (port 3006) - Security filtering
 - Technique Engine (port 3003) - Variant generation
 - Optimizer (port 3007) - Multi-objective selection
 - Telemetry (port 3002) - Metrics collection
@@ -46,6 +47,7 @@ This will start:
 ## 📋 What's Working
 
 ✅ **Full Functionality with Real API Calls**
+
 - Task classification and analysis
 - Multi-technique variant generation (6 techniques)
 - Safety filtering and prompt sanitization
@@ -55,6 +57,7 @@ This will start:
 - Complete microservices orchestration
 
 ✅ **Production-Ready Features**
+
 - Multi-provider LLM support
 - Concurrent request handling
 - Error recovery and retries
@@ -64,11 +67,13 @@ This will start:
 ## 🧪 Manual Testing
 
 ### Test Health Check
+
 ```bash
 curl http://localhost:3000/health
 ```
 
 ### Test Simple Optimization
+
 ```bash
 curl -X POST http://localhost:3000/api/optimize \
   -H "Content-Type: application/json" \
@@ -76,6 +81,7 @@ curl -X POST http://localhost:3000/api/optimize \
 ```
 
 ### Test with Preferences
+
 ```bash
 curl -X POST http://localhost:3000/api/optimize \
   -H "Content-Type: application/json" \
@@ -95,11 +101,13 @@ curl -X POST http://localhost:3000/api/optimize \
 ## 🛠️ Troubleshooting
 
 ### Services Won't Start
+
 1. Check Node.js version: `node --version` (needs v18+)
 2. Check port availability: `lsof -i :3000`
 3. Kill existing processes: `pkill -f "tsx src/index"`
 
 ### API Gateway Can't Find Services
+
 1. Ensure services started before gateway
 2. Check individual service health:
    ```bash
@@ -108,6 +116,7 @@ curl -X POST http://localhost:3000/api/optimize \
    ```
 
 ### Build Errors
+
 1. Install dependencies: `npm install`
 2. Build shared package: `cd packages/shared && npm run build`
 3. Use tsx for TypeScript: `npx tsx src/index.ts`
@@ -138,6 +147,7 @@ curl -X POST http://localhost:3000/api/optimize \
 ## 📊 Monitoring
 
 View real-time metrics:
+
 ```bash
 # System metrics
 curl http://localhost:3000/metrics
@@ -162,6 +172,7 @@ pkill -f "node dist/index"
 ## 🚧 Known Limitations
 
 This is a development deployment with:
+
 - Mocked LLM responses (no actual API calls)
 - Simplified evaluation (random scores)
 - No persistent storage
@@ -175,6 +186,7 @@ For production deployment, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 The system now supports **full end-to-end testing with real LLM API calls**:
 
 ### What's Implemented:
+
 - ✅ Real LLM API calls through LLM Runner service
 - ✅ Multi-provider support (OpenAI, Anthropic, Google)
 - ✅ Real evaluations using LLM-based methods
@@ -182,11 +194,13 @@ The system now supports **full end-to-end testing with real LLM API calls**:
 - ✅ Production-ready error handling
 
 ### To Test with Real APIs:
+
 1. Ensure you have API keys in `.env`
 2. Run `./scripts/deploy-local.sh`
 3. Run `./test-real-api.js`
 
 ### Next Steps for Production:
+
 1. **Configure Rate Limiting** - Adjust based on API tier
 2. **Enable Persistence** - Add database for telemetry
 3. **Set Up Monitoring** - Configure alerts and dashboards

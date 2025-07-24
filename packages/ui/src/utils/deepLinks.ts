@@ -19,7 +19,7 @@ export function getChatGPTLink(prompt: string): PlatformLink {
     name: 'ChatGPT',
     url: `https://chat.openai.com/?q=${encodedPrompt}`,
     requiresExtension: true,
-    icon: '🤖'
+    icon: '🤖',
   }
 }
 
@@ -32,7 +32,7 @@ export function getClaudeLink(): PlatformLink {
     name: 'Claude',
     url: 'https://claude.ai/',
     requiresExtension: false,
-    icon: '🔮'
+    icon: '🔮',
   }
 }
 
@@ -45,7 +45,7 @@ export function getGeminiLink(): PlatformLink {
     name: 'Gemini',
     url: 'https://gemini.google.com/',
     requiresExtension: false,
-    icon: '💎'
+    icon: '💎',
   }
 }
 
@@ -58,7 +58,7 @@ export function getPerplexityLink(): PlatformLink {
     name: 'Perplexity',
     url: 'https://perplexity.ai/',
     requiresExtension: false,
-    icon: '🔍'
+    icon: '🔍',
   }
 }
 
@@ -66,12 +66,7 @@ export function getPerplexityLink(): PlatformLink {
  * Gets all available platform links for a prompt
  */
 export function getAllPlatformLinks(prompt: string): PlatformLink[] {
-  return [
-    getChatGPTLink(prompt),
-    getClaudeLink(),
-    getGeminiLink(),
-    getPerplexityLink()
-  ]
+  return [getChatGPTLink(prompt), getClaudeLink(), getGeminiLink(), getPerplexityLink()]
 }
 
 /**
@@ -79,7 +74,7 @@ export function getAllPlatformLinks(prompt: string): PlatformLink[] {
  */
 export function getPlatformLinksForModel(prompt: string, model: string): PlatformLink[] {
   const allLinks = getAllPlatformLinks(prompt)
-  
+
   // Map model names to platform preferences
   const modelToPlatform: Record<string, string[]> = {
     'gpt-4': ['ChatGPT', 'Perplexity'],
@@ -88,10 +83,10 @@ export function getPlatformLinksForModel(prompt: string, model: string): Platfor
     'claude-3-sonnet': ['Claude', 'Perplexity'],
     'claude-3-haiku': ['Claude', 'Perplexity'],
     'gemini-pro': ['Gemini', 'Perplexity'],
-    'gemini-ultra': ['Gemini', 'Perplexity']
+    'gemini-ultra': ['Gemini', 'Perplexity'],
   }
-  
+
   const preferredPlatforms = modelToPlatform[model] || ['ChatGPT', 'Claude', 'Gemini']
-  
-  return allLinks.filter(link => preferredPlatforms.includes(link.name))
+
+  return allLinks.filter((link) => preferredPlatforms.includes(link.name))
 }

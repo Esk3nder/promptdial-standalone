@@ -11,38 +11,35 @@ interface ShortcutConfig {
 }
 
 export function useKeyboardShortcuts(shortcuts: ShortcutConfig[]) {
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    shortcuts.forEach(shortcut => {
-      const {
-        key,
-        ctrl = false,
-        cmd = false,
-        shift = false,
-        alt = false,
-        handler,
-        preventDefault = true,
-      } = shortcut
-      
-      const isCtrlMatch = ctrl ? event.ctrlKey : !event.ctrlKey
-      const isCmdMatch = cmd ? event.metaKey : !event.metaKey
-      const isShiftMatch = shift ? event.shiftKey : !event.shiftKey
-      const isAltMatch = alt ? event.altKey : !event.altKey
-      
-      if (
-        event.key === key &&
-        isCtrlMatch &&
-        isCmdMatch &&
-        isShiftMatch &&
-        isAltMatch
-      ) {
-        if (preventDefault) {
-          event.preventDefault()
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      shortcuts.forEach((shortcut) => {
+        const {
+          key,
+          ctrl = false,
+          cmd = false,
+          shift = false,
+          alt = false,
+          handler,
+          preventDefault = true,
+        } = shortcut
+
+        const isCtrlMatch = ctrl ? event.ctrlKey : !event.ctrlKey
+        const isCmdMatch = cmd ? event.metaKey : !event.metaKey
+        const isShiftMatch = shift ? event.shiftKey : !event.shiftKey
+        const isAltMatch = alt ? event.altKey : !event.altKey
+
+        if (event.key === key && isCtrlMatch && isCmdMatch && isShiftMatch && isAltMatch) {
+          if (preventDefault) {
+            event.preventDefault()
+          }
+          handler()
         }
-        handler()
-      }
-    })
-  }, [shortcuts])
-  
+      })
+    },
+    [shortcuts],
+  )
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)

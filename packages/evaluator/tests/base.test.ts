@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BaseEvaluator, EvaluatorConfig } from '../src/evaluators/base'
-import {
-  createTestPromptVariant,
-  createTestTaskClassification
-} from '@promptdial/shared'
+import { createTestPromptVariant, createTestTaskClassification } from '@promptdial/shared'
 import type { PromptVariant, TaskClassification, EvaluationResult } from '@promptdial/shared'
 
 // Mock logger
@@ -15,8 +12,8 @@ vi.mock('@promptdial/shared', async () => {
       debug: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn()
-    })
+      error: vi.fn(),
+    }),
   }
 })
 
@@ -26,13 +23,13 @@ class TestEvaluator extends BaseEvaluator {
     variant: PromptVariant,
     response: string,
     taskMeta: TaskClassification,
-    references?: string[]
+    references?: string[],
   ): Promise<Partial<EvaluationResult>> {
     return {
       variant_id: variant.id,
       scores: {
-        test: 0.8
-      }
+        test: 0.8,
+      },
     }
   }
 }
@@ -46,7 +43,7 @@ describe('BaseEvaluator', () => {
       name: 'test_evaluator',
       description: 'Test evaluator for unit testing',
       requiresReference: false,
-      requiresLLM: false
+      requiresLLM: false,
     }
     evaluator = new TestEvaluator(config)
   })
@@ -65,7 +62,7 @@ describe('BaseEvaluator', () => {
     it('should return true when configured', () => {
       const refEvaluator = new TestEvaluator({
         ...config,
-        requiresReference: true
+        requiresReference: true,
       })
       expect(refEvaluator.requiresReference()).toBe(true)
     })
@@ -79,7 +76,7 @@ describe('BaseEvaluator', () => {
     it('should return true when configured', () => {
       const llmEvaluator = new TestEvaluator({
         ...config,
-        requiresLLM: true
+        requiresLLM: true,
       })
       expect(llmEvaluator.requiresLLM()).toBe(true)
     })
@@ -201,7 +198,7 @@ describe('BaseEvaluator', () => {
 
       const response = 'This is sentence one. This is sentence two! Is this sentence three?'
       const info = extractKeyInfo(response)
-      
+
       expect(info.wordCount).toBe(12)
       expect(info.sentenceCount).toBe(3)
     })

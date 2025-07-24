@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Tree of Thought (ToT) Technique
- * 
+ *
  * Explores multiple reasoning paths in a tree structure
  */
 
@@ -9,7 +9,7 @@ import {
   PromptVariant,
   TaskClassification,
   BudgetConstraints,
-  TECHNIQUES
+  TECHNIQUES,
 } from '@promptdial/shared'
 
 export class TreeOfThoughtTechnique extends BaseTechnique {
@@ -17,48 +17,48 @@ export class TreeOfThoughtTechnique extends BaseTechnique {
   description = 'Systematic exploration of multiple reasoning paths'
   best_for = ['creative_writing', 'math_reasoning', 'code_generation'] as const
   needs_retrieval = false
-  
+
   async generate(
     base_prompt: string,
     meta: TaskClassification,
-    budget: BudgetConstraints
+    budget: BudgetConstraints,
   ): Promise<PromptVariant[]> {
     const variants: PromptVariant[] = []
-    
+
     // ToT is expensive - check if we have sufficient budget
     const minCost = this.estimateMinCost(base_prompt)
     if (budget.remaining_cost_usd < minCost) {
       return []
     }
-    
+
     // Variant 1: Basic Tree of Thought
     const basicPrompt = this.createBasicToT(base_prompt, meta)
     const variant1 = this.createVariant(
       this.sandwichPrompt(basicPrompt),
       `${this.name}_basic`,
       0.8,
-      0
+      0,
     )
     variant1.cost_usd *= 1.5 // ToT requires more tokens
-    
+
     if (this.fitsInBudget(variant1, budget)) {
       variants.push(variant1)
     }
-    
+
     // Variant 2: Structured ToT with evaluation
     const structuredPrompt = this.createStructuredToT(base_prompt, meta)
     const variant2 = this.createVariant(
       this.sandwichPrompt(structuredPrompt),
       `${this.name}_structured`,
       0.7,
-      1
+      1,
     )
     variant2.cost_usd *= 2 // More expensive due to evaluation steps
-    
+
     if (this.fitsInBudget(variant2, budget)) {
       variants.push(variant2)
     }
-    
+
     // Variant 3: Guided ToT for complex problems
     if (meta.complexity > 0.7 && budget.remaining_cost_usd > minCost * 3) {
       const guidedPrompt = this.createGuidedToT(base_prompt, meta)
@@ -66,24 +66,21 @@ export class TreeOfThoughtTechnique extends BaseTechnique {
         this.sandwichPrompt(guidedPrompt),
         `${this.name}_guided`,
         0.7,
-        2
+        2,
       )
       variant3.cost_usd *= 2.5
-      
+
       if (this.fitsInBudget(variant3, budget)) {
         variants.push(variant3)
       }
     }
-    
+
     return variants
   }
-  
-  private createBasicToT(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createBasicToT(basePrompt: string, meta: TaskClassification): string {
     const branchingFactor = meta.complexity > 0.6 ? 3 : 2
-    
+
     return `Solve this problem using Tree of Thought reasoning:
 
 ${basePrompt}
@@ -112,13 +109,10 @@ SELECTED PATH: [Develop the best branch to completion]
 
 SOLUTION: [Final answer]`
   }
-  
-  private createStructuredToT(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createStructuredToT(basePrompt: string, meta: TaskClassification): string {
     const evaluationCriteria = this.getEvaluationCriteria(meta.task_type)
-    
+
     return `Apply Tree of Thought with systematic evaluation:
 
 PROBLEM: ${basePrompt}
@@ -147,13 +141,10 @@ Follow the selected path to completion:
 
 Present your work clearly with headers for each phase.`
   }
-  
-  private createGuidedToT(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createGuidedToT(basePrompt: string, meta: TaskClassification): string {
     const domainGuidance = this.getDomainGuidance(meta.task_type, meta.domain)
-    
+
     return `Use Tree of Thought reasoning with domain-specific guidance:
 
 PROBLEM: ${basePrompt}
@@ -182,7 +173,7 @@ TRAVERSAL:
 
 Use clear visual structure (indentation, bullets) to show the tree.`
   }
-  
+
   private getEvaluationCriteria(taskType: string): string {
     const criteria: Record<string, string> = {
       math_reasoning: `
@@ -190,61 +181,61 @@ Use clear visual structure (indentation, bullets) to show the tree.`
 - Efficiency: How many steps are required?
 - Clarity: Is the reasoning easy to follow?
 - Generality: Does it handle edge cases?`,
-      
+
       code_generation: `
 - Correctness: Will the code work as intended?
 - Efficiency: Time and space complexity
 - Readability: Is the code clean and maintainable?
 - Robustness: Error handling and edge cases`,
-      
+
       creative_writing: `
 - Originality: How unique is this approach?
 - Coherence: Does it flow logically?
 - Impact: Will it engage the reader?
 - Feasibility: Can it be well-executed?`,
-      
+
       data_analysis: `
 - Validity: Are the methods appropriate?
 - Completeness: Does it address all aspects?
 - Insight: Will it reveal meaningful patterns?
 - Actionability: Can results guide decisions?`,
-      
+
       general_qa: `
 - Accuracy: Is the information correct?
 - Completeness: Does it fully address the question?
 - Clarity: Is it easy to understand?
-- Relevance: Does it focus on what matters?`
+- Relevance: Does it focus on what matters?`,
     }
-    
+
     return criteria[taskType] || criteria.general_qa
   }
-  
+
   private getDomainGuidance(taskType: string, domain: string): string {
     const guidance: Record<string, Record<string, string>> = {
       math_reasoning: {
         academic: 'Consider formal mathematical proofs and rigorous notation',
         technical: 'Focus on computational efficiency and numerical stability',
-        general: 'Emphasize clear explanations and practical applications'
+        general: 'Emphasize clear explanations and practical applications',
       },
       code_generation: {
         technical: 'Prioritize performance, scalability, and best practices',
         business: 'Focus on maintainability, documentation, and business logic',
-        general: 'Balance readability with functionality'
+        general: 'Balance readability with functionality',
       },
       creative_writing: {
         creative: 'Explore unconventional narratives and experimental techniques',
         academic: 'Maintain formal tone with structured arguments',
-        general: 'Aim for broad appeal with clear storytelling'
-      }
+        general: 'Aim for broad appeal with clear storytelling',
+      },
     }
-    
+
     const taskGuidance = guidance[taskType] || {}
     return taskGuidance[domain] || 'Consider multiple perspectives and aim for clarity'
   }
-  
+
   private estimateMinCost(prompt: string): number {
     // ToT typically requires 2-3x more tokens than standard prompts
     const baseTokens = Math.ceil(prompt.length / 4)
-    return (baseTokens * 3 / 1000) * 0.002
+    return ((baseTokens * 3) / 1000) * 0.002
   }
 }

@@ -10,13 +10,7 @@ export default defineConfig({
     setupFiles: './tests/setup.ts',
     coverage: {
       reporter: ['text', 'html'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/mockServiceWorker.js',
-      ],
+      exclude: ['node_modules/', 'tests/', '**/*.d.ts', '**/*.config.*', '**/mockServiceWorker.js'],
     },
   },
   resolve: {

@@ -37,7 +37,7 @@ const promptDial = new PromptDial()
 const result = await promptDial.optimize({
   prompt: 'Write about artificial intelligence',
   targetModel: 'gpt-4',
-  optimizationLevel: 'advanced'
+  optimizationLevel: 'advanced',
 })
 
 console.log(result.variants[0].optimizedPrompt)
@@ -56,12 +56,12 @@ const result = await promptDial.optimize({
   constraints: {
     maxLength: 500,
     tone: 'professional',
-    format: 'structured'
-  }
+    format: 'structured',
+  },
 })
 
 // Get quality scores
-result.variants.forEach(variant => {
+result.variants.forEach((variant) => {
   console.log(`Score: ${variant.quality.score}/100`)
   console.log(`Improvements: ${variant.changes.length}`)
 })
@@ -72,7 +72,7 @@ result.variants.forEach(variant => {
 PromptDial evaluates prompts across 7 key dimensions:
 
 1. **Clarity** - Clear instructions and action verbs
-2. **Specificity** - Detailed requirements and constraints  
+2. **Specificity** - Detailed requirements and constraints
 3. **Structure** - Organization with sections and lists
 4. **Completeness** - Appropriate length and detail
 5. **Efficiency** - Balanced comprehensiveness
@@ -86,6 +86,7 @@ PromptDial evaluates prompts across 7 key dimensions:
 Optimizes a prompt and returns scored variants.
 
 **Parameters:**
+
 - `prompt` (string, required): The prompt to optimize
 - `targetModel` (string, required): Target AI model ('gpt-4', 'claude-3-opus', 'gemini-pro')
 - `optimizationLevel` (string, required): Optimization level ('basic', 'advanced', 'expert')
@@ -96,13 +97,14 @@ Optimizes a prompt and returns scored variants.
   - `format` (string): Output format
 
 **Returns:**
+
 ```typescript
 {
   variants: Array<{
     id: string
     originalPrompt: string
     optimizedPrompt: string
-    changes: Array<{type: string, description: string}>
+    changes: Array<{ type: string; description: string }>
     quality: {
       score: number
       factors: QualityFactors

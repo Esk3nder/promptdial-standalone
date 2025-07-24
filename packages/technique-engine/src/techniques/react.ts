@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - ReAct (Reasoning + Acting) Technique
- * 
+ *
  * Interleaves reasoning with actions for complex multi-step problems
  */
 
@@ -9,7 +9,7 @@ import {
   PromptVariant,
   TaskClassification,
   BudgetConstraints,
-  TECHNIQUES
+  TECHNIQUES,
 } from '@promptdial/shared'
 
 export class ReActTechnique extends BaseTechnique {
@@ -17,40 +17,40 @@ export class ReActTechnique extends BaseTechnique {
   description = 'Reasoning and acting in an interleaved manner'
   best_for = ['code_generation', 'data_analysis', 'general_qa'] as const
   needs_retrieval = false // Can work with retrieval but doesn't require it
-  
+
   async generate(
     base_prompt: string,
     meta: TaskClassification,
-    budget: BudgetConstraints
+    budget: BudgetConstraints,
   ): Promise<PromptVariant[]> {
     const variants: PromptVariant[] = []
-    
+
     // Variant 1: Basic ReAct
     const basicPrompt = this.createBasicReAct(base_prompt, meta)
     const variant1 = this.createVariant(
       this.sandwichPrompt(basicPrompt),
       `${this.name}_basic`,
       0.7,
-      0
+      0,
     )
-    
+
     if (this.fitsInBudget(variant1, budget)) {
       variants.push(variant1)
     }
-    
+
     // Variant 2: ReAct with explicit action space
     const explicitPrompt = this.createExplicitReAct(base_prompt, meta)
     const variant2 = this.createVariant(
       this.sandwichPrompt(explicitPrompt),
       `${this.name}_explicit`,
       0.7,
-      1
+      1,
     )
-    
+
     if (this.fitsInBudget(variant2, budget)) {
       variants.push(variant2)
     }
-    
+
     // Variant 3: ReAct with examples
     if (budget.remaining_cost_usd > variant1.cost_usd * 2) {
       const examplePrompt = this.createExampleReAct(base_prompt, meta)
@@ -58,21 +58,18 @@ export class ReActTechnique extends BaseTechnique {
         this.sandwichPrompt(examplePrompt),
         `${this.name}_examples`,
         0.6,
-        2
+        2,
       )
-      
+
       if (this.fitsInBudget(variant3, budget)) {
         variants.push(variant3)
       }
     }
-    
+
     return variants
   }
-  
-  private createBasicReAct(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createBasicReAct(basePrompt: string, meta: TaskClassification): string {
     return `Solve this problem using the ReAct framework:
 
 ${basePrompt}
@@ -99,13 +96,10 @@ Available actions:
 
 Begin your reasoning now:`
   }
-  
-  private createExplicitReAct(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createExplicitReAct(basePrompt: string, meta: TaskClassification): string {
     const actionSpace = this.getActionSpace(meta.task_type)
-    
+
     return `Use the ReAct (Reasoning + Acting) framework to solve:
 
 ${basePrompt}
@@ -125,13 +119,10 @@ Observation [N]: <what you learned>
 
 Start with Thought 1:`
   }
-  
-  private createExampleReAct(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createExampleReAct(basePrompt: string, meta: TaskClassification): string {
     const example = this.getExampleForTask(meta.task_type)
-    
+
     return `Here's an example of using ReAct to solve a problem:
 
 ${example}
@@ -148,7 +139,7 @@ Remember to:
 
 Begin:`
   }
-  
+
   private getActionSpace(taskType: string): string {
     const actionSpaces: Record<string, string> = {
       math_reasoning: `
@@ -157,7 +148,7 @@ Begin:`
 - Apply[formula]: Apply a mathematical formula
 - Simplify[expression]: Simplify an expression
 - Verify[result]: Verify a calculation`,
-      
+
       code_generation: `
 - Design[component]: Design a code component
 - Implement[function]: Write code implementation
@@ -165,7 +156,7 @@ Begin:`
 - Debug[issue]: Debug problems in the code
 - Optimize[code]: Improve code efficiency
 - Document[code]: Add documentation`,
-      
+
       data_analysis: `
 - Examine[data]: Look at data characteristics
 - Calculate[statistic]: Compute statistical measures
@@ -173,19 +164,19 @@ Begin:`
 - Visualize[data]: Describe data visualization
 - Interpret[result]: Interpret findings
 - Conclude[insight]: Draw conclusions`,
-      
+
       general_qa: `
 - Research[topic]: Gather information about a topic
 - Define[term]: Define key terms
 - Compare[concepts]: Compare different concepts
 - Analyze[aspect]: Analyze specific aspects
 - Synthesize[information]: Combine information
-- Conclude[answer]: Provide final answer`
+- Conclude[answer]: Provide final answer`,
     }
-    
+
     return actionSpaces[taskType] || actionSpaces.general_qa
   }
-  
+
   private getExampleForTask(taskType: string): string {
     const examples: Record<string, string> = {
       math_reasoning: `
@@ -210,7 +201,7 @@ Observation 4: Both legs had the same speed, so average is also 50 mph ✓
 Thought 5: The answer is confirmed.
 Action 5: Conclude[answer]: 50 miles per hour
 Observation 5: Problem solved successfully.`,
-      
+
       code_generation: `
 EXAMPLE: "Write a function to check if a string is a palindrome"
 
@@ -238,7 +229,7 @@ Observation 4: Returns True ✓
 Thought 5: The solution is complete.
 Action 5: Document[code]: Add docstring explaining the function
 Observation 5: Function is ready for use.`,
-      
+
       general_qa: `
 EXAMPLE: "Why do leaves change color in autumn?"
 
@@ -260,9 +251,9 @@ Observation 4: Trees reabsorb nutrients from leaves before dropping them to cons
 
 Thought 5: I can now provide a complete answer.
 Action 5: Synthesize[explanation]: Combine all observations
-Observation 5: Complete explanation ready`
+Observation 5: Complete explanation ready`,
     }
-    
+
     return examples[taskType] || examples.general_qa
   }
 }

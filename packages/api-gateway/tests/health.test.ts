@@ -15,8 +15,8 @@ vi.mock('@promptdial/shared', async () => {
       debug: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn()
-    })
+      error: vi.fn(),
+    }),
   }
 })
 
@@ -28,22 +28,22 @@ describe('HealthChecker', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.clearAllMocks()
-    
+
     mockServices = {
       classifier: {
         name: 'Classifier',
         url: 'http://localhost:3001',
         healthEndpoint: '/health',
-        timeout: 5000
+        timeout: 5000,
       },
       evaluator: {
         name: 'Evaluator',
         url: 'http://localhost:3005',
         healthEndpoint: '/health',
-        timeout: 5000
-      }
+        timeout: 5000,
+      },
     }
-    
+
     healthChecker = new HealthChecker(mockServices)
     mockAxios = vi.mocked(axios)
   })
@@ -56,31 +56,28 @@ describe('HealthChecker', () => {
     it('should check healthy service', async () => {
       mockAxios.get.mockResolvedValueOnce({
         data: { status: 'healthy' },
-        status: 200
+        status: 200,
       })
-      
+
       const status = await healthChecker.checkService('classifier')
-      
+
       expect(status.service).toBe('Classifier')
       expect(status.healthy).toBe(true)
       expect(status.latency).toBeGreaterThanOrEqual(0)
       expect(status.error).toBeUndefined()
       expect(status.lastCheck).toBeInstanceOf(Date)
-      
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        'http://localhost:3001/health',
-        {
-          timeout: 5000,
-          validateStatus: expect.any(Function)
-        }
-      )
+
+      expect(mockAxios.get).toHaveBeenCalledWith('http://localhost:3001/health', {
+        timeout: 5000,
+        validateStatus: expect.any(Function),
+      })
     })
 
     it('should check unhealthy service', async () => {
       mockAxios.get.mockRejectedValueOnce(new Error('Connection refused'))
-      
+
       const status = await healthChecker.checkService('classifier')
-      
+
       expect(status.service).toBe('Classifier')
       expect(status.healthy).toBe(false)
       expect(status.error).toBe('Connection refused')
@@ -88,20 +85,21 @@ describe('HealthChecker', () => {
     })
 
     it('should throw for unknown service', async () => {
-      await expect(healthChecker.checkService('unknown'))
-        .rejects.toThrow('Unknown service: unknown')
+      await expect(healthChecker.checkService('unknown')).rejects.toThrow(
+        'Unknown service: unknown',
+      )
     })
 
     it('should use cached status within timeout', async () => {
       mockAxios.get.mockResolvedValueOnce({
         data: { status: 'healthy' },
-        status: 200
+        status: 200,
       })
-      
+
       // First call
       const status1 = await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(1)
-      
+
       // Second call (should use cache)
       const status2 = await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(1) // No additional call
@@ -112,14 +110,14 @@ describe('HealthChecker', () => {
       mockAxios.get
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
-      
+
       // First call
       await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(1)
-      
+
       // Advance time past cache timeout
       vi.advanceTimersByTime(31000)
-      
+
       // Second call (should refresh)
       await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(2)
@@ -128,29 +126,30 @@ describe('HealthChecker', () => {
     it('should handle non-200 status codes', async () => {
       mockAxios.get.mockRejectedValueOnce({
         response: { status: 503 },
-        message: 'Service Unavailable'
+        message: 'Service Unavailable',
       })
-      
+
       const status = await healthChecker.checkService('classifier')
-      
+
       expect(status.healthy).toBe(false)
       expect(status.error).toContain('Unknown error')
     })
 
     it('should measure latency correctly', async () => {
       let resolvePromise: any
-      mockAxios.get.mockImplementationOnce(() => 
-        new Promise(resolve => {
-          resolvePromise = resolve
-        })
+      mockAxios.get.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolvePromise = resolve
+          }),
       )
-      
+
       const statusPromise = healthChecker.checkService('classifier')
-      
+
       // Simulate 100ms delay
       vi.advanceTimersByTime(100)
       resolvePromise({ data: { status: 'healthy' }, status: 200 })
-      
+
       const status = await statusPromise
       expect(status.latency).toBeGreaterThanOrEqual(100)
     })
@@ -161,9 +160,9 @@ describe('HealthChecker', () => {
       mockAxios.get
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
-      
+
       const results = await healthChecker.checkAll()
-      
+
       expect(Object.keys(results)).toHaveLength(2)
       expect(results.classifier.healthy).toBe(true)
       expect(results.evaluator.healthy).toBe(true)
@@ -174,9 +173,9 @@ describe('HealthChecker', () => {
       mockAxios.get
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
         .mockRejectedValueOnce(new Error('Connection timeout'))
-      
+
       const results = await healthChecker.checkAll()
-      
+
       expect(results.classifier.healthy).toBe(true)
       expect(results.evaluator.healthy).toBe(false)
       expect(results.evaluator.error).toBe('Connection timeout')
@@ -184,9 +183,9 @@ describe('HealthChecker', () => {
 
     it('should handle all services being unhealthy', async () => {
       mockAxios.get.mockRejectedValue(new Error('Network error'))
-      
+
       const results = await healthChecker.checkAll()
-      
+
       expect(results.classifier.healthy).toBe(false)
       expect(results.evaluator.healthy).toBe(false)
       expect(results.classifier.error).toBe('Network error')
@@ -197,11 +196,11 @@ describe('HealthChecker', () => {
       mockAxios.get
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
         .mockResolvedValueOnce({ data: { status: 'healthy' }, status: 200 })
-      
+
       // First checkAll
       await healthChecker.checkAll()
       expect(mockAxios.get).toHaveBeenCalledTimes(2)
-      
+
       // Second checkAll (should use cache)
       await healthChecker.checkAll()
       expect(mockAxios.get).toHaveBeenCalledTimes(2) // No additional calls
@@ -211,14 +210,14 @@ describe('HealthChecker', () => {
   describe('clearCache', () => {
     it('should clear the cache', async () => {
       mockAxios.get.mockResolvedValue({ data: { status: 'healthy' }, status: 200 })
-      
+
       // First call
       await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(1)
-      
+
       // Clear cache
       healthChecker.clearCache()
-      
+
       // Second call (should not use cache)
       await healthChecker.checkService('classifier')
       expect(mockAxios.get).toHaveBeenCalledTimes(2)
@@ -228,9 +227,9 @@ describe('HealthChecker', () => {
   describe('edge cases', () => {
     it('should handle non-Error exceptions', async () => {
       mockAxios.get.mockRejectedValueOnce('String error')
-      
+
       const status = await healthChecker.checkService('classifier')
-      
+
       expect(status.healthy).toBe(false)
       expect(status.error).toBe('Unknown error')
     })
@@ -238,7 +237,7 @@ describe('HealthChecker', () => {
     it('should handle empty service config', async () => {
       const emptyChecker = new HealthChecker({})
       const results = await emptyChecker.checkAll()
-      
+
       expect(results).toEqual({})
     })
 
@@ -249,10 +248,10 @@ describe('HealthChecker', () => {
         expect(validateStatus?.(200)).toBe(true)
         expect(validateStatus?.(201)).toBe(false)
         expect(validateStatus?.(500)).toBe(false)
-        
+
         return Promise.resolve({ data: {}, status: 200 })
       })
-      
+
       await healthChecker.checkService('classifier')
     })
   })
@@ -260,31 +259,31 @@ describe('HealthChecker', () => {
   describe('concurrent requests', () => {
     it('should handle concurrent checks to same service', async () => {
       mockAxios.get.mockResolvedValue({ data: { status: 'healthy' }, status: 200 })
-      
+
       // Make multiple concurrent requests
-      const promises = Array(5).fill(null).map(() => 
-        healthChecker.checkService('classifier')
-      )
-      
+      const promises = Array(5)
+        .fill(null)
+        .map(() => healthChecker.checkService('classifier'))
+
       const results = await Promise.all(promises)
-      
+
       // Should make some requests (caching may not prevent all in concurrent scenario)
       expect(mockAxios.get).toHaveBeenCalled()
-      
+
       // All results should be the same
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.healthy).toBe(true)
       })
     })
 
     it('should handle concurrent checks to different services', async () => {
       mockAxios.get.mockResolvedValue({ data: { status: 'healthy' }, status: 200 })
-      
+
       const promise1 = healthChecker.checkService('classifier')
       const promise2 = healthChecker.checkService('evaluator')
-      
+
       const [result1, result2] = await Promise.all([promise1, promise2])
-      
+
       expect(mockAxios.get).toHaveBeenCalledTimes(2)
       expect(result1.service).toBe('Classifier')
       expect(result2.service).toBe('Evaluator')

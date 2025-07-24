@@ -18,7 +18,7 @@ PromptDial 2.0 is a microservices-based prompt optimization engine consisting of
 │Classifier│ │Technique │ │Retrieval │ │Safety    │
 │Port 3001 │ │Port 3003 │ │Port 3004 │ │Port 3006 │
 └─────────┘ └──────────┘ └──────────┘ └──────────┘
-                                          
+
 ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
 │Telemetry │ │Evaluator │ │Optimizer │ │LLM Runner│
 │Port 3002 │ │Port 3005 │ │Port 3007 │ │Port 400x │
@@ -60,39 +60,47 @@ docker run -p 3001:3001 promptdial-classifier
 Each service can be configured via environment variables:
 
 #### API Gateway
+
 - `PORT`: Gateway port (default: 3000)
 - `RATE_LIMIT`: Requests per minute (default: 60)
 - `ALLOWED_ORIGINS`: CORS origins (comma-separated)
 - `[SERVICE]_URL`: Override service URLs
 
 #### Classifier Service
+
 - `PORT`: Service port (default: 3001)
 - `COMPLEXITY_THRESHOLD`: Task complexity threshold
 
 #### Technique Engine
+
 - `PORT`: Service port (default: 3003)
 - `MAX_VARIANTS`: Maximum variants to generate
 
 #### Retrieval Hub
+
 - `PORT`: Service port (default: 3004)
 - `VECTOR_STORE_TYPE`: Vector store backend (memory/chroma/pinecone)
 - `EMBEDDING_MODEL`: Embedding model to use
 
 #### LLM Runner
+
 - `PORT`: Service port (default: 4001+)
 - `PROVIDER`: LLM provider (openai/anthropic/google)
 - `API_KEY`: Provider API key
 - `DEFAULT_MODEL`: Default model to use
 
 #### Evaluator
+
 - `PORT`: Service port (default: 3005)
 - `CALIBRATION_THRESHOLD`: Drift detection threshold
 
 #### Safety Guard
+
 - `PORT`: Service port (default: 3006)
 - `BLOCK_THRESHOLD`: Risk score threshold for blocking
 
 #### Optimizer
+
 - `PORT`: Service port (default: 3007)
 - `OPTIMIZATION_MODE`: Default optimization mode
 
@@ -124,28 +132,30 @@ spec:
         app: promptdial-classifier
     spec:
       containers:
-      - name: classifier
-        image: promptdial/classifier:2.0.0
-        ports:
-        - containerPort: 3001
-        env:
-        - name: NODE_ENV
-          value: "production"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        - name: classifier
+          image: promptdial/classifier:2.0.0
+          ports:
+            - containerPort: 3001
+          env:
+            - name: NODE_ENV
+              value: 'production'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
 ```
 
 ### Health Checks
 
 All services expose health endpoints:
+
 - `GET /health` - Service health status
 - Returns 200 if healthy, 503 if degraded
 
 The API Gateway aggregates health from all services:
+
 - `GET /health` - Overall system health
 - `GET /health/:service` - Individual service health
 
@@ -167,6 +177,7 @@ The API Gateway aggregates health from all services:
 ### Horizontal Scaling
 
 Most services are stateless and can be scaled horizontally:
+
 - Classifier: Scale based on request volume
 - Technique Engine: Scale based on generation load
 - Evaluator: Scale based on evaluation queue
@@ -207,6 +218,7 @@ Most services are stateless and can be scaled horizontally:
 ### Debug Mode
 
 Enable debug logging:
+
 ```bash
 export LOG_LEVEL=debug
 export NODE_ENV=development
@@ -215,6 +227,7 @@ export NODE_ENV=development
 ### Service Logs
 
 Access logs for each service:
+
 ```bash
 # Docker
 docker logs promptdial-classifier

@@ -8,7 +8,7 @@ import type {
   ServiceResponse,
   TelemetryEvent,
   BudgetConstraints,
-  LLMProviderConfig
+  LLMProviderConfig,
 } from '../src/types'
 
 // Type guard tests
@@ -24,10 +24,10 @@ describe('Types', () => {
           max_cost_per_variant: 0.1,
           max_total_cost: 1.0,
           max_tokens: 1000,
-          max_latency_ms: 5000
-        }
+          max_latency_ms: 5000,
+        },
       }
-      
+
       expect(request).toBeDefined()
       expect(request.id).toBe('test-id')
     })
@@ -43,9 +43,9 @@ describe('Types', () => {
         estimated_tokens: 500,
         estimated_latency_ms: 2000,
         quality_score: 0.85,
-        metadata: {}
+        metadata: {},
       }
-      
+
       expect(variant).toBeDefined()
       expect(variant.technique).toBe('few_shot_cot')
     })
@@ -61,12 +61,12 @@ describe('Types', () => {
         confidence_scores: {
           task_type: 0.9,
           domain: 0.85,
-          complexity: 0.8
+          complexity: 0.8,
         },
         detected_languages: ['en'],
-        recommended_techniques: ['few_shot_cot']
+        recommended_techniques: ['few_shot_cot'],
       }
-      
+
       expect(classification).toBeDefined()
       expect(classification.task_type).toBe('code_generation')
     })
@@ -78,12 +78,12 @@ describe('Types', () => {
         score: 0.85,
         details: {
           coherence: 0.9,
-          relevance: 0.85
+          relevance: 0.85,
         },
         confidence: 0.9,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
-      
+
       expect(result).toBeDefined()
       expect(result.evaluator).toBe('g_eval')
     })
@@ -94,9 +94,9 @@ describe('Types', () => {
         timestamp: new Date(),
         service: 'api-gateway',
         method: 'optimize',
-        payload: { data: 'test' }
+        payload: { data: 'test' },
       }
-      
+
       expect(request).toBeDefined()
       expect(request.payload.data).toBe('test')
     })
@@ -107,9 +107,9 @@ describe('Types', () => {
         timestamp: new Date(),
         service: 'classifier',
         success: true,
-        data: { result: 42 }
+        data: { result: 42 },
       }
-      
+
       expect(response).toBeDefined()
       expect(response.success).toBe(true)
       expect(response.data?.result).toBe(42)
@@ -124,10 +124,10 @@ describe('Types', () => {
         error: {
           code: 'E001',
           message: 'Error occurred',
-          retryable: true
-        }
+          retryable: true,
+        },
       }
-      
+
       expect(response).toBeDefined()
       expect(response.success).toBe(false)
       expect(response.error?.code).toBe('E001')
@@ -139,9 +139,9 @@ describe('Types', () => {
         variant_id: 'variant-456',
         ts_utc: new Date().toISOString(),
         event_type: 'optimization_started',
-        task_type: 'general_qa'
+        task_type: 'general_qa',
       }
-      
+
       expect(event).toBeDefined()
       expect(event.event_type).toBe('optimization_started')
     })
@@ -151,9 +151,9 @@ describe('Types', () => {
         max_cost_per_variant: 0.1,
         max_total_cost: 1.0,
         max_tokens: 1000,
-        max_latency_ms: 5000
+        max_latency_ms: 5000,
       }
-      
+
       expect(budget).toBeDefined()
       expect(budget.max_cost_per_variant).toBe(0.1)
     })
@@ -167,9 +167,9 @@ describe('Types', () => {
         max_tokens: 1000,
         top_p: 0.9,
         frequency_penalty: 0.1,
-        presence_penalty: 0.1
+        presence_penalty: 0.1,
       }
-      
+
       expect(config).toBeDefined()
       expect(config.provider).toBe('openai')
       expect(config.temperature).toBe(0.7)
@@ -182,9 +182,9 @@ describe('Types', () => {
         id: 'id',
         prompt: 'prompt',
         target_models: ['model'],
-        optimization_level: 'basic'
+        optimization_level: 'basic',
       }
-      
+
       expect(minimal.budget_constraints).toBeUndefined()
       expect(minimal.task_type).toBeUndefined()
       expect(minimal.custom_techniques).toBeUndefined()
@@ -199,9 +199,9 @@ describe('Types', () => {
         model: 'gpt-4',
         estimated_cost: 0.01,
         estimated_tokens: 100,
-        estimated_latency_ms: 1000
+        estimated_latency_ms: 1000,
       }
-      
+
       expect(variant.quality_score).toBeUndefined()
       expect(variant.evaluation_results).toBeUndefined()
       expect(variant.safety_score).toBeUndefined()
@@ -212,9 +212,9 @@ describe('Types', () => {
         variant_id: 'id',
         evaluator: 'g_eval',
         score: 0.8,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
-      
+
       expect(result.details).toBeUndefined()
       expect(result.confidence).toBeUndefined()
       expect(result.calibration_offset).toBeUndefined()
@@ -230,10 +230,10 @@ describe('Types', () => {
         'creative_writing',
         'summarization',
         'translation',
-        'data_analysis'
+        'data_analysis',
       ]
-      
-      validTypes.forEach(type => {
+
+      validTypes.forEach((type) => {
         const classification: TaskClassification = {
           task_type: type as any,
           domain: 'general',
@@ -244,20 +244,20 @@ describe('Types', () => {
           confidence_scores: {
             task_type: 0.9,
             domain: 0.9,
-            complexity: 0.9
+            complexity: 0.9,
           },
           detected_languages: ['en'],
-          recommended_techniques: []
+          recommended_techniques: [],
         }
-        
+
         expect(classification.task_type).toBe(type)
       })
     })
 
     it('should handle complexity levels', () => {
       const levels = ['low', 'medium', 'high']
-      
-      levels.forEach(level => {
+
+      levels.forEach((level) => {
         const classification: TaskClassification = {
           task_type: 'general_qa',
           domain: 'general',
@@ -268,26 +268,26 @@ describe('Types', () => {
           confidence_scores: {
             task_type: 0.9,
             domain: 0.9,
-            complexity: 0.9
+            complexity: 0.9,
           },
           detected_languages: ['en'],
-          recommended_techniques: []
+          recommended_techniques: [],
         }
-        
+
         expect(classification.complexity).toBe(level)
       })
     })
 
     it('should handle provider types', () => {
       const providers = ['openai', 'anthropic', 'google', 'cohere']
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         const config: LLMProviderConfig = {
           provider: provider as any,
           api_key: 'key',
-          model: 'model'
+          model: 'model',
         }
-        
+
         expect(config.provider).toBe(provider)
       })
     })

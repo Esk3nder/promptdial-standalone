@@ -12,12 +12,9 @@ const sizes = {
   lg: 32,
 }
 
-export function LoadingSpinner({ 
-  size = 'md', 
-  label = 'Loading' 
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', label = 'Loading' }: LoadingSpinnerProps) {
   const dimension = sizes[size]
-  
+
   const spinnerStyle: CSSProperties = {
     width: dimension,
     height: dimension,
@@ -26,10 +23,10 @@ export function LoadingSpinner({
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   }
-  
+
   return (
-    <div 
-      role="status" 
+    <div
+      role="status"
       aria-live="polite"
       style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
     >

@@ -8,12 +8,9 @@ interface UseLocalStorageOptions<T> {
 export function useLocalStorage<T>(
   key: string,
   defaultValue: T,
-  options: UseLocalStorageOptions<T> = {}
+  options: UseLocalStorageOptions<T> = {},
 ): [T, (value: T) => void] {
-  const {
-    deserializer = JSON.parse,
-    serializer = JSON.stringify,
-  } = options
+  const { deserializer = JSON.parse, serializer = JSON.stringify } = options
 
   const [value, setValue] = useState<T>(() => {
     try {

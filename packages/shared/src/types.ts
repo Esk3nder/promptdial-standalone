@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Shared Types and Contracts
- * 
+ *
  * Core data models shared across all microservices
  */
 
@@ -9,8 +9,8 @@
 export interface PromptVariant {
   id: string
   technique: string
-  prompt: string  // The optimized prompt text
-  optimized_prompt?: string  // Legacy field for compatibility
+  prompt: string // The optimized prompt text
+  optimized_prompt?: string // Legacy field for compatibility
   temperature: number
   est_tokens: number
   cost_usd: number
@@ -60,7 +60,7 @@ export interface OptimizationResponse {
 
 // ============= Classification Types =============
 
-export type TaskType = 
+export type TaskType =
   | 'math_reasoning'
   | 'code_generation'
   | 'creative_writing'
@@ -71,19 +71,14 @@ export type TaskType =
   | 'classification'
   | 'general'
 
-export type Domain = 
-  | 'academic'
-  | 'business'
-  | 'technical'
-  | 'creative'
-  | 'general'
+export type Domain = 'academic' | 'business' | 'technical' | 'creative' | 'general'
 
 export type SecurityLevel = 'standard' | 'high' | 'strict'
 
 export interface TaskClassification {
   task_type: TaskType
   domain: Domain
-  complexity: number  // 0-1 scale
+  complexity: number // 0-1 scale
   safety_risk: number // 0-1 scale
   needs_retrieval: boolean
   suggested_techniques: string[]
@@ -96,11 +91,11 @@ export interface TechniqueStrategy {
   description: string
   best_for: TaskType[]
   needs_retrieval: boolean
-  
+
   generate(
     base_prompt: string,
     meta: TaskClassification,
-    budget: BudgetConstraints
+    budget: BudgetConstraints,
   ): Promise<PromptVariant[]>
 }
 
@@ -127,7 +122,6 @@ export interface EvaluationResult {
   calibration_error?: number
 }
 
-
 // ============= Security Types =============
 
 // ============= Telemetry Types =============
@@ -136,7 +130,11 @@ export interface TelemetryEvent {
   trace_id: string
   variant_id: string
   ts_utc: string
-  event_type: 'optimization_start' | 'variant_generated' | 'evaluation_complete' | 'optimization_end'
+  event_type:
+    | 'optimization_start'
+    | 'variant_generated'
+    | 'evaluation_complete'
+    | 'optimization_end'
   task_type: TaskType
   provider?: string
   total_tokens?: number
@@ -180,9 +178,7 @@ export interface ServiceResponse<T = any> {
   }
 }
 
-
 // ============= Configuration Types =============
-
 
 export interface LLMProviderConfig {
   provider: 'openai' | 'anthropic' | 'google' | 'cohere'
@@ -195,7 +191,6 @@ export interface LLMProviderConfig {
     tokens_per_minute: number
   }
 }
-
 
 // ============= Vector Store Types =============
 

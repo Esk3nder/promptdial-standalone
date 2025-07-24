@@ -1,11 +1,12 @@
 import type { OptimizedVariant, ValidationResult } from 'promptdial'
 
 export const createMockVariant = (
-  overrides: Partial<OptimizedVariant & { quality?: ValidationResult }> = {}
+  overrides: Partial<OptimizedVariant & { quality?: ValidationResult }> = {},
 ): OptimizedVariant & { quality?: ValidationResult } => ({
   id: '1',
   originalPrompt: 'test prompt',
-  optimizedPrompt: 'Please provide a comprehensive and detailed test prompt that clearly articulates the specific requirements and expected outcomes.',
+  optimizedPrompt:
+    'Please provide a comprehensive and detailed test prompt that clearly articulates the specific requirements and expected outcomes.',
   changes: [
     { type: 'clarity', description: 'Added clear action verb' },
     { type: 'specificity', description: 'Included specific requirements' },
@@ -51,7 +52,7 @@ export const createMockOptimizationResult = (variantCount = 1) => ({
         suggestions: [],
         improvementPercentage: 150 - i * 10,
       },
-    })
+    }),
   ),
   request: {
     prompt: 'test prompt',

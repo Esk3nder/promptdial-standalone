@@ -21,21 +21,22 @@ export function ComparisonChart({ results }: ComparisonChartProps) {
   const renderBar = (value: number, label: string) => {
     const isPositive = value > 0
     const width = Math.min(Math.abs(value), 100)
-    
+
     return (
       <div className="metric-bar">
         <div className="label">{label}</div>
         <div className="bar-container">
           <div className="baseline" />
-          <div 
+          <div
             className={`bar ${isPositive ? 'positive' : 'negative'}`}
-            style={{ 
+            style={{
               width: `${width}%`,
-              marginLeft: isPositive ? '50%' : `${50 - width}%`
+              marginLeft: isPositive ? '50%' : `${50 - width}%`,
             }}
           />
           <span className="value">
-            {isPositive ? '+' : ''}{value.toFixed(1)}%
+            {isPositive ? '+' : ''}
+            {value.toFixed(1)}%
           </span>
         </div>
       </div>
@@ -46,7 +47,7 @@ export function ComparisonChart({ results }: ComparisonChartProps) {
     <div className="comparison-chart">
       <h2>📊 Performance Comparison</h2>
       <p className="subtitle">Average improvement across all providers</p>
-      
+
       <div className="metrics">
         {renderBar(averageImprovement.responseTime, 'Response Time')}
         {renderBar(averageImprovement.tokenCount, 'Token Usage')}

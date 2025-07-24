@@ -58,7 +58,7 @@ export interface PromptDialOptions {
 
 export class PromptDial {
   constructor(options?: PromptDialOptions) {}
-  
+
   async optimize(request: OptimizationRequest): Promise<OptimizedResult> {
     // This will use the API endpoint instead
     const response = await fetch('/api/optimize', {
@@ -68,12 +68,12 @@ export class PromptDial {
       },
       body: JSON.stringify(request),
     })
-    
+
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.error || 'Optimization failed')
     }
-    
+
     return response.json()
   }
 }

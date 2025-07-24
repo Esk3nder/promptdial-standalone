@@ -14,14 +14,14 @@ export default defineConfig({
         'src/**/*.spec.ts',
         'src/**/*.d.ts',
         'src/__tests__/**',
-        'src/types.ts'
+        'src/types.ts',
       ],
       thresholds: {
         lines: 100,
         functions: 100,
         branches: 100,
-        statements: 100
-      }
-    }
-  }
+        statements: 100,
+      },
+    },
+  },
 })

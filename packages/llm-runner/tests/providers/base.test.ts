@@ -8,27 +8,27 @@ class TestProvider extends BaseLLMProvider {
   async call(
     variant: PromptVariant,
     streaming?: boolean,
-    callback?: StreamingCallback
+    callback?: StreamingCallback,
   ): Promise<LLMResponse> {
     await this.checkRateLimit()
-    
+
     const response: LLMResponse = {
       content: `Response to: ${variant.optimized_prompt}`,
       tokens_used: 100,
       latency_ms: 500,
       provider: this.config.provider,
-      model: this.config.model || 'test-model'
+      model: this.config.model || 'test-model',
     }
-    
+
     await this.logTelemetry(variant, response)
-    
+
     if (streaming && callback) {
       callback.onComplete?.(response)
     }
-    
+
     return response
   }
-  
+
   protected extractTokenFromChunk(chunk: any): string | null {
     return chunk.token || null
   }
@@ -43,7 +43,7 @@ vi.mock('@promptdial/shared', async () => {
       debug: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn()
+      error: vi.fn(),
     }),
     getTelemetryService: () => ({
       incrementCounter: vi.fn(),
@@ -51,8 +51,8 @@ vi.mock('@promptdial/shared', async () => {
       recordMetric: vi.fn(),
       trackEvent: vi.fn(),
       trackError: vi.fn(),
-      flush: vi.fn()
-    })
+      flush: vi.fn(),
+    }),
   }
 })
 
@@ -64,7 +64,7 @@ describe('BaseLLMProvider', () => {
     config = createTestLLMConfig({
       provider: 'test',
       api_key: 'test-key',
-      model: 'test-model'
+      model: 'test-model',
     })
     provider = new TestProvider(config)
   })
@@ -84,7 +84,7 @@ describe('BaseLLMProvider', () => {
     it('should return false without API key', () => {
       const noKeyProvider = new TestProvider({
         ...config,
-        api_key: ''
+        api_key: '',
       })
       expect(noKeyProvider.isConfigured()).toBe(false)
     })
@@ -94,7 +94,7 @@ describe('BaseLLMProvider', () => {
     it('should call LLM and return response', async () => {
       const variant = createTestPromptVariant()
       const response = await provider.call(variant)
-      
+
       expect(response.content).toContain('Response to:')
       expect(response.tokens_used).toBe(100)
       expect(response.latency_ms).toBe(500)
@@ -105,47 +105,43 @@ describe('BaseLLMProvider', () => {
     it('should handle streaming callback', async () => {
       const variant = createTestPromptVariant()
       const onComplete = vi.fn()
-      
+
       await provider.call(variant, true, { onComplete })
-      
+
       expect(onComplete).toHaveBeenCalledWith(
         expect.objectContaining({
           content: expect.any(String),
-          tokens_used: 100
-        })
+          tokens_used: 100,
+        }),
       )
     })
 
     it('should check rate limits', async () => {
       const telemetry = vi.mocked((await import('@promptdial/shared')).getTelemetryService())
       const variant = createTestPromptVariant()
-      
+
       await provider.call(variant)
-      
-      expect(telemetry.incrementCounter).toHaveBeenCalledWith(
-        'llm_requests',
-        1,
-        { provider: 'test' }
-      )
+
+      expect(telemetry.incrementCounter).toHaveBeenCalledWith('llm_requests', 1, {
+        provider: 'test',
+      })
     })
 
     it('should log telemetry', async () => {
       const telemetry = vi.mocked((await import('@promptdial/shared')).getTelemetryService())
       const variant = createTestPromptVariant()
-      
+
       await provider.call(variant)
-      
+
       expect(telemetry.recordLatency).toHaveBeenCalledWith('test', 500)
-      expect(telemetry.incrementCounter).toHaveBeenCalledWith(
-        'llm_tokens',
-        100,
-        { provider: 'test', model: 'test-model' }
-      )
-      expect(telemetry.recordMetric).toHaveBeenCalledWith(
-        'llm_cost_usd',
-        expect.any(Number),
-        { provider: 'test', model: 'test-model' }
-      )
+      expect(telemetry.incrementCounter).toHaveBeenCalledWith('llm_tokens', 100, {
+        provider: 'test',
+        model: 'test-model',
+      })
+      expect(telemetry.recordMetric).toHaveBeenCalledWith('llm_cost_usd', expect.any(Number), {
+        provider: 'test',
+        model: 'test-model',
+      })
     })
   })
 
@@ -155,9 +151,9 @@ describe('BaseLLMProvider', () => {
         { model: 'gpt-4', tokens: 1000, expected: 0.03 },
         { model: 'gpt-3.5-turbo', tokens: 1000, expected: 0.002 },
         { model: 'claude-3-opus', tokens: 2000, expected: 0.03 },
-        { model: 'gemini-pro', tokens: 5000, expected: 0.005 }
+        { model: 'gemini-pro', tokens: 5000, expected: 0.005 },
       ]
-      
+
       testCases.forEach(({ model, tokens, expected }) => {
         const cost = (provider as any).calculateCost(tokens, model)
         expect(cost).toBe(expected)
@@ -172,25 +168,17 @@ describe('BaseLLMProvider', () => {
 
   describe('handleStreaming', () => {
     it('should handle streaming tokens', async () => {
-      const chunks = [
-        { token: 'Hello' },
-        { token: ' ' },
-        { token: 'world' },
-        { token: '!' }
-      ]
-      
+      const chunks = [{ token: 'Hello' }, { token: ' ' }, { token: 'world' }, { token: '!' }]
+
       async function* generateChunks() {
         for (const chunk of chunks) {
           yield chunk
         }
       }
-      
+
       const onToken = vi.fn()
-      const result = await (provider as any).handleStreaming(
-        generateChunks(),
-        { onToken }
-      )
-      
+      const result = await (provider as any).handleStreaming(generateChunks(), { onToken })
+
       expect(result).toBe('Hello world!')
       expect(onToken).toHaveBeenCalledTimes(4)
       expect(onToken).toHaveBeenCalledWith('Hello')
@@ -202,13 +190,13 @@ describe('BaseLLMProvider', () => {
         yield { token: 'Start' }
         throw new Error('Stream error')
       }
-      
+
       const onError = vi.fn()
-      
-      await expect(
-        (provider as any).handleStreaming(generateError(), { onError })
-      ).rejects.toThrow('Stream error')
-      
+
+      await expect((provider as any).handleStreaming(generateError(), { onError })).rejects.toThrow(
+        'Stream error',
+      )
+
       expect(onError).toHaveBeenCalledWith(expect.any(Error))
     })
 
@@ -218,7 +206,7 @@ describe('BaseLLMProvider', () => {
         yield {} // No token
         yield { token: 'world' }
       }
-      
+
       const result = await (provider as any).handleStreaming(generateChunks())
       expect(result).toBe('Helloworld')
     })
@@ -227,19 +215,15 @@ describe('BaseLLMProvider', () => {
   describe('createErrorResponse', () => {
     it('should format error response correctly', () => {
       const error = new Error('Test error')
-      const response = (provider as any).createErrorResponse(
-        error,
-        'test-provider',
-        'test-model'
-      )
-      
+      const response = (provider as any).createErrorResponse(error, 'test-provider', 'test-model')
+
       expect(response).toEqual({
         content: '',
         tokens_used: 0,
         latency_ms: 0,
         provider: 'test-provider',
         model: 'test-model',
-        error: 'Test error'
+        error: 'Test error',
       })
     })
   })

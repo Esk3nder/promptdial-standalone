@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Essential Commands
 
 ### Development & Testing
+
 ```bash
 # Setup and install
 npm run setup              # Clean and install all dependencies
@@ -24,13 +25,14 @@ npm run test:performance   # Run performance benchmarks
 
 # Code quality
 npm run lint               # ESLint check
-npm run lint:fix           # Fix ESLint issues  
+npm run lint:fix           # Fix ESLint issues
 npm run format             # Prettier format
 npm run format:check       # Check formatting
 npm run build              # Build all packages
 ```
 
 ### Service-Specific Testing
+
 ```bash
 # Test individual services
 cd services/api-gateway && npm test
@@ -40,6 +42,7 @@ cd services/evaluator && npm test
 ```
 
 ### Docker Development
+
 ```bash
 # Start all services
 docker-compose up
@@ -95,6 +98,7 @@ The main package (`packages/core`) follows a facade pattern:
 ### Type System
 
 The codebase is strongly typed with key interfaces:
+
 - `OptimizationRequest` - Input parameters for optimization
 - `OptimizedVariant` - Individual optimization result with quality metrics
 - `ValidationResult` - Quality assessment with scores and suggestions
@@ -103,6 +107,7 @@ The codebase is strongly typed with key interfaces:
 ## Testing Architecture
 
 ### Framework: Vitest with Supertest
+
 - BDD-style tests with describe/it blocks
 - Global test functions enabled
 - API testing with supertest for service endpoints
@@ -128,6 +133,7 @@ The codebase is strongly typed with key interfaces:
 ## Development Workflow
 
 ### Environment Setup
+
 ```bash
 # Required environment variables
 OPENAI_API_KEY=your-key-here
@@ -137,25 +143,30 @@ NODE_ENV=development
 ```
 
 ### TypeScript Configuration
-- Target: ES2020, Module: CommonJS  
+
+- Target: ES2020, Module: CommonJS
 - Strict mode enabled - no implicit any
 - Source maps for debugging
 - Declaration files for type support
 
 ### Code Quality Standards
+
 - ESLint with max complexity of 6
 - Prettier for consistent formatting
 - Husky pre-commit hooks with lint-staged
 - No console.log in production code
 
 ### Service Communication
+
 Services communicate via HTTP REST APIs:
+
 - Request/response JSON format
 - Standardized error responses
 - Health check endpoints at `/health`
 - Metrics endpoints at `/metrics`
 
 ### Debugging Tips
+
 1. Use service logs: `docker-compose logs -f [service-name]`
 2. Check health endpoints: `curl http://localhost:3000/health`
 3. Enable debug mode: `DEBUG=promptdial:* npm start`
@@ -166,6 +177,7 @@ Services communicate via HTTP REST APIs:
 The project includes a React-based web UI for testing:
 
 ### Running the UI
+
 ```bash
 # From monorepo root
 cd packages/ui
@@ -173,6 +185,7 @@ npm run dev
 ```
 
 ### UI Architecture
+
 - React 18 with TypeScript
 - Vite for development
 - CSS Modules (no Tailwind)
@@ -182,16 +195,19 @@ npm run dev
 ## Common Troubleshooting
 
 ### Service Connection Issues
+
 - Ensure all services are running: `docker-compose ps`
 - Check service logs for errors
 - Verify port availability (3000-3007, 400x)
 
 ### Build Failures
+
 - Clear node_modules: `npm run clean`
 - Reinstall dependencies: `npm run setup`
 - Check Node.js version (18+ required)
 
 ### Test Failures
+
 - Run single test in debug mode: `npx vitest --reporter=verbose [test-file]`
 - Check for missing environment variables
 - Ensure services are accessible for integration tests

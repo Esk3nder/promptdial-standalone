@@ -29,6 +29,5 @@
     "express": "^4.21.2",
     "openai": "^5.10.1"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

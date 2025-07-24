@@ -7,6 +7,7 @@
 **Problem**: `npm install` fails with dependency errors
 
 **Solutions**:
+
 - Run the setup script: `./install.sh`
 - Ensure Node.js 18+ is installed: `node --version`
 - Clear npm cache: `npm cache clean --force`
@@ -22,6 +23,7 @@
 **Problem**: Error messages about `@promptdial/shared` not found
 
 **Solutions**:
+
 - The workspace dependencies have been updated to use file references
 - Run `npm install` in the root directory
 - Then run `npm install` in each package directory:
@@ -36,6 +38,7 @@
 **Problem**: TypeScript compilation fails
 
 **Solutions**:
+
 - Ensure all packages have their dependencies installed
 - Build the shared package first:
   ```bash
@@ -49,6 +52,7 @@
 **Problem**: `npm start` fails or server doesn't respond
 
 **Solutions**:
+
 - Check if port 3000 is already in use: `lsof -i :3000`
 - Use a different port: `PORT=8080 npm start`
 - Check the logs for errors
@@ -59,6 +63,7 @@
 **Problem**: Module not found errors
 
 **Solutions**:
+
 - Run the full setup: `npm run setup`
 - Install specific package dependencies:
   ```bash
@@ -69,6 +74,7 @@
 ## Quick Fixes
 
 ### Complete Reset
+
 ```bash
 # Clean everything
 npm run clean
@@ -81,6 +87,7 @@ npm start
 ```
 
 ### Verify Installation
+
 ```bash
 # Check Node version
 node --version  # Should be 18+
@@ -93,6 +100,7 @@ npm ls
 ```
 
 ### Debug Mode
+
 ```bash
 # Run with debug logging
 DEBUG=* npm start

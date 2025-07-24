@@ -13,6 +13,7 @@ PromptDial 2.0 is a complete rewrite featuring a microservices architecture that
 ## ✨ Key Features
 
 ### Core Capabilities
+
 - **🧠 Intelligent Classification**: Automatic task type, domain, and complexity detection
 - **🎯 Advanced Techniques**: 6+ optimization strategies (Few-Shot CoT, Self-Consistency, ReAct, Tree of Thought, IRCoT, DSPy)
 - **🔍 Retrieval-Augmented**: Vector store integration for example retrieval and context enhancement
@@ -21,6 +22,7 @@ PromptDial 2.0 is a complete rewrite featuring a microservices architecture that
 - **📊 Calibrated Evaluation**: G-EVAL, ChatEval, Role-Debate, and Self-Consistency with drift detection
 
 ### Architecture Benefits
+
 - **Microservices Design**: 8 specialized services for scalability and reliability
 - **Multi-Provider Support**: OpenAI, Anthropic, Google AI, Cohere, and custom models
 - **Enterprise Ready**: Production-grade monitoring, telemetry, and deployment options
@@ -41,7 +43,7 @@ PromptDial 2.0 consists of 8 microservices:
 │Classifier│ │Technique │ │Retrieval │ │SafetyGuard│
 │Port 3001 │ │Port 3003 │ │Port 3004 │ │Port 3006  │
 └─────────┘ └──────────┘ └──────────┘ └───────────┘
-                                          
+
 ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐
 │Telemetry │ │Evaluator │ │Optimizer │ │LLM Runner │
 │Port 3002 │ │Port 3005 │ │Port 3007 │ │Port 400x  │
@@ -51,6 +53,7 @@ PromptDial 2.0 consists of 8 microservices:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18 or higher
 - npm 7 or higher
 
@@ -156,9 +159,9 @@ const result = await axios.post('http://localhost:3000/api/optimize', {
     preferences: {
       quality: 0.7,
       cost: 0.2,
-      latency: 0.1
-    }
-  }
+      latency: 0.1,
+    },
+  },
 })
 
 console.log(result.data.result.recommended_variant)
@@ -169,31 +172,37 @@ console.log(result.data.result.recommended_variant)
 PromptDial 2.0 implements cutting-edge prompt optimization strategies:
 
 ### 1. **Few-Shot Chain-of-Thought (CoT)**
+
 - Adds step-by-step reasoning examples
 - Improves accuracy on complex tasks
 - Best for: Math, reasoning, analysis
 
 ### 2. **Self-Consistency**
+
 - Generates multiple reasoning paths
 - Uses voting for robust answers
 - Best for: High-stakes decisions
 
 ### 3. **ReAct (Reasoning + Acting)**
+
 - Interleaves reasoning and actions
 - Structured thought process
 - Best for: Multi-step tasks
 
 ### 4. **Tree of Thoughts**
+
 - Explores multiple reasoning branches
 - Backtracks when needed
 - Best for: Creative problem solving
 
 ### 5. **IRCoT (Interleaved Retrieval CoT)**
+
 - Retrieves relevant examples dynamically
 - Enhances with external knowledge
 - Best for: Knowledge-intensive tasks
 
 ### 6. **DSPy Automatic Prompt Engineering**
+
 - Learns optimal prompts from data
 - Self-improving optimization
 - Best for: Repeated similar tasks
@@ -205,12 +214,13 @@ PromptDial 2.0 implements cutting-edge prompt optimization strategies:
 Main optimization endpoint that orchestrates all services.
 
 **Request Body:**
+
 ```json
 {
   "prompt": "Your prompt text",
   "options": {
     "max_variants": 5,
-    "cost_cap_usd": 0.20,
+    "cost_cap_usd": 0.2,
     "latency_cap_ms": 5000,
     "security_level": "strict",
     "preferences": {
@@ -226,6 +236,7 @@ Main optimization endpoint that orchestrates all services.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -247,7 +258,9 @@ Main optimization endpoint that orchestrates all services.
         "score": 0.92
       }
     ],
-    "recommended_variant": { /* best variant */ },
+    "recommended_variant": {
+      /* best variant */
+    },
     "optimization_metadata": {
       "techniques_used": ["FewShot_CoT", "ReAct"],
       "pareto_frontier_size": 3,
@@ -269,12 +282,14 @@ Main optimization endpoint that orchestrates all services.
 PromptDial 2.0 includes comprehensive security:
 
 ### Threat Detection
+
 - **Prompt Injection**: 15+ patterns including instruction override, role hijacking
 - **Jailbreaks**: DAN mode, pretend scenarios, hypotheticals
 - **Data Exfiltration**: Training data probes, API key fishing
 - **Evasion Techniques**: Base64 encoding, Unicode tricks, leetspeak
 
 ### Protection Mechanisms
+
 - Real-time prompt sanitization
 - Content filtering and PII redaction
 - Risk scoring (0-1 scale)
@@ -300,6 +315,7 @@ cd packages/safety-guard && npm run test
 ## 📊 Monitoring & Telemetry
 
 The telemetry service tracks:
+
 - Request latencies and throughput
 - Token usage and costs
 - Optimization patterns
@@ -328,6 +344,7 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Kubernetes manifests and produc
 ### Configuration
 
 Key environment variables:
+
 ```env
 # LLM Providers
 OPENAI_API_KEY=sk-...
@@ -363,6 +380,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## 🙏 Acknowledgments
 
 Built on research from:
+
 - [Chain-of-Thought Prompting](https://arxiv.org/abs/2201.11903)
 - [Self-Consistency](https://arxiv.org/abs/2203.11171)
 - [ReAct Framework](https://arxiv.org/abs/2210.03629)

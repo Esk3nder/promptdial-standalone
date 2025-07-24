@@ -17,7 +17,7 @@ import {
   stddev,
   confidenceInterval,
   findParetoFrontier,
-  retryWithBackoff
+  retryWithBackoff,
 } from '../src/utils'
 import { ERROR_CODES, STATUS_CODES } from '../src/constants'
 
@@ -53,14 +53,10 @@ describe('ID Generation', () => {
 describe('Error Handling', () => {
   describe('PromptDialError', () => {
     it('should create error with all properties', () => {
-      const error = new PromptDialError(
-        'TEST_ERROR',
-        'Test message',
-        400,
-        true,
-        { extra: 'details' }
-      )
-      
+      const error = new PromptDialError('TEST_ERROR', 'Test message', 400, true, {
+        extra: 'details',
+      })
+
       expect(error.code).toBe('TEST_ERROR')
       expect(error.message).toBe('Test message')
       expect(error.statusCode).toBe(400)
@@ -83,21 +79,29 @@ describe('Error Handling', () => {
         code: 'CODE',
         message: 'message',
         retryable: true,
-        details: { data: 1 }
+        details: { data: 1 },
       })
     })
   })
 
   describe('isRetryableError', () => {
     it('should identify retryable errors', () => {
-      expect(isRetryableError({ code: ERROR_CODES.SERVICE_UNAVAILABLE, message: '', retryable: false })).toBe(true)
-      expect(isRetryableError({ code: ERROR_CODES.TIMEOUT, message: '', retryable: false })).toBe(true)
-      expect(isRetryableError({ code: ERROR_CODES.RATE_LIMIT_EXCEEDED, message: '', retryable: false })).toBe(true)
+      expect(
+        isRetryableError({ code: ERROR_CODES.SERVICE_UNAVAILABLE, message: '', retryable: false }),
+      ).toBe(true)
+      expect(isRetryableError({ code: ERROR_CODES.TIMEOUT, message: '', retryable: false })).toBe(
+        true,
+      )
+      expect(
+        isRetryableError({ code: ERROR_CODES.RATE_LIMIT_EXCEEDED, message: '', retryable: false }),
+      ).toBe(true)
       expect(isRetryableError({ code: 'OTHER', message: '', retryable: true })).toBe(true)
     })
 
     it('should identify non-retryable errors', () => {
-      expect(isRetryableError({ code: ERROR_CODES.INVALID_PROMPT, message: '', retryable: false })).toBe(false)
+      expect(
+        isRetryableError({ code: ERROR_CODES.INVALID_PROMPT, message: '', retryable: false }),
+      ).toBe(false)
       expect(isRetryableError({ code: 'OTHER', message: '', retryable: false })).toBe(false)
     })
   })
@@ -125,7 +129,7 @@ describe('Service Communication', () => {
     it('should create success response', () => {
       const request = createServiceRequest('service', 'method', {}, 'trace-123')
       const response = createServiceResponse(request, { result: 'success' })
-      
+
       expect(response.trace_id).toBe('trace-123')
       expect(response.service).toBe('service')
       expect(response.success).toBe(true)
@@ -137,7 +141,7 @@ describe('Service Communication', () => {
       const request = createServiceRequest('service', 'method', {})
       const error = createServiceError('ERROR', 'Failed')
       const response = createServiceResponse(request, undefined, error)
-      
+
       expect(response.success).toBe(false)
       expect(response.error).toEqual(error)
       expect(response.data).toBeUndefined()
@@ -174,13 +178,10 @@ describe('Token and Cost Estimation', () => {
 describe('Telemetry', () => {
   describe('createTelemetryEvent', () => {
     it('should create telemetry event with all fields', () => {
-      const event = createTelemetryEvent(
-        'optimization_started',
-        'trace-123',
-        'variant-456',
-        { task_type: 'code_generation' }
-      )
-      
+      const event = createTelemetryEvent('optimization_started', 'trace-123', 'variant-456', {
+        task_type: 'code_generation',
+      })
+
       expect(event.event_type).toBe('optimization_started')
       expect(event.trace_id).toBe('trace-123')
       expect(event.variant_id).toBe('variant-456')
@@ -244,23 +245,21 @@ describe('Logging', () => {
 
     it('should create logger with service name', () => {
       const logger = createLogger('test-service')
-      
+
       logger.debug('debug message', { extra: 1 })
       expect(console.debug).toHaveBeenCalledWith('[test-service] debug message', { extra: 1 })
-      
+
       logger.info('info message')
       expect(console.info).toHaveBeenCalledWith('[test-service] info message', undefined)
-      
+
       logger.warn('warning')
       expect(console.warn).toHaveBeenCalledWith('[test-service] warning', undefined)
-      
+
       const error = new Error('test error')
       logger.error('error occurred', error, { context: 'test' })
-      expect(console.error).toHaveBeenCalledWith(
-        '[test-service] error occurred',
-        error,
-        { context: 'test' }
-      )
+      expect(console.error).toHaveBeenCalledWith('[test-service] error occurred', error, {
+        context: 'test',
+      })
     })
   })
 })
@@ -303,7 +302,7 @@ describe('Math Utilities', () => {
       const scores = [0.8, 0.85, 0.9, 0.82, 0.88]
       const [lower95, upper95] = confidenceInterval(scores, 0.95)
       const [lower99, upper99] = confidenceInterval(scores, 0.99)
-      
+
       // 99% CI should be wider
       expect(upper99 - lower99).toBeGreaterThan(upper95 - lower95)
     })
@@ -318,12 +317,12 @@ describe('Pareto Optimization', () => {
         { id: '2', score: 0.7, cost: 0.02 },
         { id: '3', score: 0.6, cost: 0.03 }, // Dominated by #2
         { id: '4', score: 0.9, cost: 0.05 },
-        { id: '5', score: 0.8, cost: 0.08 } // Dominated by #4
+        { id: '5', score: 0.8, cost: 0.08 }, // Dominated by #4
       ]
-      
+
       const frontier = findParetoFrontier(points)
       expect(frontier).toHaveLength(3)
-      expect(frontier.map(p => p.id)).toEqual(['1', '2', '4'])
+      expect(frontier.map((p) => p.id)).toEqual(['1', '2', '4'])
     })
 
     it('should handle single point', () => {
@@ -347,31 +346,32 @@ describe('Retry Logic', () => {
     it('should succeed on first try', async () => {
       const fn = vi.fn().mockResolvedValue('success')
       const result = await retryWithBackoff(fn)
-      
+
       expect(result).toBe('success')
       expect(fn).toHaveBeenCalledTimes(1)
     })
 
     it('should retry on failure', async () => {
-      const fn = vi.fn()
+      const fn = vi
+        .fn()
         .mockRejectedValueOnce(new Error('fail 1'))
         .mockRejectedValueOnce(new Error('fail 2'))
         .mockResolvedValue('success')
-      
+
       const promise = retryWithBackoff(fn, 3, 100)
-      
+
       // First attempt
       await vi.advanceTimersByTimeAsync(0)
       expect(fn).toHaveBeenCalledTimes(1)
-      
+
       // Second attempt after 100ms
       await vi.advanceTimersByTimeAsync(100)
       expect(fn).toHaveBeenCalledTimes(2)
-      
+
       // Third attempt after 200ms more
       await vi.advanceTimersByTimeAsync(200)
       expect(fn).toHaveBeenCalledTimes(3)
-      
+
       const result = await promise
       expect(result).toBe('success')
     })
@@ -379,7 +379,7 @@ describe('Retry Logic', () => {
     it('should not retry non-retryable errors', async () => {
       const error = new PromptDialError('TEST', 'message', 400, false)
       const fn = vi.fn().mockRejectedValue(error)
-      
+
       await expect(retryWithBackoff(fn)).rejects.toThrow(error)
       expect(fn).toHaveBeenCalledTimes(1)
     })
@@ -387,12 +387,12 @@ describe('Retry Logic', () => {
     it('should throw last error after max retries', async () => {
       const error = new Error('persistent failure')
       const fn = vi.fn().mockRejectedValue(error)
-      
+
       const promise = retryWithBackoff(fn, 2, 100)
-      
+
       await vi.advanceTimersByTimeAsync(0)
       await vi.advanceTimersByTimeAsync(100)
-      
+
       await expect(promise).rejects.toThrow(error)
       expect(fn).toHaveBeenCalledTimes(2)
     })
@@ -400,20 +400,20 @@ describe('Retry Logic', () => {
     it('should use exponential backoff', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('fail'))
       const promise = retryWithBackoff(fn, 4, 100)
-      
+
       // Delays should be: 100ms, 200ms, 400ms
       await vi.advanceTimersByTimeAsync(0)
       expect(fn).toHaveBeenCalledTimes(1)
-      
+
       await vi.advanceTimersByTimeAsync(100)
       expect(fn).toHaveBeenCalledTimes(2)
-      
+
       await vi.advanceTimersByTimeAsync(200)
       expect(fn).toHaveBeenCalledTimes(3)
-      
+
       await vi.advanceTimersByTimeAsync(400)
       expect(fn).toHaveBeenCalledTimes(4)
-      
+
       await expect(promise).rejects.toThrow()
     })
   })
