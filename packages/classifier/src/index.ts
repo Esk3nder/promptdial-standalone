@@ -26,39 +26,53 @@ const TASK_PATTERNS: Record<TaskType, RegExp[]> = {
     /\b(solve|calculate|compute|find|determine)\b.*\b(equation|math|number|value|result)\b/i,
     /\b(if|given|when).*\b(equals?|=)\b/i,
     /\b\d+\s*[\+\-\*\/]\s*\d+\b/,
-    /\b(algebra|geometry|calculus|arithmetic)\b/i,
+    /\b(algebra|geometry|calculus|arithmetic|statistics|probability)\b/i,
+    /\b(prove|derive|demonstrate|verify)\b.*\b(theorem|formula|equation)\b/i,
+    /\b(optimize|minimize|maximize|constraint)\b/i,
   ],
   code_generation: [
-    /\b(write|create|implement|code|program)\b.*\b(function|class|method|algorithm|script)\b/i,
-    /\b(python|javascript|java|cpp|golang|rust)\b/i,
-    /\b(debug|fix|refactor|optimize)\s+.*code\b/i,
-    /\b(api|database|server|frontend|backend)\b.*\bimplement/i,
+    /\b(write|create|implement|code|program|develop)\b.*\b(function|class|method|algorithm|script|app)\b/i,
+    /\b(python|javascript|typescript|java|cpp|golang|rust|react|node)\b/i,
+    /\b(debug|fix|refactor|optimize|test)\s+.*code\b/i,
+    /\b(api|database|server|frontend|backend|fullstack)\b.*\b(implement|create|build)\b/i,
+    /\b(architecture|design\s+pattern|microservice|monolith)\b/i,
+    /\b(unit\s+test|integration|e2e|testing)\b/i,
   ],
   creative_writing: [
-    /\b(write|create|compose)\b.*\b(story|poem|essay|article|blog|narrative)\b/i,
-    /\b(creative|fiction|imaginative|narrative)\b/i,
-    /\b(character|plot|theme|setting)\b.*\b(develop|create)\b/i,
+    /\b(write|create|compose|craft|author)\b.*\b(story|poem|essay|article|blog|narrative|script)\b/i,
+    /\b(creative|fiction|imaginative|narrative|literary)\b/i,
+    /\b(character|plot|theme|setting|dialogue|scene)\b.*\b(develop|create|write)\b/i,
+    /\b(tone|voice|style|mood|atmosphere)\b/i,
+    /\b(metaphor|simile|imagery|symbolism)\b/i,
   ],
   data_analysis: [
-    /\b(analyze|interpret|examine)\b.*\b(data|statistics|metrics|trends)\b/i,
-    /\b(correlation|regression|distribution|visualization)\b/i,
-    /\b(insights?|patterns?|findings?)\b.*\bdata\b/i,
+    /\b(analyze|interpret|examine|explore|investigate)\b.*\b(data|statistics|metrics|trends|patterns)\b/i,
+    /\b(correlation|regression|distribution|visualization|clustering)\b/i,
+    /\b(insights?|patterns?|findings?|anomalies?)\b.*\bdata\b/i,
+    /\b(machine\s+learning|ml|ai|predictive|model)\b/i,
+    /\b(dashboard|report|visualization|chart|graph)\b/i,
   ],
   summarization: [
-    /\b(summarize|summary|brief|condense|shorten)\b/i,
-    /\b(key\s+points?|main\s+ideas?|highlights?)\b/i,
+    /\b(summarize|summary|brief|condense|shorten|distill|synthesize)\b/i,
+    /\b(key\s+points?|main\s+ideas?|highlights?|takeaways?)\b/i,
     /\btl;?dr\b/i,
+    /\b(abstract|overview|synopsis|digest)\b/i,
+    /\b(essence|gist|core\s+message)\b/i,
   ],
   translation: [
-    /\b(translate|translation)\b.*\b(from|to|into)\b/i,
-    /\b(english|spanish|french|german|chinese|japanese)\b.*\b(to|into)\b/i,
+    /\b(translate|translation|convert)\b.*\b(from|to|into|between)\b/i,
+    /\b(english|spanish|french|german|chinese|japanese|korean|arabic)\b.*\b(to|into|from)\b/i,
     /\bconvert.*language\b/i,
+    /\b(localize|localization|internationalize)\b/i,
+    /\b(interpret|interpretation)\b.*\blanguages?\b/i,
   ],
   general_qa: [], // Default fallback
   classification: [
-    /\b(classify|categorize|identify|label|group)\b/i,
-    /\b(type|category|class|kind|sort)\s+of\b/i,
-    /\bwhich\s+(type|category|class|kind)\b/i,
+    /\b(classify|categorize|identify|label|group|sort|organize)\b/i,
+    /\b(type|category|class|kind|sort|taxonomy)\s+of\b/i,
+    /\bwhich\s+(type|category|class|kind|group)\b/i,
+    /\b(taxonomy|ontology|hierarchy|clustering)\b/i,
+    /\b(detect|recognize|distinguish)\b.*\b(pattern|type|category)\b/i,
   ],
   general: [], // Most generic fallback
 }
@@ -121,14 +135,17 @@ export class TaskRiskClassifier {
     const startTime = Date.now()
 
     try {
-      // Detect task type
+      // Detect task type with cognitive profiling
       const taskType = this.detectTaskType(prompt)
+      
+      // Analyze cognitive requirements
+      const cognitiveProfile = this.analyzeCognitiveProfile(prompt, taskType)
 
       // Detect domain
       const domain = this.detectDomain(prompt)
 
-      // Calculate complexity
-      const complexity = this.calculateComplexity(prompt)
+      // Calculate complexity with enhanced metrics
+      const complexity = this.calculateComplexity(prompt, cognitiveProfile)
 
       // Assess safety risk
       const safetyRisk = this.assessSafetyRisk(prompt)
@@ -136,8 +153,8 @@ export class TaskRiskClassifier {
       // Determine if retrieval is needed
       const needsRetrieval = this.needsRetrieval(prompt, taskType)
 
-      // Suggest techniques based on classification
-      const suggestedTechniques = this.suggestTechniques(taskType, complexity, needsRetrieval)
+      // Suggest techniques based on cognitive profile
+      const suggestedTechniques = this.suggestTechniques(taskType, complexity, needsRetrieval, cognitiveProfile)
 
       const classification: TaskClassification = {
         task_type: taskType,
@@ -149,7 +166,7 @@ export class TaskRiskClassifier {
       }
 
       const latency = Date.now() - startTime
-      logger.info(`Classified prompt in ${latency}ms`, { classification })
+      logger.info(`Classified prompt in ${latency}ms`, { classification, cognitiveProfile })
 
       return classification
     } catch (error) {
@@ -192,7 +209,7 @@ export class TaskRiskClassifier {
     return 'general'
   }
 
-  private calculateComplexity(prompt: string): number {
+  private calculateComplexity(prompt: string, cognitiveProfile: string): number {
     const lowerPrompt = prompt.toLowerCase()
     let complexityScore = 0.5 // Start with medium
 
@@ -210,12 +227,36 @@ export class TaskRiskClassifier {
       }
     }
 
+    // Adjust based on cognitive profile
+    const profileComplexity: Record<string, number> = {
+      'full-spectrum-cognitive': 0.9,
+      'analytical-synthetic': 0.8,
+      'creative-abstract': 0.75,
+      'critical-analytical': 0.7,
+      'generative-creative': 0.65,
+      'analytical-exploratory': 0.6,
+      'task-focused': 0.5,
+    }
+    
+    const profileScore = profileComplexity[cognitiveProfile] || 0.5
+    complexityScore = (complexityScore + profileScore) / 2
+
     // Adjust based on prompt length
     const wordCount = prompt.split(/\s+/).length
     if (wordCount > 100) {
       complexityScore += 0.1
     } else if (wordCount < 20) {
       complexityScore -= 0.1
+    }
+
+    // Check for multi-step or conditional logic
+    if (/\b(then|after|before|first|second|finally|step)\b/i.test(lowerPrompt)) {
+      complexityScore += 0.1
+    }
+    
+    // Check for abstract concepts
+    if (/\b(concept|theory|principle|philosophy|abstract)\b/i.test(lowerPrompt)) {
+      complexityScore += 0.05
     }
 
     // Normalize to 0-1 range
@@ -254,56 +295,131 @@ export class TaskRiskClassifier {
     return retrievalIndicators.some((pattern) => pattern.test(lowerPrompt))
   }
 
+  private analyzeCognitiveProfile(prompt: string, taskType: TaskType): string {
+    const lowerPrompt = prompt.toLowerCase()
+    
+    // Analyze thinking patterns required
+    const requiresAnalysis = /\b(analyze|examine|investigate|explore|understand|explain)\b/i.test(lowerPrompt)
+    const requiresSynthesis = /\b(create|generate|design|build|compose|combine)\b/i.test(lowerPrompt)
+    const requiresEvaluation = /\b(evaluate|assess|judge|compare|critique|review)\b/i.test(lowerPrompt)
+    const requiresAbstraction = /\b(conceptualize|abstract|generalize|theorize|model)\b/i.test(lowerPrompt)
+    
+    // Determine cognitive profile
+    if (requiresAnalysis && requiresSynthesis && requiresEvaluation) {
+      return 'full-spectrum-cognitive'
+    } else if (requiresAnalysis && requiresSynthesis) {
+      return 'analytical-synthetic'
+    } else if (requiresSynthesis && requiresAbstraction) {
+      return 'creative-abstract'
+    } else if (requiresAnalysis && requiresEvaluation) {
+      return 'critical-analytical'
+    } else if (requiresSynthesis) {
+      return 'generative-creative'
+    } else if (requiresAnalysis) {
+      return 'analytical-exploratory'
+    } else {
+      return 'task-focused'
+    }
+  }
+
   private suggestTechniques(
     taskType: TaskType,
     complexity: number,
     needsRetrieval: boolean,
+    cognitiveProfile: string,
   ): string[] {
     const techniques: string[] = []
 
-    // Base technique selection on task type
+    // Ultra-Think cognitive technique mapping
+    const cognitiveMapping: Record<string, string[]> = {
+      'full-spectrum-cognitive': [
+        TECHNIQUES.TREE_OF_THOUGHT,
+        TECHNIQUES.SELF_CONSISTENCY,
+        TECHNIQUES.DSPY_GRIPS,
+      ],
+      'analytical-synthetic': [
+        TECHNIQUES.FEW_SHOT_COT,
+        TECHNIQUES.AUTO_DICOT,
+        TECHNIQUES.REACT,
+      ],
+      'creative-abstract': [
+        TECHNIQUES.TREE_OF_THOUGHT,
+        TECHNIQUES.UNIVERSAL_SELF_PROMPT,
+        TECHNIQUES.DSPY_APE,
+      ],
+      'critical-analytical': [
+        TECHNIQUES.SELF_CONSISTENCY,
+        TECHNIQUES.FEW_SHOT_COT,
+        TECHNIQUES.AUTO_DICOT,
+      ],
+      'generative-creative': [
+        TECHNIQUES.TREE_OF_THOUGHT,
+        TECHNIQUES.UNIVERSAL_SELF_PROMPT,
+      ],
+      'analytical-exploratory': [
+        TECHNIQUES.FEW_SHOT_COT,
+        TECHNIQUES.REACT,
+      ],
+      'task-focused': [
+        TECHNIQUES.FEW_SHOT_COT,
+      ],
+    }
+
+    // Apply cognitive profile techniques
+    const profileTechniques = cognitiveMapping[cognitiveProfile] || []
+    techniques.push(...profileTechniques)
+
+    // Enhanced task-specific techniques  
     switch (taskType) {
       case 'math_reasoning':
-        techniques.push(TECHNIQUES.FEW_SHOT_COT)
-        techniques.push(TECHNIQUES.SELF_CONSISTENCY)
-        if (complexity > 0.7) {
+        if (!techniques.includes(TECHNIQUES.SELF_CONSISTENCY)) {
+          techniques.push(TECHNIQUES.SELF_CONSISTENCY)
+        }
+        if (complexity > 0.7 && !techniques.includes(TECHNIQUES.TREE_OF_THOUGHT)) {
           techniques.push(TECHNIQUES.TREE_OF_THOUGHT)
         }
         break
 
       case 'code_generation':
-        techniques.push(TECHNIQUES.FEW_SHOT_COT)
-        techniques.push(TECHNIQUES.REACT)
-        if (complexity > 0.6) {
+        if (!techniques.includes(TECHNIQUES.REACT)) {
+          techniques.push(TECHNIQUES.REACT)
+        }
+        if (complexity > 0.6 && !techniques.includes(TECHNIQUES.DSPY_APE)) {
           techniques.push(TECHNIQUES.DSPY_APE)
         }
         break
 
       case 'creative_writing':
-        techniques.push(TECHNIQUES.TREE_OF_THOUGHT)
-        techniques.push(TECHNIQUES.UNIVERSAL_SELF_PROMPT)
+        if (!techniques.includes(TECHNIQUES.TREE_OF_THOUGHT)) {
+          techniques.push(TECHNIQUES.TREE_OF_THOUGHT)
+        }
+        if (!techniques.includes(TECHNIQUES.UNIVERSAL_SELF_PROMPT)) {
+          techniques.push(TECHNIQUES.UNIVERSAL_SELF_PROMPT)
+        }
         break
 
       case 'data_analysis':
-        techniques.push(TECHNIQUES.AUTO_DICOT)
-        techniques.push(TECHNIQUES.SELF_CONSISTENCY)
+        if (!techniques.includes(TECHNIQUES.AUTO_DICOT)) {
+          techniques.push(TECHNIQUES.AUTO_DICOT)
+        }
+        if (complexity > 0.7 && !techniques.includes(TECHNIQUES.DSPY_GRIPS)) {
+          techniques.push(TECHNIQUES.DSPY_GRIPS)
+        }
         break
-
-      default:
-        techniques.push(TECHNIQUES.FEW_SHOT_COT)
     }
 
     // Add retrieval-based technique if needed
-    if (needsRetrieval) {
+    if (needsRetrieval && !techniques.includes(TECHNIQUES.IRCOT)) {
       techniques.push(TECHNIQUES.IRCOT)
     }
 
     // Add advanced techniques for high complexity
-    if (complexity > 0.8 && !techniques.includes(TECHNIQUES.DSPY_GRIPS)) {
+    if (complexity > 0.85 && !techniques.includes(TECHNIQUES.DSPY_GRIPS)) {
       techniques.push(TECHNIQUES.DSPY_GRIPS)
     }
 
-    return techniques
+    // Remove duplicates and limit techniques
+    return [...new Set(techniques)].slice(0, 5)
   }
 }
 
@@ -318,6 +434,7 @@ export async function handleClassifyRequest(
     const classification = await classifier.classify(request.payload.prompt)
     return createServiceResponse(request, classification)
   } catch (error) {
+    logger.error('Classification failed', error as Error)
     const serviceError = createServiceError(
       ERROR_CODES.INTERNAL_ERROR,
       'Classification failed',
