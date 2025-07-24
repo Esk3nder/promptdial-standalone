@@ -17,7 +17,6 @@ export function PromptForm({ onSubmit, isLoading, error }: PromptFormProps) {
   const [level, setLevel] = useState<'basic' | 'advanced' | 'expert'>('advanced')
   const [taskType, setTaskType] = useState<string | undefined>(undefined)
   const [validationError, setValidationError] = useState<string>('')
-  const [activeTab, setActiveTab] = useState<'instant' | 'deep'>('instant')
   const [chainOfThought, setChainOfThought] = useState(false)
   
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -62,7 +61,7 @@ export function PromptForm({ onSubmit, isLoading, error }: PromptFormProps) {
     const request: OptimizationRequest = {
       prompt: prompt.trim(),
       targetModel: model,
-      optimizationLevel: activeTab === 'deep' ? 'expert' : level,
+      optimizationLevel: level,
       ...(taskType && taskType !== 'undefined' && { taskType: taskType as any }),
       ...(chainOfThought && { chainOfThought }),
     }
@@ -97,23 +96,6 @@ export function PromptForm({ onSubmit, isLoading, error }: PromptFormProps) {
         </div>
       </div>
       
-      {/* Tabs */}
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'instant' ? styles.active : ''}`}
-          onClick={() => setActiveTab('instant')}
-        >
-          Instant Prompt
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'deep' ? styles.active : ''}`}
-          onClick={() => setActiveTab('deep')}
-        >
-          Deep Prompting
-        </button>
-      </div>
       
       {/* Configuration */}
       <div className={styles.configSection}>
@@ -132,6 +114,28 @@ export function PromptForm({ onSubmit, isLoading, error }: PromptFormProps) {
             className={styles.select}
           >
             {MODEL_OPTIONS.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Optimization Level */}
+        <div className={styles.formGroup}>
+          <label htmlFor="level" className={styles.label}>
+            Optimization Level
+          </label>
+          <select
+            id="level"
+            name="level"
+            value={level}
+            onChange={(e) => setLevel(e.target.value as 'basic' | 'advanced' | 'expert')}
+            disabled={isLoading}
+            aria-label="Select optimization level"
+            className={styles.select}
+          >
+            {LEVEL_OPTIONS.map(option => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>

@@ -4,41 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Essential Commands
 
-### Testing
+### Development & Testing
 ```bash
-# Run all tests
-npm test
+# Setup and install
+npm run setup              # Clean and install all dependencies
+npm run install:all        # Install root and workspace dependencies
 
-# Run tests with coverage report
-npm run test:coverage
+# Development servers
+npm start                  # Start standalone server (port 3000)
+npm run dev                # Start core development server
+npm run start:ui           # Start UI development server
 
-# Run a single test file
-npx vitest tests/index.test.ts
+# Testing
+npm test                   # Run all workspace tests
+npm run test:coverage      # Run tests with coverage report
+npx vitest tests/index.test.ts  # Run a single test file
+npx vitest --watch         # Run tests in watch mode
+npm run test:performance   # Run performance benchmarks
 
-# Run tests in watch mode
-npx vitest --watch
-
-# Run performance benchmarks
-npm run test:performance
+# Code quality
+npm run lint               # ESLint check
+npm run lint:fix           # Fix ESLint issues  
+npm run format             # Prettier format
+npm run format:check       # Check formatting
+npm run build              # Build all packages
 ```
 
-### Development
+### Service-Specific Testing
 ```bash
-# Build TypeScript to JavaScript
-npm run build
+# Test individual services
+cd services/api-gateway && npm test
+cd services/classifier && npm test
+cd services/evaluator && npm test
+# etc. for other services
+```
 
-# Run demo in watch mode
-npm run dev
+### Docker Development
+```bash
+# Start all services
+docker-compose up
 
-# Pre-publish checks (build + test)
-npm run prepublishOnly
+# Start specific service
+docker-compose up api-gateway
+
+# Rebuild containers
+docker-compose build
 ```
 
 ## Architecture Overview
 
-PromptDial follows a facade pattern with clear separation of concerns:
+PromptDial 2.0 is a microservices-based prompt optimization platform that automatically enhances AI prompts using advanced techniques.
 
-### Core Components
+### Microservices Architecture
+
+The system consists of 8+ specialized services communicating via HTTP:
+
+1. **API Gateway** (port 3000) - Central orchestration and request routing
+2. **Classifier** (3001) - Task classification and routing decisions
+3. **Telemetry** (3002) - Monitoring, metrics, and observability
+4. **Technique Engine** (3003) - Implements optimization strategies (Few-Shot CoT, ReAct, Tree of Thoughts, etc.)
+5. **Retrieval Hub** (3004) - Vector store integration for context retrieval
+6. **Evaluator** (3005) - Quality assessment using G-EVAL, ChatEval, Role-Debate
+7. **Safety Guard** (3006) - Security validation with 30+ injection prevention patterns
+8. **Optimizer** (3007) - Pareto optimization balancing quality/cost/latency
+9. **LLM Runners** (400x) - Model-specific execution engines
+
+### Core Library Components
+
+The main package (`packages/core`) follows a facade pattern:
 
 1. **PromptDial** (src/index.ts) - Main API facade
    - Orchestrates the optimization pipeline
@@ -55,6 +88,10 @@ PromptDial follows a facade pattern with clear separation of concerns:
    - Provides improvement suggestions
    - Calculates overall quality scores
 
+4. **AIMetaPromptDesigner** (src/ai-meta-prompt-designer.ts) - AI-powered optimization
+   - Uses LLMs to generate advanced optimizations
+   - Implements multi-model strategies
+
 ### Type System
 
 The codebase is strongly typed with key interfaces:
@@ -63,18 +100,12 @@ The codebase is strongly typed with key interfaces:
 - `ValidationResult` - Quality assessment with scores and suggestions
 - `QualityFactors` - Detailed scoring across all dimensions
 
-### Multi-Model Architecture
-
-Each target model (GPT-4, Claude-3, Gemini) receives tailored optimizations:
-- Model-specific prompt structures
-- Optimized instruction formats
-- Targeted feature utilization
-
 ## Testing Architecture
 
-### Framework: Vitest
+### Framework: Vitest with Supertest
 - BDD-style tests with describe/it blocks
 - Global test functions enabled
+- API testing with supertest for service endpoints
 - Coverage excludes: node_modules/, tests/, src/demo.ts
 
 ### Testing Patterns
@@ -84,62 +115,55 @@ Each target model (GPT-4, Claude-3, Gemini) receives tailored optimizations:
    - Mock dependencies when needed
    - Validate error handling
 
-2. **Integration Tests**: Main API tested end-to-end
-   - Multiple optimization levels
-   - Different model targets
-   - Quality validation flows
+2. **Integration Tests**: Service APIs tested end-to-end
+   - HTTP request/response validation
+   - Inter-service communication testing
+   - Error propagation across services
 
-3. **Test Structure**:
-```typescript
-describe('Component', () => {
-  it('should handle specific case', async () => {
-    // Arrange
-    const input = { /* test data */ }
-    
-    // Act
-    const result = await component.method(input)
-    
-    // Assert
-    expect(result).toMatchExpectedStructure()
-  })
-})
-```
+3. **Performance Tests**: Benchmark optimization strategies
+   - Measure optimization time
+   - Track quality improvements
+   - Monitor resource usage
 
 ## Development Workflow
 
+### Environment Setup
+```bash
+# Required environment variables
+OPENAI_API_KEY=your-key-here
+ANTHROPIC_API_KEY=your-key-here
+GOOGLE_API_KEY=your-key-here
+NODE_ENV=development
+```
+
 ### TypeScript Configuration
-- Target: ES2020, Module: CommonJS
+- Target: ES2020, Module: CommonJS  
 - Strict mode enabled - no implicit any
 - Source maps for debugging
 - Declaration files for type support
 
-### Error Handling
-Custom error classes for different failure modes:
-- Input validation errors
-- Optimization failures
-- Model-specific issues
+### Code Quality Standards
+- ESLint with max complexity of 6
+- Prettier for consistent formatting
+- Husky pre-commit hooks with lint-staged
+- No console.log in production code
 
-### Code Organization
-- Pure functions where possible
-- Dependency injection for testability
-- Clear public/private method separation
-- Comprehensive JSDoc comments for public APIs
+### Service Communication
+Services communicate via HTTP REST APIs:
+- Request/response JSON format
+- Standardized error responses
+- Health check endpoints at `/health`
+- Metrics endpoints at `/metrics`
 
-### Publishing Workflow
-1. Make changes and test locally
-2. Run `npm run prepublishOnly` to verify
-3. Use `npm version` to bump version (triggers git hooks)
-4. Publish with `npm publish`
-
-### Current Development Focus
-- Expanding testing infrastructure (src/testing/)
-- Adding API testing capabilities
-- Performance benchmarking tools
-- Web UI for local testing (packages/ui)
+### Debugging Tips
+1. Use service logs: `docker-compose logs -f [service-name]`
+2. Check health endpoints: `curl http://localhost:3000/health`
+3. Enable debug mode: `DEBUG=promptdial:* npm start`
+4. Use Chrome DevTools for Node.js debugging
 
 ## UI Development
 
-The project now includes a web UI for testing PromptDial locally:
+The project includes a React-based web UI for testing:
 
 ### Running the UI
 ```bash
@@ -148,16 +172,26 @@ cd packages/ui
 npm run dev
 ```
 
-### UI Testing
-```bash
-# Run UI tests
-cd packages/ui
-npm test
-```
-
 ### UI Architecture
 - React 18 with TypeScript
 - Vite for development
 - CSS Modules (no Tailwind)
 - Accessibility-first design
 - TDD with Vitest
+
+## Common Troubleshooting
+
+### Service Connection Issues
+- Ensure all services are running: `docker-compose ps`
+- Check service logs for errors
+- Verify port availability (3000-3007, 400x)
+
+### Build Failures
+- Clear node_modules: `npm run clean`
+- Reinstall dependencies: `npm run setup`
+- Check Node.js version (18+ required)
+
+### Test Failures
+- Run single test in debug mode: `npx vitest --reporter=verbose [test-file]`
+- Check for missing environment variables
+- Ensure services are accessible for integration tests
