@@ -111,35 +111,6 @@
             margin-bottom: 1rem;
         }
         
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 1.5rem;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 0.75rem;
-            text-align: center;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #6b7280;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        
-        .tab.active {
-            color: #1e3a8a;
-            border-bottom-color: #1e3a8a;
-        }
-        
-        .tab:hover:not(.active) {
-            color: #374151;
-        }
         
         /* Form Elements */
         .form-group {
@@ -508,11 +479,6 @@
                     ></textarea>
                 </div>
                 
-                <!-- Tabs -->
-                <div class="tabs">
-                    <button type="button" class="tab active" data-tab="instant">Instant Prompt</button>
-                    <button type="button" class="tab" data-tab="deep">Deep Prompting</button>
-                </div>
                 
                 <!-- Configuration -->
                 <div class="config-section">
@@ -524,6 +490,15 @@
                             <option value="claude-3-sonnet">Claude 3 Sonnet</option>
                             <option value="gpt-4">GPT-4</option>
                             <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="level">Optimization Level</label>
+                        <select id="level" name="level">
+                            <option value="basic">Basic</option>
+                            <option value="advanced" selected>Advanced</option>
+                            <option value="expert">Expert</option>
                         </select>
                     </div>
                     
@@ -585,14 +560,6 @@
         const toggleSwitch = document.getElementById('toggleCot');
         const cotCheckbox = document.getElementById('chainOfThought');
         
-        // Tab switching
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-            });
-        });
         
         // Toggle switch
         toggleSwitch.addEventListener('click', () => {
@@ -605,12 +572,11 @@
             e.preventDefault();
             
             const formData = new FormData(form);
-            const activeTab = document.querySelector('.tab.active').dataset.tab;
             
             const request = {
                 prompt: formData.get('prompt'),
                 targetModel: formData.get('model'),
-                optimizationLevel: activeTab === 'deep' ? 'expert' : 'advanced',
+                optimizationLevel: formData.get('level'),
                 outputFormat: formData.get('outputFormat'),
                 chainOfThought: formData.get('chainOfThought') === 'on'
             };
