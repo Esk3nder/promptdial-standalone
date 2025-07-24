@@ -1,5 +1,6 @@
-import OpenAI from 'openai'
+import { OpenAIProvider } from '@promptdial/llm-runner'
 import type { TestResult } from '../types'
+import type { PromptVariant, LLMProviderConfig } from '@promptdial/shared'
 
 export async function testOpenAI(prompt: string): Promise<TestResult> {
   const apiKey = process.env.OPENAI_API_KEY
@@ -13,24 +14,44 @@ export async function testOpenAI(prompt: string): Promise<TestResult> {
     }
   }
 
-  const openai = new OpenAI({ apiKey })
-  
+  // Create configuration for the OpenAI provider
+  const config: LLMProviderConfig = {
+    api_key: apiKey,
+    model: 'gpt-4o-mini',
+    max_tokens: 500,
+    temperature: 0.7
+  }
+
+  // Create a PromptVariant from the simple prompt string
+  const variant: PromptVariant = {
+    id: 'test-variant',
+    technique: 'test',
+    prompt: prompt,
+    temperature: 0.7,
+    est_tokens: 100,
+    cost_usd: 0.001,
+    model: 'gpt-4o-mini',
+    model_params: {
+      temperature: 0.7,
+      max_tokens: 500
+    }
+  }
+
   const startTime = Date.now()
   
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
-      temperature: 0.7
-    })
+    // Use the consolidated OpenAI provider
+    const provider = new OpenAIProvider(config)
+    const response = await provider.call(variant)
     
     const endTime = Date.now()
     
+    // Convert LLMResponse back to TestResult
     return {
       responseTime: endTime - startTime,
-      tokenCount: response.usage?.total_tokens || 0,
-      responseText: response.choices[0]?.message?.content || ''
+      tokenCount: response.tokens_used,
+      responseText: response.content,
+      error: response.error
     }
   } catch (error) {
     const endTime = Date.now()

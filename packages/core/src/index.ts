@@ -39,14 +39,13 @@ export class PromptDial {
     
     // Use AI designer if enabled and API keys are available
     if (this.options.useAI && this.hasAPIKeys()) {
-      console.log('🤖 PromptDial: Using AI-powered optimization (AIMetaPromptDesigner)')
-      console.log('Available AI providers:', this.getAvailableProviders())
+      // AI-powered optimization enabled
       this.designer = new AIMetaPromptDesigner()
     } else {
-      console.log('📝 PromptDial: Using basic optimization (MetaPromptDesigner)')
+      // Basic optimization mode
       this.designer = new MetaPromptDesigner()
       if (this.options.useAI) {
-        console.warn('AI optimization requested but no API keys found. Falling back to basic optimization.')
+        // AI optimization requested but no API keys found. Falling back to basic optimization.
       }
     }
     

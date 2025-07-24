@@ -127,34 +127,8 @@ export interface EvaluationResult {
   calibration_error?: number
 }
 
-export interface EvaluatorDrift {
-  timestamp: Date
-  variant_id: string
-  expected_score: number
-  actual_score: number
-  drift_amount: number
-}
 
 // ============= Security Types =============
-
-export interface SecurityCheckResult {
-  is_safe: boolean
-  risk_score: number
-  violations: string[]
-  sanitized_prompt?: string
-  redacted_sections?: Array<{
-    start: number
-    end: number
-    reason: string
-  }>
-}
-
-export interface SecurityPolicy {
-  level: SecurityLevel
-  forbidden_patterns: RegExp[]
-  max_prompt_length: number
-  require_sandbox: boolean
-}
 
 // ============= Telemetry Types =============
 
@@ -198,26 +172,17 @@ export interface ServiceResponse<T = any> {
   service: string
   success: boolean
   data?: T
-  error?: ServiceError
+  error?: {
+    code: string
+    message: string
+    details?: any
+    retryable: boolean
+  }
 }
 
-export interface ServiceError {
-  code: string
-  message: string
-  details?: any
-  retryable: boolean
-}
 
 // ============= Configuration Types =============
 
-export interface ServiceConfig {
-  name: string
-  version: string
-  port: number
-  dependencies: string[]
-  health_check_path: string
-  metrics_path: string
-}
 
 export interface LLMProviderConfig {
   provider: 'openai' | 'anthropic' | 'google' | 'cohere'
@@ -231,14 +196,6 @@ export interface LLMProviderConfig {
   }
 }
 
-export interface ServiceHealth {
-  healthy: boolean
-  service: string
-  version: string
-  uptime: number
-  details?: Record<string, any>
-  timestamp?: Date
-}
 
 // ============= Vector Store Types =============
 
