@@ -28,6 +28,35 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
       },
+      output: {
+        manualChunks: {
+          // Vendor chunks for better caching
+          vendor: ['react', 'react-dom'],
+          // PromptDial core functionality
+          promptdial: ['promptdial'],
+          // Chart libraries (if used)
+          charts: ['chart.js', 'recharts'].filter(pkg => {
+            try {
+              require.resolve(pkg)
+              return true
+            } catch {
+              return false
+            }
+          })
+        }
+      }
     },
+    // Optimize build output
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    // Enable source maps for debugging
+    sourcemap: false, // Disable in production for smaller bundles
+    // Set chunk size warning limit
+    chunkSizeWarningLimit: 1000
   },
 })

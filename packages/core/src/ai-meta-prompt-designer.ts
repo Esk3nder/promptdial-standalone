@@ -77,7 +77,7 @@ export class AIMetaPromptDesigner {
       try {
         return JSON.parse(cleanedJson)
       } catch (e2) {
-        console.error('Failed to parse cleaned JSON:', cleanedJson)
+        // Failed to parse cleaned JSON
         throw new Error(`JSON parsing failed: ${e2 instanceof Error ? e2.message : String(e2)}`)
       }
     }
@@ -177,11 +177,7 @@ For writing tasks specifically:
   }
 
   async generateVariants(request: OptimizationRequest): Promise<OptimizedVariant[]> {
-    console.log('\n🎯 AIMetaPromptDesigner.generateVariants called with:', {
-      prompt: request.prompt.substring(0, 50) + '...',
-      targetModel: request.targetModel,
-      optimizationLevel: request.optimizationLevel
-    })
+    // Generating variants for optimization request
     
     this.validateInput(request)
     
@@ -193,37 +189,37 @@ For writing tasks specifically:
         case 'gpt-4':
         case 'gpt-3.5-turbo':
           if (!openai) throw new Error('OpenAI API key not configured')
-          console.log('🟢 Using OpenAI API for optimization')
+          // Using OpenAI API for optimization
           return await this.generateOpenAIVariants(request, variantCount)
           
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
           if (!anthropic) throw new Error('Anthropic API key not configured')
-          console.log('🟣 Using Anthropic Claude API for optimization')
+          // Using Anthropic Claude API for optimization
           return await this.generateClaudeVariants(request, variantCount)
           
         case 'gemini-pro':
           if (!googleAI) throw new Error('Google AI API key not configured')
-          console.log('🔵 Using Google Gemini API for optimization')
+          // Using Google Gemini API for optimization
           return await this.generateGeminiVariants(request, variantCount)
           
         default:
           // Try available providers in order (Claude first now as requested)
           if (anthropic) {
-            console.log('🟣 Using Anthropic Claude as default provider')
+            // Using Anthropic Claude as default provider
             return await this.generateClaudeVariants(request, variantCount)
           } else if (googleAI) {
-            console.log('🔵 Using Google AI as fallback provider')
+            // Using Google AI as fallback provider
             return await this.generateGeminiVariants(request, variantCount)
           } else if (openai) {
-            console.log('🟢 Using OpenAI as fallback provider')
+            // Using OpenAI as fallback provider
             return await this.generateOpenAIVariants(request, variantCount)
           }
           throw new Error('No AI API keys configured')
       }
     } catch (error) {
-      console.error('❌ AI optimization error:', error)
+      // AI optimization error occurred
       throw new Error(`Failed to generate AI-optimized variants: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
@@ -278,7 +274,7 @@ Generate an optimized version of this prompt. Return your response in the follow
           estimatedTokens: this.estimateTokens(result.optimizedPrompt)
         })
       } catch (error) {
-        console.error(`Error generating OpenAI variant ${i}:`, error)
+        // Error generating OpenAI variant
       }
     }
     
@@ -291,7 +287,7 @@ Generate an optimized version of this prompt. Return your response in the follow
     
     // Detect task type and suggested techniques
     const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
-    console.log(`📊 Detected task type: ${taskType}, Suggested techniques: ${suggestedTechniques.join(', ')}`)
+    // Task type and techniques detected
     
     for (let i = 0; i < count; i++) {
       const userPrompt = `Transform this prompt to enhance reasoning and performance:
@@ -329,7 +325,7 @@ Return JSON with:
 }`
 
       try {
-        console.log(`🟣 Calling Claude API for variant ${i + 1}/${count}...`)
+        // Calling Claude API for variant generation
         const response = await anthropic!.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1000,
@@ -344,7 +340,7 @@ Return JSON with:
         const content = response.content[0]
         if (content.type !== 'text') continue
 
-        console.log(`✅ Claude API response received for variant ${i + 1}`)
+        // Claude API response received
         // Parse the response using our helper
         const result = this.parseJsonResponse(content.text)
         
@@ -356,18 +352,18 @@ Return JSON with:
           modelSpecificFeatures: result.modelSpecificFeatures || [],
           estimatedTokens: this.estimateTokens(result.optimizedPrompt)
         })
-        console.log(`✅ Successfully created Claude variant ${i + 1}`)
+        // Successfully created Claude variant
       } catch (error) {
-        console.error(`❌ Error generating Claude variant ${i}:`, error)
+        // Error generating Claude variant
       }
     }
     
     if (variants.length === 0) {
-      console.error('❌ Failed to generate any Claude variants')
+      // Failed to generate any Claude variants
       throw new Error('Failed to generate any Claude variants')
     }
     
-    console.log(`✅ Generated ${variants.length} Claude variants successfully`)
+    // Claude variants generated successfully
     return variants
   }
 
@@ -410,7 +406,7 @@ Return ONLY a JSON object with this structure:
           estimatedTokens: this.estimateTokens(parsed.optimizedPrompt)
         })
       } catch (error) {
-        console.error(`Error generating Gemini variant ${i}:`, error)
+        // Error generating Gemini variant
       }
     }
     

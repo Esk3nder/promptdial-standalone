@@ -24,11 +24,7 @@ app.post('/api/optimize', async (req, res) => {
   try {
     const request: OptimizationRequest = req.body
     
-    console.log('\n🚀 New optimization request received:', {
-      prompt: request.prompt?.substring(0, 50) + '...',
-      targetModel: request.targetModel,
-      optimizationLevel: request.optimizationLevel
-    })
+    // New optimization request received
     
     // Validate request
     if (!request.prompt || !request.targetModel || !request.optimizationLevel) {
@@ -44,16 +40,10 @@ app.post('/api/optimize', async (req, res) => {
       useAI: true  // Enable AI-powered optimization
     })
     
-    console.log('⚡ Starting optimization...')
+    // Starting optimization
     const result = await promptDial.optimize(request)
     
-    // Log optimization result
-    console.log(`✅ Optimization complete:`, {
-      variantsGenerated: result.variants.length,
-      bestScore: result.summary.bestScore,
-      averageScore: result.summary.averageScore,
-      firstVariantChanges: result.variants[0]?.changes?.length || 0
-    })
+    // Optimization complete
     
     // Add metadata to response
     const enhancedResult = {
@@ -66,7 +56,7 @@ app.post('/api/optimize', async (req, res) => {
     
     return res.json(enhancedResult)
   } catch (error) {
-    console.error('❌ Optimization error:', error)
+    // Optimization error occurred
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed'
     })

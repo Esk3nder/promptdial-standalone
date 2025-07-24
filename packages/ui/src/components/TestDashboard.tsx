@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { PromptInput } from './PromptInput'
-import { LiveTestStatus } from './LiveTestStatus'
-import { ProviderCard } from './ProviderCard'
-import { OptimizedPromptViewer } from './OptimizedPromptViewer'
-import { ComparisonChart } from './ComparisonChart'
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react'
+
+// Lazy load heavy components for better performance
+const PromptInput = lazy(() => import('./PromptInput').then(m => ({ default: m.PromptInput })))
+const LiveTestStatus = lazy(() => import('./LiveTestStatus').then(m => ({ default: m.LiveTestStatus })))
+const ProviderCard = lazy(() => import('./ProviderCard').then(m => ({ default: m.ProviderCard })))
+const OptimizedPromptViewer = lazy(() => import('./OptimizedPromptViewer').then(m => ({ default: m.OptimizedPromptViewer })))
+const ComparisonChart = lazy(() => import('./ComparisonChart').then(m => ({ default: m.ComparisonChart })))
+
 interface TestResult {
   responseTime: number
   tokenCount: number
@@ -28,134 +31,192 @@ interface TestState {
       results: Record<ModelProvider, TestResult>
       quality: number
     }>
-    summary?: {
-      bestVariantIndex: number
-      averageImprovement: {
-        responseTime: number
-        tokenCount: number
-      }
-    }
   }
   error?: string
 }
 
+// Loading fallback component
+const ComponentLoader = () => (
+  <div className="flex items-center justify-center p-4">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+)
+
 export function TestDashboard() {
-  const [state, setState] = useState<TestState>({
+  const [testState, setTestState] = useState<TestState>({
     status: 'idle',
     events: []
   })
-  const eventSourceRef = useRef<EventSource | null>(null)
+  const [testId, setTestId] = useState<string | null>(null)
+  const [eventSource, setEventSource] = useState<EventSource | null>(null)
+  const eventsEndRef = useRef<HTMLDivElement>(null)
 
-  const startTest = async (prompt: string, options: any) => {
-    setState({ status: 'testing', events: [] })
+  // Scroll to bottom when new events arrive
+  useEffect(() => {
+    eventsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [testState.events])
 
+  // Cleanup EventSource on unmount
+  useEffect(() => {
+    return () => {
+      if (eventSource) {
+        eventSource.close()
+      }
+    }
+  }, [eventSource])
+
+  const startTest = async (prompt: string) => {
     try {
-      // Start the test
-      const response = await fetch('http://localhost:3001/api/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, ...options })
+      setTestState({
+        status: 'testing',
+        events: []
       })
 
-      const { testId, streamUrl } = await response.json()
+      // Start the test
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          targetModel: 'gpt-4',
+          optimizationLevel: 'advanced'
+        }),
+      })
 
-      // Connect to SSE stream
-      const eventSource = new EventSource(`http://localhost:3001${streamUrl}`)
-      eventSourceRef.current = eventSource
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data)
+      const data = await response.json()
+      setTestId(data.testId)
+
+      // Set up SSE connection
+      const es = new EventSource(data.streamUrl)
+      setEventSource(es)
+
+      es.onmessage = (event) => {
+        const eventData = JSON.parse(event.data)
         
-        setState(prev => ({
+        setTestState(prev => ({
           ...prev,
-          events: [...prev.events, data]
+          events: [...prev.events, eventData]
         }))
 
-        if (data.type === 'final_results') {
-          setState(prev => ({
+        if (eventData.type === 'final_results') {
+          setTestState(prev => ({
             ...prev,
             status: 'completed',
-            results: data.results
+            results: eventData.results
           }))
-          eventSource.close()
-        } else if (data.type === 'error') {
-          setState(prev => ({
+          es.close()
+        } else if (eventData.type === 'error') {
+          setTestState(prev => ({
             ...prev,
             status: 'error',
-            error: data.error
+            error: eventData.error
           }))
-          eventSource.close()
+          es.close()
         }
       }
 
-      eventSource.onerror = () => {
-        setState(prev => ({
+      es.onerror = (error) => {
+        console.error('EventSource failed:', error)
+        setTestState(prev => ({
           ...prev,
           status: 'error',
           error: 'Connection to server lost'
         }))
-        eventSource.close()
+        es.close()
       }
+
     } catch (error) {
-      setState(prev => ({
-        ...prev,
+      console.error('Failed to start test:', error)
+      setTestState({
         status: 'error',
-        error: error instanceof Error ? error.message : 'Failed to start test'
-      }))
+        events: [],
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      })
     }
   }
 
-  useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-      }
-    }
-  }, [])
-
   return (
     <div className="test-dashboard">
-      <h1>PromptDial Live Testing Dashboard</h1>
-      
-      <PromptInput onSubmit={startTest} disabled={state.status === 'testing'} />
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            PromptDial Testing Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Test and optimize your prompts across different AI providers
+          </p>
+        </div>
 
-      {state.status !== 'idle' && (
-        <LiveTestStatus events={state.events} status={state.status} />
-      )}
+        {/* Input Section */}
+        <div className="mb-8">
+          <Suspense fallback={<ComponentLoader />}>
+            <PromptInput onSubmit={startTest} isDisabled={testState.status === 'testing'} />
+          </Suspense>
+        </div>
 
-      {state.results && (
-        <>
-          <div className="provider-cards">
-            <h2>Provider Performance</h2>
-            <div className="cards-grid">
-              {(['openai', 'anthropic', 'google'] as ModelProvider[]).map(provider => (
-                <ProviderCard
-                  key={provider}
-                  provider={provider}
-                  original={state.results.original[provider]}
-                  optimized={state.results.optimized[state.results.summary?.bestVariantIndex || 0]?.results[provider]}
-                />
+        {/* Status Section */}
+        {testState.status !== 'idle' && (
+          <div className="mb-8">
+            <Suspense fallback={<ComponentLoader />}>
+              <LiveTestStatus 
+                status={testState.status}
+                events={testState.events}
+                error={testState.error}
+              />
+            </Suspense>
+            <div ref={eventsEndRef} />
+          </div>
+        )}
+
+        {/* Results Section */}
+        {testState.results && (
+          <div className="space-y-8">
+            {/* Provider Results */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Object.entries(testState.results.original).map(([provider, result]) => (
+                <Suspense key={provider} fallback={<ComponentLoader />}>
+                  <ProviderCard
+                    provider={provider as ModelProvider}
+                    result={result}
+                    isOriginal={true}
+                  />
+                </Suspense>
               ))}
             </div>
+
+            {/* Optimized Variants */}
+            {testState.results.optimized.map((variant, index) => (
+              <div key={index} className="border rounded-lg p-6 bg-white shadow-sm">
+                <Suspense fallback={<ComponentLoader />}>
+                  <OptimizedPromptViewer
+                    variant={variant.variant}
+                    quality={variant.quality}
+                    results={variant.results}
+                  />
+                </Suspense>
+              </div>
+            ))}
+
+            {/* Comparison Chart */}
+            <div className="mt-8">
+              <Suspense fallback={<ComponentLoader />}>
+                <ComparisonChart
+                  originalResults={testState.results.original}
+                  optimizedResults={testState.results.optimized}
+                />
+              </Suspense>
+            </div>
           </div>
-
-          {state.results.summary && (
-            <ComparisonChart results={state.results} />
-          )}
-
-          <OptimizedPromptViewer
-            variants={state.results.optimized}
-            bestIndex={state.results.summary?.bestVariantIndex || 0}
-          />
-        </>
-      )}
-
-      {state.error && (
-        <div className="error-message">
-          <h3>Error</h3>
-          <p>{state.error}</p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
+
+export default TestDashboard
