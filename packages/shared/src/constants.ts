@@ -3,17 +3,6 @@
  */
 
 // ============= Service Names =============
-export const SERVICES = {
-  API_GATEWAY: 'api-gateway',
-  CLASSIFIER: 'classifier',
-  TECHNIQUE_ENGINE: 'technique-engine',
-  RETRIEVAL_HUB: 'retrieval-hub',
-  SAFETY_GUARD: 'safety-guard',
-  LLM_RUNNER: 'llm-runner',
-  EVALUATOR: 'evaluator',
-  OPTIMIZER: 'optimizer',
-  TELEMETRY: 'telemetry'
-} as const
 
 // ============= Technique Names =============
 export const TECHNIQUES = {
@@ -38,51 +27,10 @@ export const EVALUATORS = {
 } as const
 
 // ============= Security Patterns =============
-export const FORBIDDEN_PREFIXES = [
-  'system:',
-  '>>',
-  '<|',
-  '[[',
-  '{{',
-  'ignore previous',
-  'disregard above',
-  'forget all'
-] as const
-
-export const JAILBREAK_PATTERNS = [
-  /\b(ignore|disregard|forget)\s+(all\s+)?(previous|above|prior)\s+instructions?\b/i,
-  /\bsystem\s*:\s*/i,
-  /\b(act|pretend|imagine)\s+you('re|r|re| are)\s+(.+)\s+instead\b/i,
-  /\bDAN\s+mode\b/i,
-  /\bjailbreak\b/i,
-  /\b(bypass|override|disable)\s+safety\b/i
-]
 
 // ============= Performance Thresholds =============
-export const PERFORMANCE_LIMITS = {
-  MAX_LATENCY_MS: 10000,
-  MAX_TOKENS: 8192,
-  MAX_COST_USD: 5.0,
-  MIN_SCORE: 0.0,
-  MAX_SCORE: 1.0,
-  DRIFT_THRESHOLD: 0.05,
-  CALIBRATION_TARGET: 0.8
-}
 
 // ============= HTTP Status Codes =============
-export const STATUS_CODES = {
-  OK: 200,
-  CREATED: 201,
-  ACCEPTED: 202,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  UNPROCESSABLE_ENTITY: 422,
-  TOO_MANY_REQUESTS: 429,
-  INTERNAL_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503
-} as const
 
 // ============= Error Codes =============
 export const ERROR_CODES = {

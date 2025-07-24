@@ -6,9 +6,10 @@
 
 import {
   PromptVariant,
-  createLogger,
-  SELF_CONSISTENCY_VOTE_PROMPT
+  createLogger
 } from '@promptdial/shared'
+
+import { SELF_CONSISTENCY_VOTE_PROMPT } from '@promptdial/technique-engine'
 
 import { LLMResponse } from './providers/base'
 import { LLMRunner } from './index'

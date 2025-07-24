@@ -12,13 +12,10 @@ import {
   ServiceRequest,
   ServiceResponse,
   TelemetryEvent,
-  createServiceResponse,
-  createServiceError,
   createLogger,
   createTelemetryEvent,
   ERROR_CODES,
   TECHNIQUES,
-  PERFORMANCE_LIMITS,
   getTelemetryService
 } from '@promptdial/shared'
 
@@ -27,6 +24,9 @@ import {
   TECHNIQUE_REGISTRY,
   BaseTechnique
 } from './techniques'
+
+// Re-export constants that other packages need
+export { SELF_CONSISTENCY_VOTE_PROMPT, IRCOT_RETRIEVAL_INSTRUCTION } from './techniques'
 
 const logger = createLogger('technique-engine')
 
@@ -261,12 +261,12 @@ export class TechniqueEngine {
       return false
     }
     
-    // Check limits
-    if (variant.est_tokens > PERFORMANCE_LIMITS.MAX_TOKENS) {
+    // Check limits (using hardcoded values since PERFORMANCE_LIMITS was removed)
+    if (variant.est_tokens > 8192) {
       return false
     }
     
-    if (variant.cost_usd > PERFORMANCE_LIMITS.MAX_COST_USD) {
+    if (variant.cost_usd > 5.0) {
       return false
     }
     
@@ -348,14 +348,25 @@ export async function handleGenerateVariantsRequest(
       trace_id
     )
     
-    return createServiceResponse(request, variants)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: true,
+      data: variants
+    }
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INTERNAL_ERROR,
-      'Failed to generate variants',
-      true
-    )
-    return createServiceResponse(request, undefined, serviceError)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: false,
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Failed to generate variants',
+        retryable: true
+      }
+    }
   }
 }
 
@@ -364,14 +375,24 @@ export async function handleRegisterTechniqueRequest(
 ): Promise<ServiceResponse<void>> {
   try {
     engineInstance.registerTechnique(request.payload)
-    return createServiceResponse(request)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: true
+    }
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INVALID_PARAMETERS,
-      (error as Error).message,
-      false
-    )
-    return createServiceResponse(request, undefined, serviceError)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: false,
+      error: {
+        code: ERROR_CODES.INVALID_PARAMETERS,
+        message: (error as Error).message,
+        retryable: false
+      }
+    }
   }
 }
 
