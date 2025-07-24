@@ -10,10 +10,7 @@ import {
   EvaluationResult,
   ServiceRequest,
   ServiceResponse,
-  ServiceError,
-  ServiceHealth,
   LLMProviderConfig,
-  SecurityCheckResult,
   BudgetConstraints,
   TechniqueStrategy,
   Document,
@@ -87,7 +84,7 @@ export function createTestServiceRequest<T = any>(data: T): ServiceRequest<T> {
   }
 }
 
-export function createTestServiceResponse<T = any>(data?: T, error?: ServiceError): ServiceResponse<T> {
+export function createTestServiceResponse<T = any>(data?: T, error?: any): ServiceResponse<T> {
   return {
     trace_id: 'trace-' + Date.now(),
     timestamp: new Date(),
@@ -127,42 +124,6 @@ export function createTestLLMConfig(overrides?: Partial<LLMProviderConfig>): LLM
   }
 }
 
-export function createTestServiceHealth(overrides?: Partial<ServiceHealth>): ServiceHealth {
-  return {
-    healthy: true,
-    service: 'test-service',
-    version: '1.0.0',
-    uptime: 3600,
-    timestamp: new Date(),
-    details: {
-      memory_usage_mb: 150,
-      cpu_usage_percent: 25,
-      active_requests: 5
-    },
-    ...overrides
-  }
-}
-
-export function createTestServiceError(overrides?: Partial<ServiceError>): ServiceError {
-  return {
-    code: 'E001',
-    message: 'Test error message',
-    details: 'Test error details',
-    retryable: false,
-    ...overrides
-  }
-}
-
-export function createTestSecurityCheckResult(overrides?: Partial<SecurityCheckResult>): SecurityCheckResult {
-  return {
-    is_safe: true,
-    risk_score: 0.1,
-    violations: [],
-    sanitized_prompt: undefined,
-    redacted_sections: [],
-    ...overrides
-  }
-}
 
 export function createTestBudgetConstraints(overrides?: Partial<BudgetConstraints>): BudgetConstraints {
   return {
@@ -221,39 +182,6 @@ export function createTestOptimizationResponse(overrides?: Partial<OptimizationR
 }
 
 // Mock factories
-export function createMockLogger() {
-  return {
-    info: () => {},
-    error: () => {},
-    warn: () => {},
-    debug: () => {}
-  }
-}
-
-export function createMockTelemetryService() {
-  return {
-    trackEvent: () => {},
-    trackMetric: () => {},
-    trackError: () => {},
-    recordMetric: () => {},
-    recordCounter: () => {},
-    recordLatency: () => {},
-    flush: () => {},
-    getMetrics: () => Promise.resolve({
-      counters: {},
-      gauges: {},
-      histograms: {}
-    })
-  }
-}
-
-export function createMockServiceClient() {
-  return {
-    call: () => {},
-    callStream: () => {},
-    health: () => Promise.resolve({ healthy: true })
-  }
-}
 
 export function createTestDocument(overrides?: Partial<Document>): Document {
   return {
@@ -303,62 +231,3 @@ export function createTestRetrievalResult(overrides?: Partial<RetrievalResult>):
 }
 
 // Test helpers
-export async function expectAsyncError(fn: () => Promise<any>, errorMessage?: string) {
-  let error: Error | null = null
-  try {
-    await fn()
-  } catch (e) {
-    error = e as Error
-  }
-  
-  if (!error) {
-    throw new Error('Expected async function to throw an error, but it did not')
-  }
-  
-  if (errorMessage && !error.message.includes(errorMessage)) {
-    throw new Error(`Expected error message to contain '${errorMessage}' but got '${error.message}'`)
-  }
-  
-  return error
-}
-
-export function mockAxiosResponse(data: any, status = 200) {
-  return {
-    data,
-    status,
-    statusText: 'OK',
-    headers: {},
-    config: {} as any
-  }
-}
-
-// Service response helpers
-export function createSuccessResponse<T>(data: T): ServiceResponse<T> {
-  return createTestServiceResponse(data)
-}
-
-export function createErrorResponse(error: ServiceError): ServiceResponse<any> {
-  return createTestServiceResponse(undefined, error)
-}
-
-// Wait utilities
-export function waitFor(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-export async function waitForCondition(
-  condition: () => boolean | Promise<boolean>,
-  timeout = 5000,
-  interval = 100
-): Promise<void> {
-  const start = Date.now()
-  
-  while (Date.now() - start < timeout) {
-    if (await condition()) {
-      return
-    }
-    await waitFor(interval)
-  }
-  
-  throw new Error('Condition not met within timeout')
-}

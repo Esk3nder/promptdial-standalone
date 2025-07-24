@@ -10,13 +10,12 @@ import {
   RetrievalResult,
   ServiceRequest,
   ServiceResponse,
-  createServiceResponse,
-  createServiceError,
   createLogger,
   ERROR_CODES,
-  IRCOT_RETRIEVAL_INSTRUCTION,
   getTelemetryService
 } from '@promptdial/shared'
+
+import { IRCOT_RETRIEVAL_INSTRUCTION } from '@promptdial/technique-engine'
 
 import { 
   VectorStore, 
@@ -410,14 +409,25 @@ export async function handleIndexRequest(
       request.payload.documents,
       request.payload.options
     )
-    return createServiceResponse(request, result)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: true,
+      data: result
+    }
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INTERNAL_ERROR,
-      'Failed to index documents',
-      true
-    )
-    return createServiceResponse(request, undefined, serviceError)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: false,
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Failed to index documents',
+        retryable: true
+      }
+    }
   }
 }
 
@@ -426,14 +436,25 @@ export async function handleSearchRequest(
 ): Promise<ServiceResponse<RetrievalResult>> {
   try {
     const result = await getRetrievalHub().search(request.payload)
-    return createServiceResponse(request, result)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: true,
+      data: result
+    }
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INTERNAL_ERROR,
-      'Search failed',
-      true
-    )
-    return createServiceResponse(request, undefined, serviceError)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: false,
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Search failed',
+        retryable: true
+      }
+    }
   }
 }
 
@@ -445,14 +466,25 @@ export async function handleIRCoTRequest(
       request.payload.query,
       request.payload.context
     )
-    return createServiceResponse(request, result)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: true,
+      data: result
+    }
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INTERNAL_ERROR,
-      'IRCoT retrieval failed',
-      true
-    )
-    return createServiceResponse(request, undefined, serviceError)
+    return {
+      trace_id: request.trace_id,
+      timestamp: new Date(),
+      service: request.service,
+      success: false,
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'IRCoT retrieval failed',
+        retryable: true
+      }
+    }
   }
 }
 
