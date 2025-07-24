@@ -46,10 +46,25 @@ app.post('/api/optimize', async (req, res) => {
     // Optimization complete
 
     // Add metadata to response
+    const hasAPIKeys = !!(
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.GOOGLE_AI_API_KEY
+    )
+    
+    const getActiveProvider = () => {
+      if (process.env.ANTHROPIC_API_KEY) return 'Anthropic Claude'
+      if (process.env.GOOGLE_AI_API_KEY) return 'Google Gemini'  
+      if (process.env.OPENAI_API_KEY) return 'OpenAI GPT'
+      return 'None'
+    }
+
     const enhancedResult = {
       ...result,
       metadata: {
-        optimizedUsing: 'ai-powered',
+        optimizationMode: hasAPIKeys ? 'dynamic-ai' : 'static-template',
+        activeProvider: hasAPIKeys ? getActiveProvider() : 'None',
+        optimizedUsing: hasAPIKeys ? 'AI-powered dynamic optimization' : 'Static template-based optimization',
         timestamp: new Date().toISOString(),
       },
     }
@@ -57,8 +72,11 @@ app.post('/api/optimize', async (req, res) => {
     return res.json(enhancedResult)
   } catch (error) {
     // Optimization error occurred
+    console.error('Server optimization error:', error)
+    console.error('Request body was:', req.body)
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed',
+      details: error instanceof Error ? error.stack : String(error)
     })
   }
 })
@@ -81,23 +99,30 @@ app.listen(PORT, () => {
     process.env.GOOGLE_AI_API_KEY
   )
 
+  const getOptimizationMode = () => {
+    if (!hasAPIKeys) return '⚠️  STATIC MODE - Using template-based optimization only'
+    
+    const providers = [
+      process.env.ANTHROPIC_API_KEY && '🤖 Anthropic Claude',
+      process.env.OPENAI_API_KEY && '🤖 OpenAI GPT',
+      process.env.GOOGLE_AI_API_KEY && '🤖 Google Gemini',
+    ].filter(Boolean)
+    
+    return `🧠 DYNAMIC AI MODE - Using ${providers.join(', ')}`
+  }
+
   console.log(`
 🚀 PromptDial Server Running!
-================================
+================================ 
 ✅ Server: http://localhost:${PORT}
 ✅ API: http://localhost:${PORT}/api/optimize
 ✅ UI: http://localhost:${PORT}
-✅ AI Mode: ${hasAPIKeys ? 'ENABLED' : 'DISABLED'}
-${
-  hasAPIKeys
-    ? `✅ Available APIs: ${[
-        process.env.OPENAI_API_KEY && 'OpenAI',
-        process.env.ANTHROPIC_API_KEY && 'Anthropic',
-        process.env.GOOGLE_AI_API_KEY && 'Google AI',
-      ]
-        .filter(Boolean)
-        .join(', ')}`
-    : '⚠️  No API keys found - Add them to .env file'
+
+${getOptimizationMode()}
+
+${hasAPIKeys 
+  ? '🎯 Dynamic prompt optimization using AI models'
+  : '📝 Static template optimization (add API keys to .env for AI features)'
 }
 
 Ready to optimize prompts!

@@ -397,7 +397,8 @@ Return JSON with:
         })
         // Successfully created Claude variant
       } catch (error) {
-        // Error generating Claude variant
+        console.error('Claude API Error:', error)
+        // Error generating Claude variant - continuing to next attempt
       }
     }
 
