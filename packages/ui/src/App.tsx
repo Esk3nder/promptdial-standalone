@@ -6,7 +6,7 @@ import type { OptimizationRequest } from '@/types'
 import './App.css'
 
 export function App() {
-  const { state, optimize } = usePromptOptimization()
+  const { state, optimize, progress } = usePromptOptimization()
   const { copy, copied } = useClipboard({
     timeout: 2000,
   })
@@ -52,6 +52,7 @@ export function App() {
             onSubmit={handleOptimize}
             isLoading={isLoading}
             error={error}
+            progress={progress}
           />
         </div>
 

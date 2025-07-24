@@ -6,7 +6,7 @@ import type { OptimizationRequest, OptimizedResult } from '@/types'
 type UIState =
   | { status: 'idle' }
   | { status: 'validating'; prompt: string }
-  | { status: 'optimizing'; request: OptimizationRequest }
+  | { status: 'optimizing'; request: OptimizationRequest; progress: number }
   | { status: 'success'; results: OptimizedResult; request: OptimizationRequest }
   | { status: 'error'; error: Error; request?: OptimizationRequest }
 
@@ -16,6 +16,7 @@ type UIEvent =
   | { type: 'VALIDATION_PASSED'; request: OptimizationRequest }
   | { type: 'VALIDATION_FAILED'; error: Error }
   | { type: 'START_OPTIMIZATION' }
+  | { type: 'UPDATE_PROGRESS'; progress: number }
   | { type: 'OPTIMIZATION_SUCCESS'; results: OptimizedResult }
   | { type: 'OPTIMIZATION_ERROR'; error: Error }
   | { type: 'RESET' }
@@ -31,7 +32,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
       
     case 'validating':
       if (event.type === 'VALIDATION_PASSED') {
-        return { status: 'optimizing', request: event.request }
+        return { status: 'optimizing', request: event.request, progress: 0 }
       }
       if (event.type === 'VALIDATION_FAILED') {
         return { status: 'error', error: event.error }
@@ -39,6 +40,9 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
       break
       
     case 'optimizing':
+      if (event.type === 'UPDATE_PROGRESS') {
+        return { ...state, progress: event.progress }
+      }
       if (event.type === 'OPTIMIZATION_SUCCESS') {
         return { 
           status: 'success', 
@@ -94,6 +98,7 @@ interface UsePromptOptimizationReturn {
   isLoading: boolean
   isError: boolean
   isSuccess: boolean
+  progress: number
 }
 
 export function usePromptOptimization(
@@ -122,11 +127,29 @@ export function usePromptOptimization(
     // Validation passed, start optimization
     dispatch({ type: 'VALIDATION_PASSED', request })
     
+    // Simulate progress updates
+    const progressInterval = setInterval(() => {
+      dispatch({ type: 'UPDATE_PROGRESS', progress: Math.floor(Math.random() * 30) + 10 })
+    }, 500)
+    
     try {
       const pd = promptDial()
+      
+      // Update progress to 45% before optimization
+      dispatch({ type: 'UPDATE_PROGRESS', progress: 45 })
+      
       const results = await pd.optimize(request)
+      
+      // Clear interval and set to 100% before success
+      clearInterval(progressInterval)
+      dispatch({ type: 'UPDATE_PROGRESS', progress: 100 })
+      
+      // Small delay to show 100% progress
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
       dispatch({ type: 'OPTIMIZATION_SUCCESS', results })
     } catch (error) {
+      clearInterval(progressInterval)
       dispatch({ 
         type: 'OPTIMIZATION_ERROR', 
         error: error instanceof Error ? error : new Error('Optimization failed')
@@ -145,5 +168,6 @@ export function usePromptOptimization(
     isLoading: state.status === 'validating' || state.status === 'optimizing',
     isError: state.status === 'error',
     isSuccess: state.status === 'success',
+    progress: state.status === 'optimizing' ? state.progress : 0,
   }
 }
