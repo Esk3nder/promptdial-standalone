@@ -14,7 +14,7 @@ interface PromptFormProps {
 
 export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptFormProps) {
   const [prompt, setPrompt] = useState('')
-  const [model, setModel] = useLocalStorage('promptdial-model', 'gemini-pro')
+  const [model, setModel] = useLocalStorage('promptdial-model', 'claude-3-opus')
   const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>(
     'promptdial-level',
     'advanced',

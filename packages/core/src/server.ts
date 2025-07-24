@@ -72,8 +72,11 @@ app.post('/api/optimize', async (req, res) => {
     return res.json(enhancedResult)
   } catch (error) {
     // Optimization error occurred
+    console.error('Server optimization error:', error)
+    console.error('Request body was:', req.body)
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed',
+      details: error instanceof Error ? error.stack : String(error)
     })
   }
 })
