@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react'
 
 // Lazy load heavy components for better performance
-const PromptInput = lazy(() => import('./PromptInput').then(m => ({ default: m.PromptInput })))
-const LiveTestStatus = lazy(() => import('./LiveTestStatus').then(m => ({ default: m.LiveTestStatus })))
-const ProviderCard = lazy(() => import('./ProviderCard').then(m => ({ default: m.ProviderCard })))
-const OptimizedPromptViewer = lazy(() => import('./OptimizedPromptViewer').then(m => ({ default: m.OptimizedPromptViewer })))
-const ComparisonChart = lazy(() => import('./ComparisonChart').then(m => ({ default: m.ComparisonChart })))
+const PromptInput = lazy(() => import('./PromptInput').then((m) => ({ default: m.PromptInput })))
+const LiveTestStatus = lazy(() =>
+  import('./LiveTestStatus').then((m) => ({ default: m.LiveTestStatus })),
+)
+const ProviderCard = lazy(() => import('./ProviderCard').then((m) => ({ default: m.ProviderCard })))
+const OptimizedPromptViewer = lazy(() =>
+  import('./OptimizedPromptViewer').then((m) => ({ default: m.OptimizedPromptViewer })),
+)
+const ComparisonChart = lazy(() =>
+  import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
+)
 
 interface TestResult {
   responseTime: number
@@ -45,7 +51,7 @@ const ComponentLoader = () => (
 export function TestDashboard() {
   const [testState, setTestState] = useState<TestState>({
     status: 'idle',
-    events: []
+    events: [],
   })
   const [testId, setTestId] = useState<string | null>(null)
   const [eventSource, setEventSource] = useState<EventSource | null>(null)
@@ -69,7 +75,7 @@ export function TestDashboard() {
     try {
       setTestState({
         status: 'testing',
-        events: []
+        events: [],
       })
 
       // Start the test
@@ -81,7 +87,7 @@ export function TestDashboard() {
         body: JSON.stringify({
           prompt,
           targetModel: 'gpt-4',
-          optimizationLevel: 'advanced'
+          optimizationLevel: 'advanced',
         }),
       })
 
@@ -98,24 +104,24 @@ export function TestDashboard() {
 
       es.onmessage = (event) => {
         const eventData = JSON.parse(event.data)
-        
-        setTestState(prev => ({
+
+        setTestState((prev) => ({
           ...prev,
-          events: [...prev.events, eventData]
+          events: [...prev.events, eventData],
         }))
 
         if (eventData.type === 'final_results') {
-          setTestState(prev => ({
+          setTestState((prev) => ({
             ...prev,
             status: 'completed',
-            results: eventData.results
+            results: eventData.results,
           }))
           es.close()
         } else if (eventData.type === 'error') {
-          setTestState(prev => ({
+          setTestState((prev) => ({
             ...prev,
             status: 'error',
-            error: eventData.error
+            error: eventData.error,
           }))
           es.close()
         }
@@ -123,20 +129,19 @@ export function TestDashboard() {
 
       es.onerror = (error) => {
         console.error('EventSource failed:', error)
-        setTestState(prev => ({
+        setTestState((prev) => ({
           ...prev,
           status: 'error',
-          error: 'Connection to server lost'
+          error: 'Connection to server lost',
         }))
         es.close()
       }
-
     } catch (error) {
       console.error('Failed to start test:', error)
       setTestState({
         status: 'error',
         events: [],
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       })
     }
   }
@@ -145,9 +150,7 @@ export function TestDashboard() {
     <div className="test-dashboard">
       <div className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            PromptDial Testing Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">PromptDial Testing Dashboard</h1>
           <p className="text-gray-600">
             Test and optimize your prompts across different AI providers
           </p>
@@ -164,7 +167,7 @@ export function TestDashboard() {
         {testState.status !== 'idle' && (
           <div className="mb-8">
             <Suspense fallback={<ComponentLoader />}>
-              <LiveTestStatus 
+              <LiveTestStatus
                 status={testState.status}
                 events={testState.events}
                 error={testState.error}

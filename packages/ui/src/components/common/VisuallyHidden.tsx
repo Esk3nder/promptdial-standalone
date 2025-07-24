@@ -6,9 +6,6 @@ interface VisuallyHiddenProps {
   as?: keyof JSX.IntrinsicElements
 }
 
-export function VisuallyHidden({ 
-  children, 
-  as: Component = 'span' 
-}: VisuallyHiddenProps) {
+export function VisuallyHidden({ children, as: Component = 'span' }: VisuallyHiddenProps) {
   return <Component style={srOnly}>{children}</Component>
 }

@@ -18,16 +18,16 @@ export const ALL_EVALUATORS = [
   GEvalEvaluator,
   ChatEvalEvaluator,
   RoleDebateEvaluator,
-  SelfConsistencyEvaluator
+  SelfConsistencyEvaluator,
 ]
 
 export function createEvaluatorRegistry(): Map<string, BaseEvaluator> {
   const registry = new Map<string, BaseEvaluator>()
-  
+
   for (const EvaluatorClass of ALL_EVALUATORS) {
     const evaluator = new EvaluatorClass()
     registry.set(evaluator.getName(), evaluator)
   }
-  
+
   return registry
 }

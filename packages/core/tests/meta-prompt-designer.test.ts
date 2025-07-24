@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { 
-  MetaPromptDesigner, 
+import {
+  MetaPromptDesigner,
   EmptyPromptError,
   PromptTooLongError,
   ValidationError,
-  OptimizationRequest
+  OptimizationRequest,
 } from '../src/meta-prompt-designer'
 
-const createOptimizationRequest = (overrides?: Partial<OptimizationRequest>): OptimizationRequest => ({
+const createOptimizationRequest = (
+  overrides?: Partial<OptimizationRequest>,
+): OptimizationRequest => ({
   prompt: 'Write a blog post about artificial intelligence',
   targetModel: 'gpt-4',
   optimizationLevel: 'advanced',
@@ -35,7 +37,7 @@ describe('MetaPromptDesigner', () => {
 
       // Assert
       expect(variants).toHaveLength(3)
-      
+
       // Each variant should have required properties
       expect(variants[0]).toMatchObject({
         id: expect.any(String),
@@ -53,27 +55,29 @@ describe('MetaPromptDesigner', () => {
 
       // Optimized prompt should be longer than original
       expect(variants[0].optimizedPrompt.length).toBeGreaterThan(request.prompt.length)
-      
+
       // Should include model-specific optimizations for GPT-4
-      expect(variants[0].optimizedPrompt.toLowerCase()).toMatch(/step[\s-]?by[\s-]?step|reasoning|analyze/i)
+      expect(variants[0].optimizedPrompt.toLowerCase()).toMatch(
+        /step[\s-]?by[\s-]?step|reasoning|analyze/i,
+      )
     })
 
     it('should apply model-specific optimizations', async () => {
       const testCases = [
-        { 
-          model: 'gpt-4', 
+        {
+          model: 'gpt-4',
           expectedFeatures: ['reasoning', 'step-by-step'],
-          expectedKeywords: /step[\s-]?by[\s-]?step|reasoning|analyze/i
+          expectedKeywords: /step[\s-]?by[\s-]?step|reasoning|analyze/i,
         },
-        { 
-          model: 'claude-3', 
+        {
+          model: 'claude-3',
           expectedFeatures: ['constitutional', 'thoughtful'],
-          expectedKeywords: /thoughtful|consider|ethical|comprehensive/i
+          expectedKeywords: /thoughtful|consider|ethical|comprehensive/i,
         },
-        { 
-          model: 'gemini-pro', 
+        {
+          model: 'gemini-pro',
           expectedFeatures: ['multimodal', 'analytical'],
-          expectedKeywords: /analyze|evidence|data|systematic/i
+          expectedKeywords: /analyze|evidence|data|systematic/i,
         },
       ]
 
@@ -88,7 +92,7 @@ describe('MetaPromptDesigner', () => {
 
         // Check model-specific features
         expect(variant.modelSpecificFeatures).toEqual(
-          expect.arrayContaining(testCase.expectedFeatures)
+          expect.arrayContaining(testCase.expectedFeatures),
         )
 
         // Check optimized prompt contains model-specific keywords
@@ -99,17 +103,15 @@ describe('MetaPromptDesigner', () => {
     it('should handle empty prompts with error', async () => {
       const request = createOptimizationRequest({ prompt: '' })
 
-      await expect(designer.generateVariants(request))
-        .rejects.toThrow(EmptyPromptError)
+      await expect(designer.generateVariants(request)).rejects.toThrow(EmptyPromptError)
     })
 
     it('should handle extremely long prompts with error', async () => {
-      const request = createOptimizationRequest({ 
-        prompt: 'x'.repeat(10001) 
+      const request = createOptimizationRequest({
+        prompt: 'x'.repeat(10001),
       })
 
-      await expect(designer.generateVariants(request))
-        .rejects.toThrow(PromptTooLongError)
+      await expect(designer.generateVariants(request)).rejects.toThrow(PromptTooLongError)
     })
 
     it('should reject harmful content', async () => {
@@ -123,8 +125,7 @@ describe('MetaPromptDesigner', () => {
       for (const prompt of harmfulPrompts) {
         const request = createOptimizationRequest({ prompt })
 
-        await expect(designer.generateVariants(request))
-          .rejects.toThrow(ValidationError)
+        await expect(designer.generateVariants(request)).rejects.toThrow(ValidationError)
       }
     })
 
@@ -139,9 +140,9 @@ describe('MetaPromptDesigner', () => {
         })
 
         const variants = await designer.generateVariants(request)
-        
+
         expect(variants).toHaveLength(expectedCounts[level])
-        
+
         // Higher levels should produce more sophisticated optimizations
         if (level === 'expert') {
           expect(variants[0].changes.length).toBeGreaterThanOrEqual(5)
@@ -171,7 +172,7 @@ describe('MetaPromptDesigner', () => {
       for (const test of taskTests) {
         const request = createOptimizationRequest({ prompt: test.prompt })
         const variants = await designer.generateVariants(request)
-        
+
         expect(variants[0].optimizedPrompt).toMatch(test.expectedKeywords)
       }
     })
@@ -185,12 +186,12 @@ describe('MetaPromptDesigner', () => {
       const changes = variants[0].changes
 
       // Should have multiple types of changes
-      const changeTypes = changes.map(c => c.type)
+      const changeTypes = changes.map((c) => c.type)
       expect(changeTypes).toContain('clarity')
       expect(changeTypes).toContain('specificity')
-      
+
       // Each change should have a description
-      changes.forEach(change => {
+      changes.forEach((change) => {
         expect(change.description).toBeTruthy()
         expect(change.description.length).toBeGreaterThan(10)
       })
@@ -202,13 +203,13 @@ describe('MetaPromptDesigner', () => {
       })
 
       const variants = await designer.generateVariants(request)
-      
-      variants.forEach(variant => {
+
+      variants.forEach((variant) => {
         // Estimated tokens should be proportional to prompt length
         // Rough estimate: 1 token ≈ 4 characters
         const expectedMinTokens = Math.floor(variant.optimizedPrompt.length / 6)
         const expectedMaxTokens = Math.ceil(variant.optimizedPrompt.length / 3)
-        
+
         expect(variant.estimatedTokens).toBeGreaterThanOrEqual(expectedMinTokens)
         expect(variant.estimatedTokens).toBeLessThanOrEqual(expectedMaxTokens)
       })
@@ -220,10 +221,10 @@ describe('MetaPromptDesigner', () => {
       })
 
       const variants = await designer.generateVariants(request)
-      
+
       // Variants should be sorted by score in descending order
       for (let i = 1; i < variants.length; i++) {
-        expect(variants[i-1].score).toBeGreaterThanOrEqual(variants[i].score)
+        expect(variants[i - 1].score).toBeGreaterThanOrEqual(variants[i].score)
       }
     })
   })

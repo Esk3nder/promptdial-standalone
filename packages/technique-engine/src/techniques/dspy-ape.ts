@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - DSPy APE (Automatic Prompt Engineering) Technique
- * 
+ *
  * Automatically discovers effective prompts through optimization
  */
 
@@ -9,7 +9,7 @@ import {
   PromptVariant,
   TaskClassification,
   BudgetConstraints,
-  TECHNIQUES
+  TECHNIQUES,
 } from '@promptdial/shared'
 
 export class DSPyAPETechnique extends BaseTechnique {
@@ -17,47 +17,47 @@ export class DSPyAPETechnique extends BaseTechnique {
   description = 'Automatic prompt engineering through iterative optimization'
   best_for = ['code_generation', 'math_reasoning', 'general_qa'] as const
   needs_retrieval = false
-  
+
   async generate(
     base_prompt: string,
     meta: TaskClassification,
-    budget: BudgetConstraints
+    budget: BudgetConstraints,
   ): Promise<PromptVariant[]> {
     const variants: PromptVariant[] = []
-    
+
     // APE is computationally expensive
-    if (budget.remaining_cost_usd < 0.10) {
+    if (budget.remaining_cost_usd < 0.1) {
       return []
     }
-    
+
     // Variant 1: Basic APE - Instruction Induction
     const instructionPrompt = this.createInstructionInduction(base_prompt, meta)
     const variant1 = this.createVariant(
       this.sandwichPrompt(instructionPrompt),
       `${this.name}_instruction`,
       0.8,
-      0
+      0,
     )
     variant1.cost_usd *= 2 // APE requires multiple iterations
-    
+
     if (this.fitsInBudget(variant1, budget)) {
       variants.push(variant1)
     }
-    
+
     // Variant 2: APE with Forward Generation
     const forwardPrompt = this.createForwardGeneration(base_prompt, meta)
     const variant2 = this.createVariant(
       this.sandwichPrompt(forwardPrompt),
       `${this.name}_forward`,
       0.7,
-      1
+      1,
     )
     variant2.cost_usd *= 2.5
-    
+
     if (this.fitsInBudget(variant2, budget)) {
       variants.push(variant2)
     }
-    
+
     // Variant 3: APE with Prompt Scoring
     if (budget.remaining_cost_usd > 0.15) {
       const scoringPrompt = this.createPromptScoring(base_prompt, meta)
@@ -65,22 +65,19 @@ export class DSPyAPETechnique extends BaseTechnique {
         this.sandwichPrompt(scoringPrompt),
         `${this.name}_scoring`,
         0.7,
-        2
+        2,
       )
       variant3.cost_usd *= 3 // Most expensive variant
-      
+
       if (this.fitsInBudget(variant3, budget)) {
         variants.push(variant3)
       }
     }
-    
+
     return variants
   }
-  
-  private createInstructionInduction(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createInstructionInduction(basePrompt: string, meta: TaskClassification): string {
     return `Use Automatic Prompt Engineering to optimize this task:
 
 ORIGINAL TASK: ${basePrompt}
@@ -111,13 +108,10 @@ Use your optimized prompt to solve the original task.
 FINAL ANSWER:
 [Solution using the optimized prompt]`
   }
-  
-  private createForwardGeneration(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createForwardGeneration(basePrompt: string, meta: TaskClassification): string {
     const taskContext = this.getTaskContext(meta.task_type)
-    
+
     return `Apply DSPy Forward Generation for prompt optimization:
 
 TASK: ${basePrompt}
@@ -152,11 +146,8 @@ What patterns make prompts effective for this type of task?
 OPTIMIZED SOLUTION:
 [Apply the best-performing template to solve the original task]`
   }
-  
-  private createPromptScoring(
-    basePrompt: string,
-    meta: TaskClassification
-  ): string {
+
+  private createPromptScoring(basePrompt: string, meta: TaskClassification): string {
     return `Use APE with Prompt Scoring optimization:
 
 TASK: ${basePrompt}
@@ -198,7 +189,7 @@ Apply the optimized prompt to solve the task.
 SOLUTION:
 [Final answer using the optimized prompt]`
   }
-  
+
   private getTaskContext(taskType: string): {
     template1: string
     template2: string
@@ -208,20 +199,24 @@ SOLUTION:
       math_reasoning: {
         template1: 'Solve this math problem: {task}',
         template2: 'Problem: {task}\nShow your work step by step and verify your answer.',
-        template3: 'Mathematical Task: {task}\n\nApproach:\n1. Identify given information\n2. Determine what to find\n3. Select appropriate method\n4. Execute calculations\n5. Verify result\n\nSolution:'
+        template3:
+          'Mathematical Task: {task}\n\nApproach:\n1. Identify given information\n2. Determine what to find\n3. Select appropriate method\n4. Execute calculations\n5. Verify result\n\nSolution:',
       },
       code_generation: {
         template1: 'Write code to: {task}',
-        template2: 'Task: {task}\n\nRequirements:\n- Clean, readable code\n- Handle edge cases\n- Include comments\n\nImplementation:',
-        template3: 'Coding Challenge: {task}\n\nConsiderations:\n- Algorithm choice\n- Time/space complexity\n- Error handling\n- Test cases\n\nSolution with explanation:'
+        template2:
+          'Task: {task}\n\nRequirements:\n- Clean, readable code\n- Handle edge cases\n- Include comments\n\nImplementation:',
+        template3:
+          'Coding Challenge: {task}\n\nConsiderations:\n- Algorithm choice\n- Time/space complexity\n- Error handling\n- Test cases\n\nSolution with explanation:',
       },
       general_qa: {
         template1: 'Answer: {task}',
         template2: 'Question: {task}\n\nProvide a comprehensive answer with supporting details.',
-        template3: 'Query: {task}\n\nStructured Response:\n- Direct answer\n- Explanation\n- Examples\n- Additional context\n\nAnswer:'
-      }
+        template3:
+          'Query: {task}\n\nStructured Response:\n- Direct answer\n- Explanation\n- Examples\n- Additional context\n\nAnswer:',
+      },
     }
-    
+
     return contexts[taskType] || contexts.general_qa
   }
 }

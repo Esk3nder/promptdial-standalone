@@ -1,4 +1,3 @@
-
 // Types
 export interface OptimizationRequest {
   prompt: string
@@ -72,7 +71,8 @@ export class MetaPromptDesigner {
     const taskType = request.taskType || this.detectTaskType(request.prompt)
 
     // Get model-specific strategy
-    const strategy = this.optimizationStrategies.get(request.targetModel) || this.getDefaultStrategy()
+    const strategy =
+      this.optimizationStrategies.get(request.targetModel) || this.getDefaultStrategy()
 
     // Generate improvements
     const improvements = this.generateImprovements(request.prompt, taskType, strategy)
@@ -158,7 +158,11 @@ export class MetaPromptDesigner {
     const lowerPrompt = prompt.toLowerCase()
 
     // Check for coding first to avoid false positives from "write a function"
-    if (/\b(code|function|program|script|implement|algorithm|python|javascript|java|class|method|variable|api|debug|compile)\b/.test(lowerPrompt)) {
+    if (
+      /\b(code|function|program|script|implement|algorithm|python|javascript|java|class|method|variable|api|debug|compile)\b/.test(
+        lowerPrompt,
+      )
+    ) {
       return 'coding'
     }
 
@@ -167,15 +171,30 @@ export class MetaPromptDesigner {
     }
 
     // Make creative detection more specific to avoid catching "write a function"
-    if (/\b(write|create).*(story|poem|narrative|blog|article|essay|fiction|creative)\b/.test(lowerPrompt) ||
-        /\b(story|poem|creative|imagine|narrative)\b/.test(lowerPrompt)) {
+    if (
+      /\b(write|create).*(story|poem|narrative|blog|article|essay|fiction|creative)\b/.test(
+        lowerPrompt,
+      ) ||
+      /\b(story|poem|creative|imagine|narrative)\b/.test(lowerPrompt)
+    ) {
       return 'creative'
     }
 
     return 'general'
   }
 
-  private generateImprovements(prompt: string, taskType: string, strategy: ModelStrategy): { clarity: unknown; specificity: { taskType?: string; suggestions?: string[] }; structure: { type: string; suggestion: string }; context: { type: string; suggestion: string }; modelOptimization: { type: string; optimizations: string[] }; taskType: string } {
+  private generateImprovements(
+    prompt: string,
+    taskType: string,
+    strategy: ModelStrategy,
+  ): {
+    clarity: unknown
+    specificity: { taskType?: string; suggestions?: string[] }
+    structure: { type: string; suggestion: string }
+    context: { type: string; suggestion: string }
+    modelOptimization: { type: string; optimizations: string[] }
+    taskType: string
+  } {
     const improvements = {
       clarity: this.addClarity(prompt),
       specificity: this.addSpecificity(prompt, taskType),
@@ -188,7 +207,11 @@ export class MetaPromptDesigner {
     return improvements
   }
 
-  private addClarity(prompt: string): { type: string; changes: Array<{ term?: string; type?: string; suggestion: string }>; suggestion: string } {
+  private addClarity(prompt: string): {
+    type: string
+    changes: Array<{ term?: string; type?: string; suggestion: string }>
+    suggestion: string
+  } {
     const vagueTerms = ['something', 'stuff', 'thing', 'whatever', 'somehow']
     const suggestions = []
 
@@ -212,13 +235,22 @@ export class MetaPromptDesigner {
     return {
       type: 'clarity',
       changes: suggestions,
-      suggestion: suggestions.length > 0 
-        ? 'Please provide a clear and specific request with explicit instructions.'
-        : '',
+      suggestion:
+        suggestions.length > 0
+          ? 'Please provide a clear and specific request with explicit instructions.'
+          : '',
     }
   }
 
-  private addSpecificity(_prompt: string, taskType: string): { type: string; changes: Array<{ suggestion: string }>; suggestions: string[]; taskType: string } {
+  private addSpecificity(
+    _prompt: string,
+    taskType: string,
+  ): {
+    type: string
+    changes: Array<{ suggestion: string }>
+    suggestions: string[]
+    taskType: string
+  } {
     const suggestions = []
 
     switch (taskType) {
@@ -253,7 +285,7 @@ export class MetaPromptDesigner {
 
     return {
       type: 'specificity',
-      changes: suggestions.map(s => ({ suggestion: s })),
+      changes: suggestions.map((s) => ({ suggestion: s })),
       suggestions,
       taskType,
     }
@@ -277,7 +309,10 @@ export class MetaPromptDesigner {
     }
   }
 
-  private optimizeForModel(_prompt: string, strategy: ModelStrategy): { type: string; optimizations: string[] } {
+  private optimizeForModel(
+    _prompt: string,
+    strategy: ModelStrategy,
+  ): { type: string; optimizations: string[] } {
     return {
       type: 'model_optimization',
       optimizations: strategy.optimizations,
@@ -286,12 +321,24 @@ export class MetaPromptDesigner {
 
   private hasExplicitTask(prompt: string): boolean {
     const taskVerbs = [
-      'write', 'create', 'explain', 'analyze', 'summarize', 'describe',
-      'list', 'compare', 'evaluate', 'design', 'develop', 'generate',
+      'write',
+      'create',
+      'explain',
+      'analyze',
+      'summarize',
+      'describe',
+      'list',
+      'compare',
+      'evaluate',
+      'design',
+      'develop',
+      'generate',
     ]
 
     const lowerPrompt = prompt.toLowerCase()
-    return taskVerbs.some(verb => lowerPrompt.startsWith(verb) || lowerPrompt.includes(` ${verb} `))
+    return taskVerbs.some(
+      (verb) => lowerPrompt.startsWith(verb) || lowerPrompt.includes(` ${verb} `),
+    )
   }
 
   private getVariantCount(level: 'basic' | 'advanced' | 'expert'): number {
@@ -304,11 +351,16 @@ export class MetaPromptDesigner {
   }
 
   private createVariant(
-    originalPrompt: string, 
-    improvements: { clarity: unknown; specificity: { taskType?: string; suggestions?: string[] }; taskType?: string; modelOptimization?: { type: string; optimizations: string[] } }, 
+    originalPrompt: string,
+    improvements: {
+      clarity: unknown
+      specificity: { taskType?: string; suggestions?: string[] }
+      taskType?: string
+      modelOptimization?: { type: string; optimizations: string[] }
+    },
     strategy: ModelStrategy,
     index: number,
-    request?: OptimizationRequest
+    request?: OptimizationRequest,
   ): OptimizedVariant {
     const changes = []
     let optimizedPrompt = originalPrompt
@@ -324,13 +376,14 @@ export class MetaPromptDesigner {
     // Always apply specificity
     optimizedPrompt = this.applySpecificity(optimizedPrompt, improvements.specificity, improvements)
     changes.push({
-      type: 'specificity', 
+      type: 'specificity',
       description: 'Added specific requirements and constraints',
     })
 
     // Apply structure for advanced and expert levels
-    const isExpertFirstVariant = index === 0 && request && this.getVariantCount(request.optimizationLevel) >= 5
-    
+    const isExpertFirstVariant =
+      index === 0 && request && this.getVariantCount(request.optimizationLevel) >= 5
+
     if (isExpertFirstVariant) {
       // For expert level first variant, add extra changes to meet 5+ requirement
       optimizedPrompt = this.applyContext(optimizedPrompt)
@@ -370,7 +423,7 @@ export class MetaPromptDesigner {
         description: 'Specified detailed output format requirements',
       })
     }
-    
+
     if (index >= 4) {
       optimizedPrompt = this.applyExampleRequest(optimizedPrompt)
       changes.push({
@@ -381,7 +434,11 @@ export class MetaPromptDesigner {
 
     // Always apply model optimization
     if (improvements.modelOptimization) {
-      optimizedPrompt = this.applyModelOptimization(optimizedPrompt, improvements.modelOptimization, index)
+      optimizedPrompt = this.applyModelOptimization(
+        optimizedPrompt,
+        improvements.modelOptimization,
+        index,
+      )
       changes.push({
         type: 'model_optimization',
         description: `Applied ${strategy.model} specific optimizations`,
@@ -408,9 +465,9 @@ export class MetaPromptDesigner {
 
     // Replace vague terms
     const replacements = {
-      'something': 'specific content',
-      'stuff': 'relevant materials',
-      'thing': 'particular item',
+      something: 'specific content',
+      stuff: 'relevant materials',
+      thing: 'particular item',
     }
 
     for (const [vague, specific] of Object.entries(replacements)) {
@@ -420,21 +477,25 @@ export class MetaPromptDesigner {
     return improved
   }
 
-  private applySpecificity(prompt: string, specificity: { taskType?: string; suggestions?: string[] }, improvements?: { taskType?: string }): string {
+  private applySpecificity(
+    prompt: string,
+    specificity: { taskType?: string; suggestions?: string[] },
+    improvements?: { taskType?: string },
+  ): string {
     // Get taskType from specificity or improvements object
     const taskType = specificity.taskType || improvements?.taskType || this.detectTaskType(prompt)
-    
+
     if (taskType === 'coding') {
       return `${prompt}. Specify the programming language. Define input and output formats. Include error handling requirements`
     }
-    
+
     // Handle both suggestions array and string array
     const suggestions = specificity.suggestions || specificity
     if (Array.isArray(suggestions) && suggestions.length > 0) {
       const additions = suggestions.slice(0, 2).join('. ')
       return `${prompt}. ${additions}`
     }
-    
+
     return prompt
   }
 
@@ -446,7 +507,11 @@ export class MetaPromptDesigner {
     return `Context: This request is for a professional setting.\n\n${prompt}`
   }
 
-  private applyModelOptimization(prompt: string, modelOpt: { optimizations: string[] }, index: number): string {
+  private applyModelOptimization(
+    prompt: string,
+    modelOpt: { optimizations: string[] },
+    index: number,
+  ): string {
     const optimization = modelOpt.optimizations[Math.min(index, modelOpt.optimizations.length - 1)]
     return `${prompt}\n\n${optimization}`
   }

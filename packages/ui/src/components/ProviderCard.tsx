@@ -16,19 +16,27 @@ interface ProviderCardProps {
 export function ProviderCard({ provider, original, optimized }: ProviderCardProps) {
   const getProviderIcon = () => {
     switch (provider) {
-      case 'openai': return '🤖'
-      case 'anthropic': return '🧠'
-      case 'google': return '🔍'
-      default: return '💡'
+      case 'openai':
+        return '🤖'
+      case 'anthropic':
+        return '🧠'
+      case 'google':
+        return '🔍'
+      default:
+        return '💡'
     }
   }
 
   const getProviderName = () => {
     switch (provider) {
-      case 'openai': return 'OpenAI'
-      case 'anthropic': return 'Anthropic'
-      case 'google': return 'Google'
-      default: return provider
+      case 'openai':
+        return 'OpenAI'
+      case 'anthropic':
+        return 'Anthropic'
+      case 'google':
+        return 'Google'
+      default:
+        return provider
     }
   }
 
@@ -40,7 +48,9 @@ export function ProviderCard({ provider, original, optimized }: ProviderCardProp
   if (!original || !optimized) {
     return (
       <div className="provider-card loading">
-        <h3>{getProviderIcon()} {getProviderName()}</h3>
+        <h3>
+          {getProviderIcon()} {getProviderName()}
+        </h3>
         <p>Waiting for results...</p>
       </div>
     )
@@ -49,7 +59,9 @@ export function ProviderCard({ provider, original, optimized }: ProviderCardProp
   if (original.error || optimized.error) {
     return (
       <div className="provider-card error">
-        <h3>{getProviderIcon()} {getProviderName()}</h3>
+        <h3>
+          {getProviderIcon()} {getProviderName()}
+        </h3>
         <p>❌ {original.error || optimized.error}</p>
       </div>
     )
@@ -60,8 +72,10 @@ export function ProviderCard({ provider, original, optimized }: ProviderCardProp
 
   return (
     <div className="provider-card">
-      <h3>{getProviderIcon()} {getProviderName()}</h3>
-      
+      <h3>
+        {getProviderIcon()} {getProviderName()}
+      </h3>
+
       <div className="metrics">
         <div className="metric">
           <span className="label">Response Time:</span>
@@ -70,7 +84,8 @@ export function ProviderCard({ provider, original, optimized }: ProviderCardProp
             <span className="arrow">→</span>
             <span className="optimized">{optimized.responseTime}ms</span>
             <span className={`improvement ${timeImprovement > 0 ? 'positive' : 'negative'}`}>
-              ({timeImprovement > 0 ? '+' : ''}{timeImprovement.toFixed(1)}%)
+              ({timeImprovement > 0 ? '+' : ''}
+              {timeImprovement.toFixed(1)}%)
             </span>
           </div>
         </div>
@@ -82,7 +97,8 @@ export function ProviderCard({ provider, original, optimized }: ProviderCardProp
             <span className="arrow">→</span>
             <span className="optimized">{optimized.tokenCount}</span>
             <span className={`improvement ${tokenImprovement > 0 ? 'positive' : 'negative'}`}>
-              ({tokenImprovement > 0 ? '+' : ''}{tokenImprovement.toFixed(1)}%)
+              ({tokenImprovement > 0 ? '+' : ''}
+              {tokenImprovement.toFixed(1)}%)
             </span>
           </div>
         </div>

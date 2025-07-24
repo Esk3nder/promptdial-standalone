@@ -8,17 +8,17 @@ export const handlers = [
   http.post('/api/optimize', async ({ request }) => {
     // Simulate network delay
     await delay(500)
-    
-    const body = await request.json() as any
+
+    const body = (await request.json()) as any
     const { optimizationLevel } = body
-    
+
     // Return different number of variants based on level
-    const variantCount = optimizationLevel === 'expert' ? 5 : 
-                        optimizationLevel === 'advanced' ? 3 : 1
-    
+    const variantCount =
+      optimizationLevel === 'expert' ? 5 : optimizationLevel === 'advanced' ? 3 : 1
+
     return HttpResponse.json(createMockOptimizationResult(variantCount))
   }),
-  
+
   // Health check endpoint
   http.get('/api/health', () => {
     return HttpResponse.json({ status: 'ok' })
@@ -30,13 +30,13 @@ export const createMockPromptDial = () => {
   const optimize = vi.fn().mockImplementation(async (request) => {
     // Simulate async behavior
     await delay(100)
-    
-    const variantCount = request.optimizationLevel === 'expert' ? 5 : 
-                        request.optimizationLevel === 'advanced' ? 3 : 1
-    
+
+    const variantCount =
+      request.optimizationLevel === 'expert' ? 5 : request.optimizationLevel === 'advanced' ? 3 : 1
+
     return createMockOptimizationResult(variantCount)
   })
-  
+
   return {
     optimize,
     validateVariant: vi.fn(),

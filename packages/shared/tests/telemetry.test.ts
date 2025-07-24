@@ -21,9 +21,9 @@ describe('Telemetry Service', () => {
         variant_id: 'variant-456',
         ts_utc: new Date().toISOString(),
         event_type: 'optimization_started' as const,
-        task_type: 'general_qa' as const
+        task_type: 'general_qa' as const,
       }
-      
+
       service.trackEvent(event)
       expect(console.log).toHaveBeenCalledWith('[Telemetry] Event:', event)
     })
@@ -31,11 +31,11 @@ describe('Telemetry Service', () => {
     it('should track metrics', () => {
       const service = getTelemetryService()
       service.trackMetric('latency', 1500, { service: 'api-gateway' })
-      
+
       expect(console.log).toHaveBeenCalledWith('[Telemetry] Metric:', {
         name: 'latency',
         value: 1500,
-        tags: { service: 'api-gateway' }
+        tags: { service: 'api-gateway' },
       })
     })
 
@@ -43,7 +43,7 @@ describe('Telemetry Service', () => {
       const service = getTelemetryService()
       const error = new Error('Test error')
       const context = { request_id: '123' }
-      
+
       service.trackError(error, context)
       expect(console.error).toHaveBeenCalledWith('[Telemetry] Error:', error, context)
     })

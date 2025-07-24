@@ -12,7 +12,7 @@ export default defineConfig({
       '@hooks': resolve(__dirname, './src/hooks'),
       '@utils': resolve(__dirname, './src/utils'),
       '@types': resolve(__dirname, './src/types'),
-      'promptdial': resolve(__dirname, '../core/src/index.ts'),
+      promptdial: resolve(__dirname, '../core/src/index.ts'),
     },
   },
   server: {
@@ -35,28 +35,28 @@ export default defineConfig({
           // PromptDial core functionality
           promptdial: ['promptdial'],
           // Chart libraries (if used)
-          charts: ['chart.js', 'recharts'].filter(pkg => {
+          charts: ['chart.js', 'recharts'].filter((pkg) => {
             try {
               require.resolve(pkg)
               return true
             } catch {
               return false
             }
-          })
-        }
-      }
+          }),
+        },
+      },
     },
     // Optimize build output
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
-      }
+        drop_debugger: true,
+      },
     },
     // Enable source maps for debugging
     sourcemap: false, // Disable in production for smaller bundles
     // Set chunk size warning limit
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
   },
 })

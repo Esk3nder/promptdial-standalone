@@ -8,9 +8,10 @@
     "declarationMap": true,
     "noEmit": false,
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
-    "target": "ESNext"
+    "target": "ESNext",
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

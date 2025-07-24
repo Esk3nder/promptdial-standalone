@@ -31,12 +31,17 @@ export interface OptimizedVariant {
 }
 
 // Initialize AI clients
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null
-const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null
-const googleAI = process.env.GOOGLE_AI_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY) : null
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null
+const googleAI = process.env.GOOGLE_AI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+  : null
 
 export class AIMetaPromptDesigner {
-  
   // Helper to clean and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
     try {
@@ -46,9 +51,9 @@ export class AIMetaPromptDesigner {
       // Extract JSON object from text
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (!jsonMatch) throw new Error('No JSON found in response')
-      
+
       let jsonStr = jsonMatch[0]
-      
+
       // More robust cleaning approach
       // 1. First, handle string literals properly
       const stringLiterals: string[] = []
@@ -57,10 +62,10 @@ export class AIMetaPromptDesigner {
         stringLiterals.push(match)
         return `"__STRING_${index}__"`
       })
-      
+
       // 2. Clean control characters outside strings
       cleanedJson = cleanedJson.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-      
+
       // 3. Restore string literals with proper escaping
       cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (_match, index) => {
         let str = stringLiterals[parseInt(index)]
@@ -73,7 +78,7 @@ export class AIMetaPromptDesigner {
         str = str.replace(/\t/g, '\\t')
         return '"' + str + '"'
       })
-      
+
       try {
         return JSON.parse(cleanedJson)
       } catch (e2) {
@@ -82,7 +87,7 @@ export class AIMetaPromptDesigner {
       }
     }
   }
-  
+
   private systemPrompts = {
     basic: `You are an expert at enhancing prompts to elicit better reasoning and understanding. Your goal is to transform the given prompt to encourage deeper thinking without being prescriptive.
 
@@ -90,7 +95,7 @@ Focus on:
 - Clarifying intent without over-specifying
 - Encouraging step-by-step reasoning where helpful
 - Making the task clear while allowing creative approaches`,
-    
+
     advanced: `You are an expert at applying advanced prompting techniques that enhance AI reasoning capabilities. Transform the given prompt using sophisticated approaches:
 
 Available techniques:
@@ -104,7 +109,7 @@ Apply techniques that:
 - Enhance reasoning capability
 - Encourage exploration of solutions
 - Maintain flexibility in approach`,
-    
+
     expert: `You are an expert at applying state-of-the-art prompting techniques for optimal AI performance. Transform prompts using sophisticated cognitive enhancement approaches.
 
 AVOID these traditional prompt engineering patterns:
@@ -124,65 +129,93 @@ For writing tasks specifically:
 - Provide thinking patterns, not structure templates
 - Show reasoning examples, not format requirements
 - Enable exploration, not rigid compliance
-- Guide discovery, not dictate output`
+- Guide discovery, not dictate output`,
   }
 
-  private detectTaskTypeAndTechniques(prompt: string): { taskType: string; suggestedTechniques: string[] } {
+  private detectTaskTypeAndTechniques(prompt: string): {
+    taskType: string
+    suggestedTechniques: string[]
+  } {
     const lowerPrompt = prompt.toLowerCase()
-    
+
     // Writing tasks - benefit from examples and structured thinking
-    if (lowerPrompt.includes('write') || lowerPrompt.includes('article') || lowerPrompt.includes('essay') || lowerPrompt.includes('story')) {
+    if (
+      lowerPrompt.includes('write') ||
+      lowerPrompt.includes('article') ||
+      lowerPrompt.includes('essay') ||
+      lowerPrompt.includes('story')
+    ) {
       return {
         taskType: 'creative_writing',
-        suggestedTechniques: ['Few-Shot Examples', 'Guided Exploration', 'Iterative Refinement']
+        suggestedTechniques: ['Few-Shot Examples', 'Guided Exploration', 'Iterative Refinement'],
       }
     }
-    
+
     // Analysis tasks - benefit from systematic reasoning
-    if (lowerPrompt.includes('analyze') || lowerPrompt.includes('explain') || lowerPrompt.includes('compare')) {
+    if (
+      lowerPrompt.includes('analyze') ||
+      lowerPrompt.includes('explain') ||
+      lowerPrompt.includes('compare')
+    ) {
       return {
         taskType: 'analysis',
-        suggestedTechniques: ['Chain-of-Thought', 'Self-Consistency', 'Multi-perspective Analysis']
+        suggestedTechniques: ['Chain-of-Thought', 'Self-Consistency', 'Multi-perspective Analysis'],
       }
     }
-    
+
     // Problem solving - benefit from exploration
-    if (lowerPrompt.includes('solve') || lowerPrompt.includes('calculate') || lowerPrompt.includes('determine')) {
+    if (
+      lowerPrompt.includes('solve') ||
+      lowerPrompt.includes('calculate') ||
+      lowerPrompt.includes('determine')
+    ) {
       return {
         taskType: 'problem_solving',
-        suggestedTechniques: ['Tree of Thought', 'Step-by-step Reasoning', 'Multiple Solution Paths']
+        suggestedTechniques: [
+          'Tree of Thought',
+          'Step-by-step Reasoning',
+          'Multiple Solution Paths',
+        ],
       }
     }
-    
+
     // Code generation - benefit from examples and patterns
-    if (lowerPrompt.includes('code') || lowerPrompt.includes('function') || lowerPrompt.includes('implement')) {
+    if (
+      lowerPrompt.includes('code') ||
+      lowerPrompt.includes('function') ||
+      lowerPrompt.includes('implement')
+    ) {
       return {
         taskType: 'coding',
-        suggestedTechniques: ['Few-Shot Code Examples', 'ReAct Pattern', 'Test-Driven Approach']
+        suggestedTechniques: ['Few-Shot Code Examples', 'ReAct Pattern', 'Test-Driven Approach'],
       }
     }
-    
+
     // Research tasks - benefit from retrieval and synthesis
-    if (lowerPrompt.includes('research') || lowerPrompt.includes('find') || lowerPrompt.includes('discover')) {
+    if (
+      lowerPrompt.includes('research') ||
+      lowerPrompt.includes('find') ||
+      lowerPrompt.includes('discover')
+    ) {
       return {
         taskType: 'research',
-        suggestedTechniques: ['IR-CoT', 'Evidence-based Reasoning', 'Source Integration']
+        suggestedTechniques: ['IR-CoT', 'Evidence-based Reasoning', 'Source Integration'],
       }
     }
-    
+
     return {
       taskType: 'general',
-      suggestedTechniques: ['Adaptive Reasoning', 'Context-aware Optimization']
+      suggestedTechniques: ['Adaptive Reasoning', 'Context-aware Optimization'],
     }
   }
 
   async generateVariants(request: OptimizationRequest): Promise<OptimizedVariant[]> {
     // Generating variants for optimization request
-    
+
     this.validateInput(request)
-    
+
     const variantCount = this.getVariantCount(request.optimizationLevel)
-    
+
     try {
       // Generate variants based on target model
       switch (request.targetModel) {
@@ -191,19 +224,19 @@ For writing tasks specifically:
           if (!openai) throw new Error('OpenAI API key not configured')
           // Using OpenAI API for optimization
           return await this.generateOpenAIVariants(request, variantCount)
-          
+
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
           if (!anthropic) throw new Error('Anthropic API key not configured')
           // Using Anthropic Claude API for optimization
           return await this.generateClaudeVariants(request, variantCount)
-          
+
         case 'gemini-pro':
           if (!googleAI) throw new Error('Google AI API key not configured')
           // Using Google Gemini API for optimization
           return await this.generateGeminiVariants(request, variantCount)
-          
+
         default:
           // Try available providers in order (Claude first now as requested)
           if (anthropic) {
@@ -220,14 +253,19 @@ For writing tasks specifically:
       }
     } catch (error) {
       // AI optimization error occurred
-      throw new Error(`Failed to generate AI-optimized variants: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(
+        `Failed to generate AI-optimized variants: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
-  private async generateOpenAIVariants(request: OptimizationRequest, count: number): Promise<OptimizedVariant[]> {
+  private async generateOpenAIVariants(
+    request: OptimizationRequest,
+    count: number,
+  ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
-    
+
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
       const variantPrompt = `${systemPrompt}
@@ -253,42 +291,45 @@ Generate an optimized version of this prompt. Return your response in the follow
           model: 'gpt-3.5-turbo',
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: variantPrompt }
+            { role: 'user', content: variantPrompt },
           ],
-          temperature: Math.min(0.7 + (i * 0.1), 1.0), // Cap at 1.0 // Vary temperature for diversity
+          temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0 // Vary temperature for diversity
           max_tokens: 1000,
-          response_format: { type: "json_object" }
+          response_format: { type: 'json_object' },
         })
 
         const content = response.choices[0].message.content
         if (!content) continue
 
         const result = JSON.parse(content)
-        
+
         variants.push({
           id: `openai-${Date.now()}-${i}`,
           originalPrompt: request.prompt,
           optimizedPrompt: result.optimizedPrompt,
           changes: result.changes || [],
           modelSpecificFeatures: result.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(result.optimizedPrompt)
+          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
         })
       } catch (error) {
         // Error generating OpenAI variant
       }
     }
-    
+
     return variants
   }
 
-  private async generateClaudeVariants(request: OptimizationRequest, count: number): Promise<OptimizedVariant[]> {
+  private async generateClaudeVariants(
+    request: OptimizationRequest,
+    count: number,
+  ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
-    
+
     // Detect task type and suggested techniques
     const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
     // Task type and techniques detected
-    
+
     for (let i = 0; i < count; i++) {
       const userPrompt = `Transform this prompt to enhance reasoning and performance:
 
@@ -329,12 +370,14 @@ Return JSON with:
         const response = await anthropic!.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1000,
-          temperature: Math.min(0.7 + (i * 0.1), 1.0), // Cap at 1.0
+          temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0
           system: systemPrompt,
-          messages: [{
-            role: 'user',
-            content: userPrompt
-          }]
+          messages: [
+            {
+              role: 'user',
+              content: userPrompt,
+            },
+          ],
         })
 
         const content = response.content[0]
@@ -343,34 +386,37 @@ Return JSON with:
         // Claude API response received
         // Parse the response using our helper
         const result = this.parseJsonResponse(content.text)
-        
+
         variants.push({
           id: `claude-${Date.now()}-${i}`,
           originalPrompt: request.prompt,
           optimizedPrompt: result.optimizedPrompt,
           changes: result.changes || [],
           modelSpecificFeatures: result.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(result.optimizedPrompt)
+          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
         })
         // Successfully created Claude variant
       } catch (error) {
         // Error generating Claude variant
       }
     }
-    
+
     if (variants.length === 0) {
       // Failed to generate any Claude variants
       throw new Error('Failed to generate any Claude variants')
     }
-    
+
     // Claude variants generated successfully
     return variants
   }
 
-  private async generateGeminiVariants(request: OptimizationRequest, count: number): Promise<OptimizedVariant[]> {
+  private async generateGeminiVariants(
+    request: OptimizationRequest,
+    count: number,
+  ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const model = googleAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    
+
     for (let i = 0; i < count; i++) {
       const prompt = `As an expert prompt engineer, optimize this prompt for ${request.targetModel}:
 
@@ -393,26 +439,25 @@ Return ONLY a JSON object with this structure:
       try {
         const result = await model.generateContent(prompt)
         const text = result.response.text()
-        
+
         // Parse the response using our helper
         const parsed = this.parseJsonResponse(text)
-        
+
         variants.push({
           id: `gemini-${Date.now()}-${i}`,
           originalPrompt: request.prompt,
           optimizedPrompt: parsed.optimizedPrompt,
           changes: parsed.changes || [],
           modelSpecificFeatures: parsed.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(parsed.optimizedPrompt)
+          estimatedTokens: this.estimateTokens(parsed.optimizedPrompt),
         })
       } catch (error) {
         // Error generating Gemini variant
       }
     }
-    
+
     return variants
   }
-
 
   private validateInput(request: OptimizationRequest): void {
     if (!request.prompt || request.prompt.trim().length === 0) {
@@ -427,7 +472,7 @@ Return ONLY a JSON object with this structure:
     const counts = {
       basic: 1,
       advanced: 3,
-      expert: 5
+      expert: 5,
     }
     return counts[level]
   }

@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Base Technique Strategy
- * 
+ *
  * Abstract base class for all prompt optimization techniques
  */
 
@@ -11,7 +11,7 @@ import {
   TechniqueStrategy,
   generateVariantId,
   estimateTokens,
-  estimateCost
+  estimateCost,
 } from '@promptdial/shared'
 
 export abstract class BaseTechnique implements TechniqueStrategy {
@@ -19,16 +19,16 @@ export abstract class BaseTechnique implements TechniqueStrategy {
   abstract description: string
   abstract best_for: TaskClassification['task_type'][]
   abstract needs_retrieval: boolean
-  
+
   /**
    * Generate prompt variants using this technique
    */
   abstract generate(
     base_prompt: string,
     meta: TaskClassification,
-    budget: BudgetConstraints
+    budget: BudgetConstraints,
   ): Promise<PromptVariant[]>
-  
+
   /**
    * Helper to create a prompt variant with common fields
    */
@@ -38,34 +38,28 @@ export abstract class BaseTechnique implements TechniqueStrategy {
     temperature: number,
     index: number,
     provider: string = 'openai',
-    model: string = 'gpt-3.5-turbo'
+    model: string = 'gpt-3.5-turbo',
   ): PromptVariant {
     const tokens = estimateTokens(prompt)
     const cost = estimateCost(tokens, provider, model)
-    
+
     return {
       id: generateVariantId(technique, index),
       technique,
       prompt,
       est_tokens: tokens,
       temperature,
-      cost_usd: cost
+      cost_usd: cost,
     }
   }
-  
+
   /**
    * Check if this technique fits within budget constraints
    */
-  protected fitsInBudget(
-    variant: PromptVariant,
-    budget: BudgetConstraints
-  ): boolean {
-    return (
-      variant.cost_usd <= budget.remaining_cost_usd &&
-      variant.est_tokens <= budget.max_tokens
-    )
+  protected fitsInBudget(variant: PromptVariant, budget: BudgetConstraints): boolean {
+    return variant.cost_usd <= budget.remaining_cost_usd && variant.est_tokens <= budget.max_tokens
   }
-  
+
   /**
    * Format a prompt with a system instruction sandwich for safety
    */
@@ -76,14 +70,14 @@ You are a helpful AI assistant. Follow the user's instructions carefully.
 ${userPrompt}
 <<END>>`
   }
-  
+
   /**
    * Add step-by-step reasoning instruction
    */
   protected addStepByStep(prompt: string): string {
     return `${prompt}\n\nPlease work through this step-by-step, showing your reasoning at each stage.`
   }
-  
+
   /**
    * Add output format specification
    */

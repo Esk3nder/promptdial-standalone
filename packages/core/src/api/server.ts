@@ -58,34 +58,38 @@ app.post('/api/test', async (req, res) => {
 
   // Return test ID immediately
   res.json({ testId, streamUrl: `/api/test-stream/${testId}` })
-  
+
   // Important: Don't return here, as we need to run the test in background
 
   // Run test in background
   try {
     const results = await runner.runTest(prompt, {
       targetModel,
-      optimizationLevel
+      optimizationLevel,
     })
 
     // Send final results
     const client = clients.get(testId)
     if (client) {
-      client.write(`data: ${JSON.stringify({ 
-        type: 'final_results', 
-        results,
-        testId 
-      })}\n\n`)
+      client.write(
+        `data: ${JSON.stringify({
+          type: 'final_results',
+          results,
+          testId,
+        })}\n\n`,
+      )
       client.end()
     }
   } catch (error) {
     const client = clients.get(testId)
     if (client) {
-      client.write(`data: ${JSON.stringify({ 
-        type: 'error', 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        testId 
-      })}\n\n`)
+      client.write(
+        `data: ${JSON.stringify({
+          type: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          testId,
+        })}\n\n`,
+      )
       client.end()
     }
   } finally {
@@ -104,11 +108,11 @@ const testResults = new Map()
 app.get('/api/test/:testId', (req, res) => {
   const { testId } = req.params
   const result = testResults.get(testId)
-  
+
   if (!result) {
     return res.status(404).json({ error: 'Test not found' })
   }
-  
+
   return res.json(result)
 })
 

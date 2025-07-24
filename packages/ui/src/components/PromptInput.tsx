@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 
 interface PromptInputProps {
-  onSubmit: (prompt: string, options: {
-    targetModel: string
-    optimizationLevel: string
-  }) => void
+  onSubmit: (
+    prompt: string,
+    options: {
+      targetModel: string
+      optimizationLevel: string
+    },
+  ) => void
   disabled?: boolean
 }
 

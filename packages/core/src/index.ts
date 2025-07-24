@@ -1,6 +1,6 @@
 /**
  * PromptDial - AI Prompt Optimization Engine
- * 
+ *
  * Transform basic prompts into optimized, model-specific queries
  */
 
@@ -11,7 +11,7 @@ import { QualityValidator, ValidationResult } from './quality-validator'
 export interface PromptDialOptions {
   autoValidate?: boolean
   sortByQuality?: boolean
-  useAI?: boolean  // New option to enable AI-powered optimization
+  useAI?: boolean // New option to enable AI-powered optimization
 }
 
 export interface OptimizedResult {
@@ -33,10 +33,10 @@ export class PromptDial {
     this.options = {
       autoValidate: true,
       sortByQuality: true,
-      useAI: true,  // Default to AI-powered optimization
-      ...options
+      useAI: true, // Default to AI-powered optimization
+      ...options,
     }
-    
+
     // Use AI designer if enabled and API keys are available
     if (this.options.useAI && this.hasAPIKeys()) {
       // AI-powered optimization enabled
@@ -48,7 +48,7 @@ export class PromptDial {
         // AI optimization requested but no API keys found. Falling back to basic optimization.
       }
     }
-    
+
     this.validator = new QualityValidator()
   }
 
@@ -80,7 +80,7 @@ export class PromptDial {
     return {
       variants: enhancedVariants,
       request,
-      summary
+      summary,
     }
   }
 
@@ -98,31 +98,38 @@ export class PromptDial {
     return this.validator.compareVariants(variants)
   }
 
-  private async addQualityScores(variants: OptimizedVariant[]): Promise<Array<OptimizedVariant & { quality: ValidationResult }>> {
+  private async addQualityScores(
+    variants: OptimizedVariant[],
+  ): Promise<Array<OptimizedVariant & { quality: ValidationResult }>> {
     return Promise.all(
       variants.map(async (variant) => ({
         ...variant,
-        quality: await this.validator.validateAndScore(variant)
-      }))
+        quality: await this.validator.validateAndScore(variant),
+      })),
     )
   }
 
   private calculateSummary(variants: Array<OptimizedVariant & { quality?: ValidationResult }>) {
     const scores = variants
-      .map(v => v.quality?.score)
+      .map((v) => v.quality?.score)
       .filter((score): score is number => score !== undefined)
 
     return {
       totalVariants: variants.length,
       bestScore: scores.length > 0 ? Math.max(...scores) : undefined,
-      averageScore: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined
+      averageScore:
+        scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : undefined,
     }
   }
-  
+
   private hasAPIKeys(): boolean {
-    return !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY)
+    return !!(
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.GOOGLE_AI_API_KEY
+    )
   }
-  
+
   private getAvailableProviders(): string[] {
     const providers = []
     if (process.env.OPENAI_API_KEY) providers.push('OpenAI')
@@ -133,16 +140,8 @@ export class PromptDial {
 }
 
 // Export all types and classes
-export {
-  MetaPromptDesigner,
-  OptimizationRequest,
-  OptimizedVariant
-} from './meta-prompt-designer'
-export {
-  QualityValidator,
-  ValidationResult,
-  QualityFactors
-} from './quality-validator'
+export { MetaPromptDesigner, OptimizationRequest, OptimizedVariant } from './meta-prompt-designer'
+export { QualityValidator, ValidationResult, QualityFactors } from './quality-validator'
 
 // Default export
 export default PromptDial

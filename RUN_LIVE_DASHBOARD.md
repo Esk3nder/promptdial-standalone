@@ -12,6 +12,7 @@ npm run server
 ```
 
 You should see:
+
 ```
 🚀 PromptDial API server running on http://localhost:3001
 📡 SSE endpoint: http://localhost:3001/api/test-stream/:testId
@@ -29,6 +30,7 @@ npm run dev
 ```
 
 You should see Vite start up:
+
 ```
 VITE v5.x.x  ready in xxx ms
 ➜  Local:   http://localhost:5173/

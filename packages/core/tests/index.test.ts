@@ -4,11 +4,11 @@ import { PromptDial } from '../src/index'
 describe('PromptDial', () => {
   it('should optimize a basic prompt', async () => {
     const promptDial = new PromptDial()
-    
+
     const result = await promptDial.optimize({
       prompt: 'Explain machine learning',
       targetModel: 'gpt-4',
-      optimizationLevel: 'basic'
+      optimizationLevel: 'basic',
     })
 
     expect(result.variants).toHaveLength(1)
@@ -20,11 +20,11 @@ describe('PromptDial', () => {
 
   it('should generate multiple variants for advanced level', async () => {
     const promptDial = new PromptDial()
-    
+
     const result = await promptDial.optimize({
       prompt: 'Write code',
       targetModel: 'claude-3-opus',
-      optimizationLevel: 'advanced'
+      optimizationLevel: 'advanced',
     })
 
     expect(result.variants).toHaveLength(3)
@@ -35,11 +35,11 @@ describe('PromptDial', () => {
 
   it('should sort variants by quality when enabled', async () => {
     const promptDial = new PromptDial({ sortByQuality: true })
-    
+
     const result = await promptDial.optimize({
       prompt: 'Analyze data',
       targetModel: 'gpt-4',
-      optimizationLevel: 'expert'
+      optimizationLevel: 'expert',
     })
 
     // Check that variants are sorted by score descending
@@ -52,11 +52,11 @@ describe('PromptDial', () => {
 
   it('should work without auto-validation', async () => {
     const promptDial = new PromptDial({ autoValidate: false })
-    
+
     const result = await promptDial.optimize({
       prompt: 'Test prompt',
       targetModel: 'gpt-4',
-      optimizationLevel: 'basic'
+      optimizationLevel: 'basic',
     })
 
     expect(result.variants[0].quality).toBeUndefined()

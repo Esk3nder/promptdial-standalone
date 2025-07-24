@@ -41,7 +41,7 @@ export const keyboard = {
 // Focus management test helpers
 export async function expectFocusOrder(elements: HTMLElement[]) {
   const user = userEvent.setup()
-  
+
   for (let i = 0; i < elements.length; i++) {
     elements[i].focus()
     expect(document.activeElement).toBe(elements[i])
@@ -64,7 +64,7 @@ export function createLiveRegion(ariaLive: 'polite' | 'assertive' = 'polite') {
 export function announceToScreenReader(message: string, region?: HTMLElement) {
   const liveRegion = region || document.querySelector('[aria-live]') || createLiveRegion()
   liveRegion.textContent = message
-  
+
   // Clear after announcement
   setTimeout(() => {
     liveRegion.textContent = ''

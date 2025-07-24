@@ -2,7 +2,7 @@
  * PromptDial 2.0 - Shared Utilities
  */
 
-import { TelemetryEvent } from './types'
+import { TelemetryEvent, ServiceResponse } from './types'
 
 // ============= ID Generation =============
 
@@ -19,8 +19,45 @@ export function generateVariantId(technique: string, index: number): string {
 
 // ============= Error Handling =============
 
+export interface ServiceError {
+  code: string
+  message: string
+  details?: Record<string, unknown>
+}
+
+export function createServiceError(
+  code: string,
+  message: string,
+  details?: Record<string, unknown>,
+): ServiceError {
+  return {
+    code,
+    message,
+    details,
+  }
+}
+
 // ============= Service Communication =============
 
+export function createServiceResponse<T = unknown>(
+  request: { trace_id?: string; [key: string]: unknown },
+  data?: T,
+  error?: {
+    code: string
+    message: string
+    details?: any
+    retryable: boolean
+  },
+): ServiceResponse<T> {
+  return {
+    trace_id: request.trace_id || generateTraceId(),
+    timestamp: new Date(),
+    service: process.env.SERVICE_NAME || 'unknown',
+    success: !error,
+    data,
+    error,
+  }
+}
 
 // ============= Token Estimation =============
 
@@ -30,11 +67,7 @@ export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4)
 }
 
-export function estimateCost(
-  tokens: number,
-  provider: string,
-  model: string
-): number {
+export function estimateCost(tokens: number, provider: string, model: string): number {
   // Simplified cost estimation - in production, use actual pricing
   const costPer1kTokens: Record<string, number> = {
     'openai:gpt-4': 0.03,
@@ -42,9 +75,9 @@ export function estimateCost(
     'anthropic:claude-3-opus': 0.015,
     'anthropic:claude-3-sonnet': 0.003,
     'google:gemini-pro': 0.001,
-    'google:gemini-1.5-flash': 0.0005
+    'google:gemini-1.5-flash': 0.0005,
   }
-  
+
   const key = `${provider}:${model}`
   const rate = costPer1kTokens[key] || 0.01
   return (tokens / 1000) * rate
@@ -56,7 +89,7 @@ export function createTelemetryEvent(
   type: TelemetryEvent['event_type'],
   traceId: string,
   variantId?: string,
-  additionalData?: Partial<TelemetryEvent>
+  additionalData?: Partial<TelemetryEvent>,
 ): TelemetryEvent {
   return {
     trace_id: traceId,
@@ -64,7 +97,7 @@ export function createTelemetryEvent(
     ts_utc: new Date().toISOString(),
     event_type: type,
     task_type: 'general_qa',
-    ...additionalData
+    ...additionalData,
   }
 }
 
@@ -73,26 +106,26 @@ export function createTelemetryEvent(
 // ============= Logging Helpers =============
 
 export interface Logger {
-  debug(message: string, meta?: any): void
-  info(message: string, meta?: any): void
-  warn(message: string, meta?: any): void
-  error(message: string, error?: Error, meta?: any): void
+  debug(message: string, meta?: Record<string, unknown>): void
+  info(message: string, meta?: Record<string, unknown>): void
+  warn(message: string, meta?: Record<string, unknown>): void
+  error(message: string, error?: Error, meta?: Record<string, unknown>): void
 }
 
 export function createLogger(service: string): Logger {
   return {
-    debug: (message: string, meta?: any) => {
+    debug: (message: string, meta?: Record<string, unknown>) => {
       console.debug(`[${service}] ${message}`, meta)
     },
-    info: (message: string, meta?: any) => {
+    info: (message: string, meta?: Record<string, unknown>) => {
       console.info(`[${service}] ${message}`, meta)
     },
-    warn: (message: string, meta?: any) => {
+    warn: (message: string, meta?: Record<string, unknown>) => {
       console.warn(`[${service}] ${message}`, meta)
     },
-    error: (message: string, error?: Error, meta?: any) => {
+    error: (message: string, error?: Error, meta?: Record<string, unknown>) => {
       console.error(`[${service}] ${message}`, error, meta)
-    }
+    },
   }
 }
 
@@ -106,19 +139,29 @@ export function mean(numbers: number[]): number {
 export function stddev(numbers: number[]): number {
   if (numbers.length < 2) return 0
   const avg = mean(numbers)
-  const squareDiffs = numbers.map(n => Math.pow(n - avg, 2))
+  const squareDiffs = numbers.map((n) => Math.pow(n - avg, 2))
   return Math.sqrt(mean(squareDiffs))
 }
-
 
 // ============= Pareto Optimization =============
 
 // ============= Telemetry Service =============
 
+interface TelemetryMetrics {
+  counters: Record<string, number>
+  latencies: Record<string, number[]>
+  errors: Array<{ timestamp: string; error: string; context?: Record<string, unknown> }>
+}
+
 interface TelemetryService {
   trackEvent(event: TelemetryEvent): void
   trackMetric(name: string, value: number, tags?: Record<string, string>): void
-  trackError(error: Error, context?: Record<string, any>): void
+  trackError(error: Error, context?: Record<string, unknown>): void
+  recordLatency(name: string, duration: number): void
+  recordCounter(name: string, count: number): void
+  recordMetric(name: string, value: number, labels?: Record<string, string>): void
+  incrementCounter(name: string, count?: number): void
+  getMetrics(): Promise<TelemetryMetrics>
   flush(): Promise<void>
 }
 
@@ -135,12 +178,32 @@ export function getTelemetryService(): TelemetryService {
       trackMetric: (name: string, value: number, tags?: Record<string, string>) => {
         console.log('[Telemetry] Metric:', { name, value, tags })
       },
-      trackError: (error: Error, context?: Record<string, any>) => {
+      trackError: (error: Error, context?: Record<string, unknown>) => {
         console.error('[Telemetry] Error:', error, context)
+      },
+      recordLatency: (name: string, duration: number) => {
+        console.log('[Telemetry] Latency:', { name, duration })
+      },
+      recordCounter: (name: string, count: number) => {
+        console.log('[Telemetry] Counter:', { name, count })
+      },
+      recordMetric: (name: string, value: number, labels?: Record<string, string>) => {
+        console.log('[Telemetry] Metric:', { name, value, labels })
+      },
+      incrementCounter: (name: string, count: number = 1) => {
+        console.log('[Telemetry] Increment Counter:', { name, count })
+      },
+      getMetrics: async () => {
+        // Return mock metrics for now
+        return {
+          counters: {},
+          latencies: {},
+          errors: [],
+        }
       },
       flush: async () => {
         // No-op for console telemetry
-      }
+      },
     }
   }
   return telemetryService

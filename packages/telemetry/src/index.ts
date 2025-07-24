@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Telemetry Service
- * 
+ *
  * Handles event logging, metrics collection, and monitoring
  */
 
@@ -13,7 +13,7 @@ import {
   createServiceError,
   createLogger,
   ERROR_CODES,
-  METRICS
+  METRICS,
 } from '@promptdial/shared'
 import { EventEmitter } from 'events'
 
@@ -41,31 +41,31 @@ interface EventFilters {
 class InMemoryEventStore implements EventStore {
   private events: TelemetryEvent[] = []
   private maxEvents = 10000
-  
+
   async write(event: TelemetryEvent): Promise<void> {
     this.events.push(event)
-    
+
     // Circular buffer - remove oldest events if over limit
     if (this.events.length > this.maxEvents) {
       this.events = this.events.slice(-this.maxEvents)
     }
   }
-  
+
   async query(filters: EventFilters): Promise<TelemetryEvent[]> {
-    return this.events.filter(event => {
+    return this.events.filter((event) => {
       if (filters.trace_id && event.trace_id !== filters.trace_id) return false
       if (filters.variant_id && event.variant_id !== filters.variant_id) return false
       if (filters.event_type && event.event_type !== filters.event_type) return false
       if (filters.task_type && event.task_type !== filters.task_type) return false
-      
+
       const eventTime = new Date(event.ts_utc)
       if (filters.start_time && eventTime < filters.start_time) return false
       if (filters.end_time && eventTime > filters.end_time) return false
-      
+
       return true
     })
   }
-  
+
   async flush(): Promise<void> {
     logger.info(`Flushing ${this.events.length} events`)
     // In production, this would batch write to BigQuery/S3
@@ -85,51 +85,51 @@ interface MetricPoint {
 class MetricsCollector {
   private metrics: Map<string, MetricPoint[]> = new Map()
   private flushInterval: NodeJS.Timeout | null = null
-  
+
   constructor(private flushIntervalMs: number = 60000) {
     this.startAutoFlush()
   }
-  
+
   record(name: string, value: number, labels: Record<string, string> = {}): void {
     const point: MetricPoint = {
       name,
       value,
       timestamp: new Date(),
-      labels
+      labels,
     }
-    
+
     if (!this.metrics.has(name)) {
       this.metrics.set(name, [])
     }
-    
+
     this.metrics.get(name)!.push(point)
   }
-  
+
   increment(name: string, value: number = 1, labels: Record<string, string> = {}): void {
     this.record(name, value, labels)
   }
-  
+
   histogram(name: string, value: number, labels: Record<string, string> = {}): void {
     this.record(name, value, labels)
   }
-  
+
   async calculatePerformanceMetrics(
     service: string,
     startTime?: Date,
-    endTime?: Date
+    endTime?: Date,
   ): Promise<PerformanceMetrics> {
     const latencyMetric = `${METRICS.REQUEST_DURATION}_${service}`
     const latencies = this.metrics.get(latencyMetric) || []
-    
+
     // Filter by time range if provided
-    const filtered = latencies.filter(point => {
+    const filtered = latencies.filter((point) => {
       if (startTime && point.timestamp < startTime) return false
       if (endTime && point.timestamp > endTime) return false
       return true
     })
-    
-    const values = filtered.map(p => p.value).sort((a, b) => a - b)
-    
+
+    const values = filtered.map((p) => p.value).sort((a, b) => a - b)
+
     if (values.length === 0) {
       return {
         p50_latency_ms: 0,
@@ -137,61 +137,61 @@ class MetricsCollector {
         p99_latency_ms: 0,
         success_rate: 0,
         error_rate: 0,
-        avg_cost_per_request: 0
+        avg_cost_per_request: 0,
       }
     }
-    
+
     // Calculate percentiles
     const p50Index = Math.floor(values.length * 0.5)
     const p95Index = Math.floor(values.length * 0.95)
     const p99Index = Math.floor(values.length * 0.99)
-    
+
     // Calculate success/error rates
-    const successCount = (this.metrics.get(METRICS.REQUEST_COUNT) || [])
-      .filter(p => p.labels.status === 'success').length
+    const successCount = (this.metrics.get(METRICS.REQUEST_COUNT) || []).filter(
+      (p) => p.labels.status === 'success',
+    ).length
     const errorCount = (this.metrics.get(METRICS.ERROR_COUNT) || []).length
     const totalRequests = successCount + errorCount
-    
+
     // Calculate average cost
-    const costs = (this.metrics.get(METRICS.COST_USD) || [])
-      .map(p => p.value)
-    const avgCost = costs.length > 0 
-      ? costs.reduce((sum, c) => sum + c, 0) / costs.length 
-      : 0
-    
+    const costs = (this.metrics.get(METRICS.COST_USD) || []).map((p) => p.value)
+    const avgCost = costs.length > 0 ? costs.reduce((sum, c) => sum + c, 0) / costs.length : 0
+
     return {
       p50_latency_ms: values[p50Index] || 0,
       p95_latency_ms: values[p95Index] || 0,
       p99_latency_ms: values[p99Index] || 0,
       success_rate: totalRequests > 0 ? successCount / totalRequests : 0,
       error_rate: totalRequests > 0 ? errorCount / totalRequests : 0,
-      avg_cost_per_request: avgCost
+      avg_cost_per_request: avgCost,
     }
   }
-  
+
   private startAutoFlush(): void {
     this.flushInterval = setInterval(() => {
       this.flush()
     }, this.flushIntervalMs)
   }
-  
+
   private async flush(): Promise<void> {
     // In production, this would send to Prometheus/Datadog
-    const metricsCount = Array.from(this.metrics.values())
-      .reduce((sum, points) => sum + points.length, 0)
-    
+    const metricsCount = Array.from(this.metrics.values()).reduce(
+      (sum, points) => sum + points.length,
+      0,
+    )
+
     if (metricsCount > 0) {
       logger.info(`Flushing ${metricsCount} metric points`)
-      
+
       // Keep only recent metrics (last hour)
       const oneHourAgo = new Date(Date.now() - 3600000)
       for (const [name, points] of this.metrics.entries()) {
-        const recent = points.filter(p => p.timestamp > oneHourAgo)
+        const recent = points.filter((p) => p.timestamp > oneHourAgo)
         this.metrics.set(name, recent)
       }
     }
   }
-  
+
   stop(): void {
     if (this.flushInterval) {
       clearInterval(this.flushInterval)
@@ -207,127 +207,121 @@ export class TelemetryService extends EventEmitter {
   private metricsCollector: MetricsCollector
   private batchSize = 100
   private eventBatch: TelemetryEvent[] = []
-  
+
   constructor(eventStore?: EventStore) {
     super()
     this.eventStore = eventStore || new InMemoryEventStore()
     this.metricsCollector = new MetricsCollector()
   }
-  
+
   async logEvent(event: TelemetryEvent): Promise<void> {
     // Validate event
     if (!event.trace_id || !event.event_type) {
       throw new Error('Invalid telemetry event: missing required fields')
     }
-    
+
     // Add to batch
     this.eventBatch.push(event)
-    
+
     // Update metrics based on event
     this.updateMetrics(event)
-    
+
     // Emit event for real-time monitoring
     this.emit('event', event)
-    
+
     // Flush if batch is full
     if (this.eventBatch.length >= this.batchSize) {
       await this.flushEvents()
     }
   }
-  
+
   async queryEvents(filters: EventFilters): Promise<TelemetryEvent[]> {
     return this.eventStore.query(filters)
   }
-  
+
   async getTraceEvents(traceId: string): Promise<TelemetryEvent[]> {
     return this.queryEvents({ trace_id: traceId })
   }
-  
+
   async getPerformanceMetrics(
     service: string,
     startTime?: Date,
-    endTime?: Date
+    endTime?: Date,
   ): Promise<PerformanceMetrics> {
-    return this.metricsCollector.calculatePerformanceMetrics(
-      service,
-      startTime,
-      endTime
-    )
+    return this.metricsCollector.calculatePerformanceMetrics(service, startTime, endTime)
   }
-  
+
   recordMetric(name: string, value: number, labels: Record<string, string> = {}): void {
     this.metricsCollector.record(name, value, labels)
   }
-  
+
   incrementCounter(name: string, value: number = 1, labels: Record<string, string> = {}): void {
     this.metricsCollector.increment(name, value, labels)
   }
-  
+
   recordLatency(service: string, latencyMs: number): void {
-    this.metricsCollector.histogram(
-      `${METRICS.REQUEST_DURATION}_${service}`,
-      latencyMs,
-      { service }
-    )
+    this.metricsCollector.histogram(`${METRICS.REQUEST_DURATION}_${service}`, latencyMs, {
+      service,
+    })
   }
-  
+
   private updateMetrics(event: TelemetryEvent): void {
     // Update counters
     this.incrementCounter(METRICS.REQUEST_COUNT, 1, {
       event_type: event.event_type,
-      task_type: event.task_type
+      task_type: event.task_type,
     })
-    
+
     // Update latency
     if (event.latency_ms) {
       this.recordLatency(event.provider || 'unknown', event.latency_ms)
     }
-    
+
     // Update token usage
     if (event.total_tokens) {
       this.incrementCounter(METRICS.TOKEN_USAGE, event.total_tokens, {
-        provider: event.provider || 'unknown'
+        provider: event.provider || 'unknown',
       })
     }
-    
+
     // Update cost
     if (event.cost_usd) {
       this.metricsCollector.record(METRICS.COST_USD, event.cost_usd, {
-        provider: event.provider || 'unknown'
+        provider: event.provider || 'unknown',
       })
     }
-    
+
     // Update quality scores
     if (event.score !== undefined) {
       this.metricsCollector.record(METRICS.EVALUATION_SCORE, event.score, {
-        task_type: event.task_type
+        task_type: event.task_type,
       })
     }
-    
+
     // Update security metrics
     if (event.safety_verdict === 'unsafe') {
       this.incrementCounter(METRICS.SECURITY_VIOLATIONS, 1, {
-        task_type: event.task_type
+        task_type: event.task_type,
       })
     }
-    
+
     // Update error metrics
     if (event.error) {
       this.incrementCounter(METRICS.ERROR_COUNT, 1, {
-        error_type: event.error
+        error_type: event.error,
       })
     }
   }
-  
+
   private async flushEvents(): Promise<void> {
     if (this.eventBatch.length === 0) return
-    
+
     const batch = this.eventBatch.slice()
     this.eventBatch = []
-    
+
     try {
       // Write events in parallel
-      await Promise.all(batch.map(event => this.eventStore.write(event)))
+      await Promise.all(batch.map((event) => this.eventStore.write(event)))
       logger.info(`Flushed ${batch.length} events to store`)
     } catch (error) {
       logger.error('Failed to flush events', error as Error)
@@ -335,15 +329,15 @@ export class TelemetryService extends EventEmitter {
       this.eventBatch.unshift(...batch)
     }
   }
-  
+
   async shutdown(): Promise<void> {
     // Flush remaining events
     await this.flushEvents()
     await this.eventStore.flush()
-    
+
     // Stop metrics collector
     this.metricsCollector.stop()
-    
+
     logger.info('Telemetry service shut down')
   }
 }
@@ -360,23 +354,19 @@ export function getTelemetryService(): TelemetryService {
 }
 
 export async function handleLogEventRequest(
-  request: ServiceRequest<TelemetryEvent>
+  request: ServiceRequest<TelemetryEvent>,
 ): Promise<ServiceResponse<void>> {
   try {
     await getTelemetryService().logEvent(request.payload)
     return createServiceResponse(request)
   } catch (error) {
-    const serviceError = createServiceError(
-      ERROR_CODES.INTERNAL_ERROR,
-      'Failed to log event',
-      true
-    )
+    const serviceError = createServiceError(ERROR_CODES.INTERNAL_ERROR, 'Failed to log event', true)
     return createServiceResponse(request, undefined, serviceError)
   }
 }
 
 export async function handleQueryEventsRequest(
-  request: ServiceRequest<EventFilters>
+  request: ServiceRequest<EventFilters>,
 ): Promise<ServiceResponse<TelemetryEvent[]>> {
   try {
     const events = await getTelemetryService().queryEvents(request.payload)
@@ -385,34 +375,30 @@ export async function handleQueryEventsRequest(
     const serviceError = createServiceError(
       ERROR_CODES.INTERNAL_ERROR,
       'Failed to query events',
-      true
+      true,
     )
     return createServiceResponse(request, undefined, serviceError)
   }
 }
 
 export async function handleMetricsRequest(
-  request: ServiceRequest<{ service: string; start_time?: string; end_time?: string }>
+  request: ServiceRequest<{ service: string; start_time?: string; end_time?: string }>,
 ): Promise<ServiceResponse<PerformanceMetrics>> {
   try {
-    const startTime = request.payload.start_time 
-      ? new Date(request.payload.start_time) 
-      : undefined
-    const endTime = request.payload.end_time 
-      ? new Date(request.payload.end_time) 
-      : undefined
-      
+    const startTime = request.payload.start_time ? new Date(request.payload.start_time) : undefined
+    const endTime = request.payload.end_time ? new Date(request.payload.end_time) : undefined
+
     const metrics = await getTelemetryService().getPerformanceMetrics(
       request.payload.service,
       startTime,
-      endTime
+      endTime,
     )
     return createServiceResponse(request, metrics)
   } catch (error) {
     const serviceError = createServiceError(
       ERROR_CODES.INTERNAL_ERROR,
       'Failed to get metrics',
-      true
+      true,
     )
     return createServiceResponse(request, undefined, serviceError)
   }
@@ -424,45 +410,47 @@ if (require.main === module) {
   const express = require('express')
   const app = express()
   const PORT = process.env.PORT || 3009
-  
+
   app.use(express.json({ limit: '10mb' }))
-  
+
   // Log event endpoint
   app.post('/events', async (req: any, res: any) => {
     const response = await handleLogEventRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
   })
-  
+
   // Query events endpoint
   app.post('/events/query', async (req: any, res: any) => {
     const response = await handleQueryEventsRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
   })
-  
+
   // Get metrics endpoint
   app.post('/metrics', async (req: any, res: any) => {
     const response = await handleMetricsRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
   })
-  
+
   // Prometheus metrics endpoint
   app.get('/metrics', (_req: any, res: any) => {
     // In production, this would export Prometheus format
     res.type('text/plain')
-    res.send('# HELP promptdial_request_total Total requests\n# TYPE promptdial_request_total counter\n')
+    res.send(
+      '# HELP promptdial_request_total Total requests\n# TYPE promptdial_request_total counter\n',
+    )
   })
-  
+
   app.get('/health', (_req: any, res: any) => {
     res.json({ status: 'healthy', service: 'telemetry' })
   })
-  
+
   // Graceful shutdown
   process.on('SIGTERM', async () => {
     logger.info('Received SIGTERM, shutting down gracefully')
     await getTelemetryService().shutdown()
     process.exit(0)
   })
-  
+
   app.listen(PORT, () => {
     logger.info(`Telemetry service running on port ${PORT}`)
   })

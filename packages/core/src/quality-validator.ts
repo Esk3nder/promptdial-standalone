@@ -24,7 +24,7 @@ export interface RankedVariant {
 
 export class QualityValidator {
   private vagueTerms = ['something', 'stuff', 'thing', 'whatever', 'somehow', 'that', 'this']
-  private vagueTermPatterns = this.vagueTerms.map(term => new RegExp(`\\b${term}\\b`, 'gi'))
+  private vagueTermPatterns = this.vagueTerms.map((term) => new RegExp(`\\b${term}\\b`, 'gi'))
   private harmfulPatterns = [
     /\bhack\s*(into|systems?|computers?)\b/i,
     /\b(steal|theft)\s*(data|information|credentials)\b/i,
@@ -73,18 +73,18 @@ export class QualityValidator {
 
     // Calculate weighted score
     const weights = {
-      clarity: 0.25,      // Increased importance
+      clarity: 0.25, // Increased importance
       specificity: 0.25,
-      structure: 0.20,    // Increased importance
-      completeness: 0.10,
-      efficiency: 0.10,
+      structure: 0.2, // Increased importance
+      completeness: 0.1,
+      efficiency: 0.1,
       modelAlignment: 0.05,
       safety: 0.05,
     }
 
     const score = Object.entries(factors).reduce(
       (sum, [key, value]) => sum + value * weights[key as keyof QualityFactors],
-      0
+      0,
     )
 
     const suggestions = this.generateSuggestions(variant, factors)
@@ -123,20 +123,25 @@ export class QualityValidator {
         vagueCount += matches.length
       }
     }
-    
+
     // Heavy penalty for vague terms - this is key for clarity
     if (vagueCount > 0) {
-      score -= vagueCount * 25  // Increased penalty
+      score -= vagueCount * 25 // Increased penalty
     }
 
     // Check for clear action verbs
-    const actionVerbs = /\b(analyze|create|explain|write|develop|design|evaluate|compare|tell|provide)\b/
+    const actionVerbs =
+      /\b(analyze|create|explain|write|develop|design|evaluate|compare|tell|provide)\b/
     if (actionVerbs.test(prompt)) {
       score += 15
     }
 
     // Check for explicit instructions
-    if (prompt.includes('please') || prompt.includes('requirements:') || prompt.includes('instructions:')) {
+    if (
+      prompt.includes('please') ||
+      prompt.includes('requirements:') ||
+      prompt.includes('instructions:')
+    ) {
       score += 15
     }
 
@@ -221,7 +226,7 @@ export class QualityValidator {
 
   private evaluateStructure(variant: OptimizedVariant): number {
     const prompt = variant.optimizedPrompt
-    let score = 0  // Start from 0
+    let score = 0 // Start from 0
 
     // Check for sections/headings with double newlines
     const sectionBreaks = (prompt.match(/\n\n/g) || []).length
@@ -230,7 +235,7 @@ export class QualityValidator {
     }
 
     // Check for numbered lists - more points if multiple
-    const numberedMatches = prompt.match(/\n\d+[.)]/g) || []  // Must be at start of line
+    const numberedMatches = prompt.match(/\n\d+[.)]/g) || [] // Must be at start of line
     if (numberedMatches.length > 0) {
       score += Math.min(50, numberedMatches.length * 15)
     }
@@ -242,7 +247,8 @@ export class QualityValidator {
     }
 
     // Check for clear organization markers
-    const orgMarkers = prompt.match(/\b(first|second|then|finally|overview|main points?|conclusion)\b/gi) || []
+    const orgMarkers =
+      prompt.match(/\b(first|second|then|finally|overview|main points?|conclusion)\b/gi) || []
     if (orgMarkers.length > 0) {
       score += Math.min(40, orgMarkers.length * 15)
     }
@@ -252,9 +258,9 @@ export class QualityValidator {
       sectionBreaks > 0,
       numberedMatches.length > 0,
       bulletMatches.length > 0,
-      orgMarkers.length > 0
+      orgMarkers.length > 0,
     ].filter(Boolean).length
-    
+
     if (structureTypes >= 2) {
       score += 10
     }
@@ -351,7 +357,8 @@ export class QualityValidator {
     const suggestions: string[] = []
 
     // Only generate suggestions if the overall quality is below excellent
-    const overallScore = Object.values(factors).reduce((a, b) => a + b, 0) / Object.keys(factors).length
+    const overallScore =
+      Object.values(factors).reduce((a, b) => a + b, 0) / Object.keys(factors).length
     if (overallScore >= 80) {
       return [] // High-quality prompts need no suggestions
     }
@@ -388,8 +395,11 @@ export class QualityValidator {
     }
 
     // Add tone/style suggestion only for lower quality prompts
-    if (overallScore < 70 && !variant.optimizedPrompt.toLowerCase().includes('tone') && 
-        !variant.optimizedPrompt.toLowerCase().includes('style')) {
+    if (
+      overallScore < 70 &&
+      !variant.optimizedPrompt.toLowerCase().includes('tone') &&
+      !variant.optimizedPrompt.toLowerCase().includes('style')
+    ) {
       suggestions.push('Specify desired tone or style')
     }
 
@@ -402,7 +412,8 @@ export class QualityValidator {
     }
 
     // Calculate based on various improvements
-    const lengthImprovement = (variant.optimizedPrompt.length / variant.originalPrompt.length - 1) * 100
+    const lengthImprovement =
+      (variant.optimizedPrompt.length / variant.originalPrompt.length - 1) * 100
     const changesBonus = variant.changes.length * 20
 
     // Cap the improvement percentage

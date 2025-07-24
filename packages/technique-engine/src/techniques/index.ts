@@ -1,6 +1,6 @@
 /**
  * PromptDial 2.0 - Technique Registry
- * 
+ *
  * Central export and registration of all optimization techniques
  */
 
@@ -26,12 +26,12 @@ export const ALL_TECHNIQUES = [
   ReActTechnique,
   TreeOfThoughtTechnique,
   IRCoTTechnique,
-  DSPyAPETechnique
+  DSPyAPETechnique,
 ]
 
 export const TECHNIQUE_REGISTRY = new Map(
-  ALL_TECHNIQUES.map(TechniqueClass => {
+  ALL_TECHNIQUES.map((TechniqueClass) => {
     const instance = new TechniqueClass()
     return [instance.name, TechniqueClass]
-  })
+  }),
 )

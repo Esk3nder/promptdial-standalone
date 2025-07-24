@@ -69,9 +69,7 @@ Let's think step by step through this complex topic.`,
       const variant = createTestVariant({
         originalPrompt: 'tell me about something interesting',
         optimizedPrompt: 'Tell me about something interesting. Please provide more details.',
-        changes: [
-          { type: 'clarity', description: 'Capitalized sentence' },
-        ],
+        changes: [{ type: 'clarity', description: 'Capitalized sentence' }],
       })
 
       // Act
@@ -99,9 +97,7 @@ Let's think step by step through this complex topic.`,
       // Assert
       expect(result.factors.clarity).toBeLessThan(30)
       expect(result.suggestions).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('vague terms'),
-        ])
+        expect.arrayContaining([expect.stringContaining('vague terms')]),
       )
     })
 
@@ -119,7 +115,8 @@ Please provide data-driven insights for each point.`,
       })
 
       const unstructuredVariant = createTestVariant({
-        optimizedPrompt: 'Tell me about renewable energy and its impact on economics and environment and what challenges there are',
+        optimizedPrompt:
+          'Tell me about renewable energy and its impact on economics and environment and what challenges there are',
       })
 
       // Act
@@ -139,7 +136,8 @@ Please provide data-driven insights for each point.`,
       })
 
       const appropriate = createTestVariant({
-        optimizedPrompt: 'Explain artificial intelligence, including its definition, current applications in healthcare and finance, and potential future developments.',
+        optimizedPrompt:
+          'Explain artificial intelligence, including its definition, current applications in healthcare and finance, and potential future developments.',
       })
 
       const tooLong = createTestVariant({
@@ -160,12 +158,14 @@ Please provide data-driven insights for each point.`,
     it('should validate model-specific optimizations', async () => {
       // Arrange
       const gpt4Variant = createTestVariant({
-        optimizedPrompt: "Let's approach this step-by-step. First, analyze the problem. Second, provide reasoning. Third, draw conclusions.",
+        optimizedPrompt:
+          "Let's approach this step-by-step. First, analyze the problem. Second, provide reasoning. Third, draw conclusions.",
         modelSpecificFeatures: ['reasoning', 'step-by-step'],
       })
 
       const claudeVariant = createTestVariant({
-        optimizedPrompt: 'Please provide a thoughtful, comprehensive analysis considering ethical implications.',
+        optimizedPrompt:
+          'Please provide a thoughtful, comprehensive analysis considering ethical implications.',
         modelSpecificFeatures: ['constitutional', 'thoughtful'],
       })
 
@@ -224,9 +224,7 @@ Requirements:
       // Arrange
       const variant = createTestVariant({
         optimizedPrompt: 'Write a blog post about technology trends',
-        changes: [
-          { type: 'clarity', description: 'Basic improvement' },
-        ],
+        changes: [{ type: 'clarity', description: 'Basic improvement' }],
       })
 
       // Act
@@ -239,7 +237,7 @@ Requirements:
           expect.stringMatching(/target.*audience/i),
           expect.stringMatching(/length.*format/i),
           expect.stringMatching(/tone.*style/i),
-        ])
+        ]),
       )
     })
 
@@ -269,10 +267,11 @@ Requirements:
       // Arrange
       const variants = [
         createTestVariant({ optimizedPrompt: 'Tell me about AI' }),
-        createTestVariant({ 
-          optimizedPrompt: 'Provide a comprehensive analysis of artificial intelligence, including current applications, challenges, and future prospects. Structure your response with clear sections and examples.',
+        createTestVariant({
+          optimizedPrompt:
+            'Provide a comprehensive analysis of artificial intelligence, including current applications, challenges, and future prospects. Structure your response with clear sections and examples.',
         }),
-        createTestVariant({ 
+        createTestVariant({
           optimizedPrompt: 'Explain AI in detail',
         }),
       ]

@@ -7,12 +7,14 @@ PromptDial 2.0 now includes a complete web-based testing interface. You can run 
 ## 🚀 Quick Start (2 Steps)
 
 ### Step 1: Start the Services
+
 ```bash
 # In your terminal, run just this one command:
 ./scripts/deploy-local.sh
 ```
 
 ### Step 2: Open the Web Interface
+
 ```bash
 # Start the web server:
 ./status-server.js
@@ -121,16 +123,19 @@ In the web interface, navigate to "Service Status" to:
 ## 🚨 Troubleshooting
 
 ### "Optimization Failed" Error
+
 - Check Service Status tab - all services should be green
 - Ensure you have API keys configured in `.env`
 - Verify services started successfully
 
 ### Services Show as Offline
+
 - Make sure you ran `./scripts/deploy-local.sh`
 - Check terminal for any startup errors
 - Try refreshing the page
 
 ### No LLM Provider Configured
+
 - Add at least one API key to `.env`:
   ```
   OPENAI_API_KEY=sk-...
@@ -161,6 +166,7 @@ Just open **http://localhost:8080/test** and start optimizing!
 ## 🔄 Auto-Save & History
 
 All your tests are automatically saved in browser storage:
+
 - Access previous tests in the "Test History" section
 - Re-run any test with one click
 - Results persist between sessions

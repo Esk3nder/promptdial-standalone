@@ -7,18 +7,22 @@ This guide explains how to test PromptDial 2.0 with actual LLM API calls.
 ## Prerequisites
 
 ### 1. API Keys
+
 Ensure you have at least one API key in your `.env` file:
+
 ```bash
 # Check your .env file
 cat .env | grep "_API_KEY"
 ```
 
 You need at least one of:
+
 - `OPENAI_API_KEY=sk-...`
 - `ANTHROPIC_API_KEY=sk-ant-...`
 - `GOOGLE_AI_API_KEY=AIza...`
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 npm install dotenv  # If not already installed
@@ -34,6 +38,7 @@ npm install dotenv  # If not already installed
 ```
 
 You should see:
+
 - ✅ All core services starting
 - ✅ LLM Runner starting (OpenAI/Anthropic/Google based on your API keys)
 - ✅ Health check passing
@@ -63,6 +68,7 @@ curl http://localhost:4003/health  # Google
 ```
 
 This test will:
+
 - ✅ Verify all services are healthy
 - ✅ Test optimization with real prompts
 - ✅ Make actual LLM API calls
@@ -116,11 +122,13 @@ Recommended Variant:
 ## Cost Estimates
 
 Each full optimization test will cost approximately:
+
 - **OpenAI**: $0.10-0.30 per test
-- **Anthropic**: $0.08-0.25 per test  
+- **Anthropic**: $0.08-0.25 per test
 - **Google AI**: $0.05-0.20 per test
 
 Costs depend on:
+
 - Number of variants generated
 - Evaluation methods used
 - Prompt complexity
@@ -128,21 +136,25 @@ Costs depend on:
 ## Troubleshooting
 
 ### "No LLM provider configured"
+
 - Check your `.env` file has valid API keys
 - Ensure the keys start with the correct prefix
 - Restart services after updating `.env`
 
 ### "Request timeout"
+
 - LLM calls can take 10-30 seconds
 - Check your internet connection
 - Verify API key has sufficient quota
 
 ### "Evaluation failed"
+
 - Ensure evaluator service is running
 - Check LLM Runner logs: `tail -f packages/llm-runner/logs/*`
 - Verify port 4001/4002/4003 is accessible
 
 ### Rate Limiting
+
 - OpenAI: 3 requests/minute on free tier
 - Add delays between tests if needed
 - Consider upgrading API plan for heavy testing
@@ -150,6 +162,7 @@ Costs depend on:
 ## Advanced Testing
 
 ### Test Specific Techniques
+
 ```bash
 curl -X POST http://localhost:3000/api/optimize \
   -H "Content-Type: application/json" \
@@ -163,6 +176,7 @@ curl -X POST http://localhost:3000/api/optimize \
 ```
 
 ### Test with Custom Preferences
+
 ```bash
 curl -X POST http://localhost:3000/api/optimize \
   -H "Content-Type: application/json" \
@@ -179,6 +193,7 @@ curl -X POST http://localhost:3000/api/optimize \
 ```
 
 ### Monitor Real-time Logs
+
 ```bash
 # In separate terminals:
 tail -f packages/api-gateway/logs/*
@@ -189,6 +204,7 @@ tail -f packages/evaluator/logs/*
 ## Performance Metrics
 
 With real API calls, expect:
+
 - **Total optimization time**: 10-45 seconds
 - **Variant generation**: 2-5 seconds each
 - **LLM execution**: 3-15 seconds per variant
@@ -207,6 +223,7 @@ Once testing is successful:
 ## 🎉 Success Indicators
 
 You know the system is working when:
+
 - ✅ All services show as healthy
 - ✅ Real LLM responses appear (not mocked)
 - ✅ Evaluation scores vary between variants

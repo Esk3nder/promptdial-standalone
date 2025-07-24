@@ -1,40 +1,45 @@
 # How to Run PromptDial Performance Tests
 
 ## Prerequisites
+
 Make sure you have your API keys set up in the `.env` file in the `packages/core` directory.
 
 ## Step-by-Step Instructions
 
 1. **Navigate to the core package:**
+
    ```bash
    cd packages/core
    ```
 
 2. **Run a basic test:**
+
    ```bash
    npm run test:performance "Explain quantum computing"
    ```
 
 3. **Test with different optimization levels:**
+
    ```bash
    # Basic level
    npm run test:performance "What is AI?" -- --level basic
-   
+
    # Advanced level (default)
    npm run test:performance "What is AI?" -- --level advanced
-   
+
    # Expert level
    npm run test:performance "What is AI?" -- --level expert
    ```
 
 4. **Test with specific models:**
+
    ```bash
    # Test with Claude
    npm run test:performance "Write a poem" -- --model claude-3-opus
-   
+
    # Test with Gemini
    npm run test:performance "Write a poem" -- --model gemini-pro
-   
+
    # Test with GPT-4 (default)
    npm run test:performance "Write a poem" -- --model gpt-4
    ```
@@ -47,12 +52,14 @@ Make sure you have your API keys set up in the `.env` file in the `packages/core
 ## What the Output Shows
 
 The test will display:
+
 - **Original Prompt Performance**: Response time and token count for your raw prompt
 - **Optimized Variant Performance**: Response time and token count for PromptDial-optimized versions
 - **Improvement Percentages**: How much faster/slower and more/less tokens used
 - **Best Optimized Prompt**: The actual optimized prompt text
 
 ## Example Output
+
 ```
 📊 Performance Test Results
 ==================================================

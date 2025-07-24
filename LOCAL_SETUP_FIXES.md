@@ -3,25 +3,30 @@
 ## Issues Fixed
 
 ### 1. Package Structure Problems
+
 - ✅ Removed duplicate `package-standalone.json`
 - ✅ Updated root `package.json` to proper workspace configuration
 - ✅ Added npm workspaces configuration
 
 ### 2. Dependency Resolution
+
 - ✅ Fixed `workspace:*` references to use `file:` references
 - ✅ Created `pnpm-workspace.yaml` for pnpm compatibility
 - ✅ Ensured all packages can resolve dependencies correctly
 
 ### 3. Entry Points & Scripts
+
 - ✅ Removed redundant `simple-server.js`
 - ✅ Consolidated server entry points
 - ✅ Added unified npm scripts in root package.json
 
 ### 4. TypeScript Configuration
+
 - ✅ Fixed root `tsconfig.json` to remove incorrect `rootDir`
 - ✅ Added proper `baseUrl` configuration
 
 ### 5. Installation & Setup
+
 - ✅ Created `install.sh` script for easy setup
 - ✅ Added `npm run setup` command for clean installation
 - ✅ Created `TROUBLESHOOTING.md` guide
@@ -29,11 +34,13 @@
 ## New Setup Process
 
 1. **Quick Install**:
+
    ```bash
    ./install.sh
    ```
 
 2. **Manual Install**:
+
    ```bash
    npm run setup
    ```

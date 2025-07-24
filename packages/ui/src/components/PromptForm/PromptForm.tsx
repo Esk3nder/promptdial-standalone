@@ -15,21 +15,24 @@ interface PromptFormProps {
 export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptFormProps) {
   const [prompt, setPrompt] = useState('')
   const [model, setModel] = useLocalStorage('promptdial-model', 'gemini-pro')
-  const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>('promptdial-level', 'advanced')
+  const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>(
+    'promptdial-level',
+    'advanced',
+  )
   const [outputFormat, setOutputFormat] = useLocalStorage('promptdial-format', 'markdown')
   const [taskType] = useState<string | undefined>(undefined)
   const [validationError, setValidationError] = useState<string>('')
   const [chainOfThought, setChainOfThought] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const errorId = 'prompt-error'
-  
+
   // Focus textarea on mount
   useEffect(() => {
     textareaRef.current?.focus()
   }, [])
-  
+
   // Keyboard shortcuts
   useKeyboardShortcuts([
     {
@@ -39,7 +42,7 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
       preventDefault: true,
     },
   ])
-  
+
   const handlePromptChange = (value: string) => {
     // Enforce max length
     if (value.length <= 10000) {
@@ -47,7 +50,7 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
       setValidationError('')
     }
   }
-  
+
   const validateForm = (): boolean => {
     if (!prompt.trim()) {
       setValidationError('Please enter a prompt')
@@ -55,12 +58,12 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
     }
     return true
   }
-  
+
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault()
-    
+
     if (!validateForm()) return
-    
+
     const request: OptimizationRequest = {
       prompt: prompt.trim(),
       targetModel: model,
@@ -68,12 +71,12 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
       ...(taskType && taskType !== 'undefined' && { taskType }),
       ...(chainOfThought && { chainOfThought }),
     }
-    
+
     onSubmit(request)
   }
-  
+
   const displayError = validationError || error
-  
+
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       {/* Prompt Textarea */}
@@ -93,12 +96,10 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
             rows={6}
             placeholder="Enter your prompt here... (e.g., 'Create a 3-day travel itinerary for Paris focused on art museums')"
           />
-          <div className={styles.charCount}>
-            {prompt.length.toLocaleString()} / 10,000
-          </div>
+          <div className={styles.charCount}>{prompt.length.toLocaleString()} / 10,000</div>
         </div>
       </div>
-      
+
       {/* Advanced Settings Toggle */}
       <button
         type="button"
@@ -107,12 +108,12 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
         aria-expanded={showAdvanced}
         aria-controls="advanced-settings"
       >
-        <svg 
+        <svg
           className={`${styles.advancedIcon} ${showAdvanced ? styles.expanded : ''}`}
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth="2" 
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="2"
           stroke="currentColor"
           width="16"
           height="16"
@@ -121,7 +122,7 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
         </svg>
         Advanced Settings
       </button>
-      
+
       {/* Configuration */}
       {showAdvanced && (
         <div id="advanced-settings" className={styles.configSection}>
@@ -139,14 +140,14 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
               aria-label="Select target AI model"
               className={styles.select}
             >
-              {MODEL_OPTIONS.map(option => (
+              {MODEL_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
           </div>
-          
+
           {/* Optimization Level */}
           <div className={styles.formGroup}>
             <label htmlFor="level" className={styles.label}>
@@ -161,14 +162,14 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
               aria-label="Select optimization level"
               className={styles.select}
             >
-              {LEVEL_OPTIONS.map(option => (
+              {LEVEL_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
           </div>
-          
+
           {/* Output Format */}
           <div className={styles.formGroup}>
             <label htmlFor="outputFormat" className={styles.label}>
@@ -190,7 +191,7 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
           </div>
         </div>
       )}
-      
+
       {/* Toggle Switch - Only show when Advanced is open */}
       {showAdvanced && (
         <div className={styles.toggleGroup}>
@@ -209,14 +210,14 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
           </button>
         </div>
       )}
-      
+
       {/* Error Message */}
       {displayError && (
         <div id={errorId} role="alert" className={styles.error}>
           {displayError}
         </div>
       )}
-      
+
       {/* Submit Button */}
       <button
         type="submit"
@@ -233,14 +234,24 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
           </>
         ) : (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611l-3.98.793a3 3 0 01-2.31-2.31l-.793-3.98c-.293-1.717 1.379-2.299 2.611-1.067l1.402 1.402M5 14.5l-1.402 1.402c-1.232 1.232-.65 3.318 1.067 3.611l3.98.793a3 3 0 002.31-2.31l.793-3.98c.293-1.717-1.379-2.299-2.611-1.067L5 14.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611l-3.98.793a3 3 0 01-2.31-2.31l-.793-3.98c-.293-1.717 1.379-2.299 2.611-1.067l1.402 1.402M5 14.5l-1.402 1.402c-1.232 1.232-.65 3.318 1.067 3.611l3.98.793a3 3 0 002.31-2.31l.793-3.98c.293-1.717-1.379-2.299-2.611-1.067L5 14.5"
+              />
             </svg>
             Refine Prompt
           </>
         )}
       </button>
-      
+
       <div className={styles.hint}>
         Tip: Press <kbd>Cmd</kbd> + <kbd>Enter</kbd> to optimize
       </div>

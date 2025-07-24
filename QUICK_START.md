@@ -13,6 +13,7 @@ npm start
 ```
 
 This will:
+
 1. Start the PromptDial server on `http://localhost:3000`
 2. Serve the web UI automatically
 3. Open your browser to the UI
@@ -20,6 +21,7 @@ This will:
 ## 📱 What You Get
 
 Once running, you can:
+
 - Enter prompts to optimize
 - Select target AI models (GPT-4, Claude, Gemini)
 - Choose optimization levels (Basic, Advanced, Expert)
@@ -29,12 +31,14 @@ Once running, you can:
 ## 🛠️ Alternative Commands
 
 ### Run the server manually:
+
 ```bash
 cd packages/core
 npm run server
 ```
 
 ### Development mode (with hot reload):
+
 ```bash
 # Terminal 1: Run the UI dev server
 cd packages/ui
@@ -48,6 +52,7 @@ npm run server:dev
 ## 🔧 Configuration
 
 The server runs on port 3000 by default. To change:
+
 ```bash
 PORT=8080 npm start
 ```
@@ -55,6 +60,7 @@ PORT=8080 npm start
 ## 📝 API Endpoint
 
 The optimization API is available at:
+
 ```
 POST http://localhost:3000/api/optimize
 

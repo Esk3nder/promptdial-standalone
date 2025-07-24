@@ -3,12 +3,14 @@
 ## Quick Deploy to GitHub
 
 ### Option 1: Using GitHub CLI (Recommended)
+
 ```bash
 cd promptdial-standalone
 ./setup-github.sh
 ```
 
 ### Option 2: Manual Setup
+
 Follow the instructions in `MANUAL_SETUP.md`
 
 ## What You Get
@@ -42,21 +44,25 @@ promptdial/
 ## Features
 
 ✅ **3 Core Components**:
+
 - MetaPromptDesigner - Generates optimized variants
 - QualityValidator - Scores prompt quality
 - PromptDial - Main API interface
 
 ✅ **Multi-Model Support**:
+
 - GPT-4
 - Claude 3 (Opus/Sonnet/Haiku)
 - Gemini Pro
 
 ✅ **Optimization Levels**:
+
 - Basic (1 variant)
 - Advanced (3 variants)
 - Expert (5 variants)
 
 ✅ **Quality Metrics**:
+
 - Clarity
 - Specificity
 - Structure
@@ -68,6 +74,7 @@ promptdial/
 ## Next Steps
 
 1. **Test Locally**:
+
    ```bash
    cd promptdial-standalone
    npm install
@@ -81,6 +88,7 @@ promptdial/
    - Customize README with your information
 
 3. **Publish to npm** (optional):
+
    ```bash
    npm login
    npm publish

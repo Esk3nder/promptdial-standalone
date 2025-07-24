@@ -24,7 +24,11 @@ export function DeepLinkButtons({ prompt, model, className }: DeepLinkButtonsPro
             key={link.name}
             className={`${styles.linkButton} ${link.requiresExtension ? styles.requiresExtension : ''}`}
             onClick={() => handleLinkClick(link)}
-            title={link.requiresExtension ? `${link.name} (requires browser extension)` : `Open in ${link.name}`}
+            title={
+              link.requiresExtension
+                ? `${link.name} (requires browser extension)`
+                : `Open in ${link.name}`
+            }
             aria-label={`Open prompt in ${link.name}`}
           >
             <span className={styles.icon} aria-hidden="true">
@@ -39,10 +43,8 @@ export function DeepLinkButtons({ prompt, model, className }: DeepLinkButtonsPro
           </button>
         ))}
       </div>
-      {links.some(link => link.requiresExtension) && (
-        <div className={styles.disclaimer}>
-          * Requires browser extension for auto-submit
-        </div>
+      {links.some((link) => link.requiresExtension) && (
+        <div className={styles.disclaimer}>* Requires browser extension for auto-submit</div>
       )}
     </div>
   )

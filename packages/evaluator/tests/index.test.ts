@@ -4,13 +4,13 @@ import {
   getEvaluatorEnsemble,
   handleEvaluateRequest,
   handleCompareRequest,
-  handleFeedbackRequest
+  handleFeedbackRequest,
 } from '../src/index'
 import {
   createTestPromptVariant,
   createTestTaskClassification,
   createTestEvaluationResult,
-  createTestServiceRequest
+  createTestServiceRequest,
 } from '@promptdial/shared'
 import { BaseEvaluator } from '../src/evaluators/base'
 
@@ -23,32 +23,32 @@ vi.mock('@promptdial/shared', async () => {
       debug: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn()
+      error: vi.fn(),
     }),
     getTelemetryService: () => ({
       recordLatency: vi.fn(),
       recordMetric: vi.fn(),
-      recordCounter: vi.fn()
+      recordCounter: vi.fn(),
     }),
-    createServiceResponse: (request: any, data?: any, error?: any) => ({
+    createServiceResponse: (request: any, data?: any, error?: unknown) => ({
       request_id: request.request_id || 'test-request',
       success: !error,
       data,
       error,
       timestamp: new Date(),
-      service: 'evaluator'
+      service: 'evaluator',
     }),
     createServiceError: (code: string, message: string) => ({
       code,
       message,
       details: null,
-      retryable: true
+      retryable: true,
     }),
     mean: (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length,
     confidenceInterval: (values: number[]) => {
       const mean = values.reduce((a, b) => a + b, 0) / values.length
       return [mean - 0.1, mean + 0.1] as [number, number]
-    }
+    },
   }
 })
 
@@ -58,21 +58,28 @@ const mockEvaluator = {
   requiresLLM: vi.fn().mockReturnValue(false),
   requiresReference: vi.fn().mockReturnValue(false),
   evaluate: vi.fn().mockResolvedValue({
-    scores: { mock_evaluator: 0.85 }
-  })
+    scores: { mock_evaluator: 0.85 },
+  }),
 }
 
 vi.mock('../src/evaluators', () => ({
   BaseEvaluator: class {
-    getName() { return 'base' }
-    requiresLLM() { return false }
-    requiresReference() { return false }
+    getName() {
+      return 'base'
+    }
+    requiresLLM() {
+      return false
+    }
+    requiresReference() {
+      return false
+    }
   },
-  createEvaluatorRegistry: () => new Map([
-    ['g_eval', mockEvaluator],
-    ['chat_eval', mockEvaluator],
-    ['self_consistency', mockEvaluator]
-  ])
+  createEvaluatorRegistry: () =>
+    new Map([
+      ['g_eval', mockEvaluator],
+      ['chat_eval', mockEvaluator],
+      ['self_consistency', mockEvaluator],
+    ]),
 }))
 
 // Mock calibration monitor
@@ -82,13 +89,13 @@ const mockCalibrationMonitor = {
   addHumanFeedback: vi.fn(),
   getCalibrationStats: vi.fn().mockReturnValue({
     total_samples: 100,
-    calibrated_evaluators: ['g_eval', 'chat_eval']
-  })
+    calibrated_evaluators: ['g_eval', 'chat_eval'],
+  }),
 }
 
 vi.mock('../src/calibration', () => ({
   getCalibrationMonitor: () => mockCalibrationMonitor,
-  CalibrationMonitor: vi.fn()
+  CalibrationMonitor: vi.fn(),
 }))
 
 describe('CalibratedEvaluatorEnsemble', () => {
@@ -106,20 +113,14 @@ describe('CalibratedEvaluatorEnsemble', () => {
       const taskMeta = createTestTaskClassification()
       const references = ['Reference answer']
 
-      const result = await ensemble.evaluate(
-        variant,
-        response,
-        taskMeta,
-        references,
-        'trace-123'
-      )
+      const result = await ensemble.evaluate(variant, response, taskMeta, references, 'trace-123')
 
       expect(result).toBeDefined()
       expect(result.variant_id).toBe(variant.id)
       expect(result.scores).toBeDefined()
       expect(result.final_score).toBeGreaterThan(0)
       expect(result.confidence_interval).toHaveLength(2)
-      
+
       // Verify evaluator was called
       expect(mockEvaluator.evaluate).toHaveBeenCalled()
     })
@@ -133,14 +134,14 @@ describe('CalibratedEvaluatorEnsemble', () => {
 
       // Should not throw - failed evaluators are caught
       const result = await ensemble.evaluate(variant, response, taskMeta)
-      
+
       expect(result).toBeDefined()
       expect(result.variant_id).toBe(variant.id)
     })
 
     it('should apply calibration to scores', async () => {
       mockEvaluator.evaluate.mockResolvedValueOnce({
-        scores: { g_eval: 0.8 }
+        scores: { g_eval: 0.8 },
       })
       mockCalibrationMonitor.calibrateScore.mockReturnValueOnce(0.85)
 
@@ -157,19 +158,27 @@ describe('CalibratedEvaluatorEnsemble', () => {
     it('should detect disagreement between evaluators', async () => {
       // Reset mocks for multiple evaluators
       const evaluators = new Map([
-        ['e1', {
-          ...mockEvaluator,
-          getName: () => 'e1',
-          evaluate: vi.fn().mockResolvedValue({ scores: { e1: 0.9 } })
-        }],
-        ['e2', {
-          ...mockEvaluator,
-          getName: () => 'e2',
-          evaluate: vi.fn().mockResolvedValue({ scores: { e2: 0.5 } })
-        }]
+        [
+          'e1',
+          {
+            ...mockEvaluator,
+            getName: () => 'e1',
+            evaluate: vi.fn().mockResolvedValue({ scores: { e1: 0.9 } }),
+          },
+        ],
+        [
+          'e2',
+          {
+            ...mockEvaluator,
+            getName: () => 'e2',
+            evaluate: vi.fn().mockResolvedValue({ scores: { e2: 0.5 } }),
+          },
+        ],
       ])
 
-      vi.mocked(require('../src/evaluators').createEvaluatorRegistry).mockReturnValueOnce(evaluators)
+      vi.mocked(require('../src/evaluators').createEvaluatorRegistry).mockReturnValueOnce(
+        evaluators,
+      )
       ensemble = new CalibratedEvaluatorEnsemble()
 
       const variant = createTestPromptVariant()
@@ -185,7 +194,7 @@ describe('CalibratedEvaluatorEnsemble', () => {
 
     it('should include self-consistency evaluator for consistency variants', async () => {
       const variant = createTestPromptVariant({
-        technique: 'self_consistency_cot'
+        technique: 'self_consistency_cot',
       })
       const response = 'Test response'
       const taskMeta = createTestTaskClassification()
@@ -202,7 +211,7 @@ describe('CalibratedEvaluatorEnsemble', () => {
       const variants = [
         { variant: createTestPromptVariant({ id: 'v1' }), response: 'Response 1' },
         { variant: createTestPromptVariant({ id: 'v2' }), response: 'Response 2' },
-        { variant: createTestPromptVariant({ id: 'v3' }), response: 'Response 3' }
+        { variant: createTestPromptVariant({ id: 'v3' }), response: 'Response 3' },
       ]
       const taskMeta = createTestTaskClassification()
 
@@ -226,10 +235,7 @@ describe('CalibratedEvaluatorEnsemble', () => {
     it('should add human feedback for calibration', () => {
       ensemble.addHumanFeedback('variant-123', 0.85)
 
-      expect(mockCalibrationMonitor.addHumanFeedback).toHaveBeenCalledWith(
-        'variant-123',
-        0.85
-      )
+      expect(mockCalibrationMonitor.addHumanFeedback).toHaveBeenCalledWith('variant-123', 0.85)
     })
   })
 
@@ -239,7 +245,7 @@ describe('CalibratedEvaluatorEnsemble', () => {
 
       expect(stats).toEqual({
         total_samples: 100,
-        calibrated_evaluators: ['g_eval', 'chat_eval']
+        calibrated_evaluators: ['g_eval', 'chat_eval'],
       })
     })
   })
@@ -257,7 +263,7 @@ describe('Service Handlers', () => {
         response: 'Test response',
         task_meta: createTestTaskClassification(),
         references: ['Reference'],
-        trace_id: 'trace-123'
+        trace_id: 'trace-123',
       })
 
       const response = await handleEvaluateRequest(request as any)
@@ -274,7 +280,7 @@ describe('Service Handlers', () => {
       const request = createTestServiceRequest({
         variant: createTestPromptVariant(),
         response: 'Test response',
-        task_meta: createTestTaskClassification()
+        task_meta: createTestTaskClassification(),
       })
 
       const response = await handleEvaluateRequest(request as any)
@@ -290,10 +296,10 @@ describe('Service Handlers', () => {
       const request = createTestServiceRequest({
         variants: [
           { variant: createTestPromptVariant({ id: 'v1' }), response: 'Response 1' },
-          { variant: createTestPromptVariant({ id: 'v2' }), response: 'Response 2' }
+          { variant: createTestPromptVariant({ id: 'v2' }), response: 'Response 2' },
         ],
         task_meta: createTestTaskClassification(),
-        references: ['Reference']
+        references: ['Reference'],
       })
 
       const response = await handleCompareRequest(request as any)
@@ -309,10 +315,8 @@ describe('Service Handlers', () => {
       mockEvaluator.evaluate.mockRejectedValueOnce(new Error('Comparison failed'))
 
       const request = createTestServiceRequest({
-        variants: [
-          { variant: createTestPromptVariant(), response: 'Response' }
-        ],
-        task_meta: createTestTaskClassification()
+        variants: [{ variant: createTestPromptVariant(), response: 'Response' }],
+        task_meta: createTestTaskClassification(),
       })
 
       const response = await handleCompareRequest(request as any)
@@ -326,16 +330,13 @@ describe('Service Handlers', () => {
     it('should handle feedback request successfully', async () => {
       const request = createTestServiceRequest({
         variant_id: 'variant-123',
-        human_score: 0.9
+        human_score: 0.9,
       })
 
       const response = await handleFeedbackRequest(request as any)
 
       expect(response.success).toBe(true)
-      expect(mockCalibrationMonitor.addHumanFeedback).toHaveBeenCalledWith(
-        'variant-123',
-        0.9
-      )
+      expect(mockCalibrationMonitor.addHumanFeedback).toHaveBeenCalledWith('variant-123', 0.9)
     })
 
     it('should handle feedback failure', async () => {
@@ -345,7 +346,7 @@ describe('Service Handlers', () => {
 
       const request = createTestServiceRequest({
         variant_id: 'variant-123',
-        human_score: 0.9
+        human_score: 0.9,
       })
 
       const response = await handleFeedbackRequest(request as any)

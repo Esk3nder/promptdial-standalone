@@ -29,7 +29,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
         return { status: 'validating', prompt: event.prompt }
       }
       break
-      
+
     case 'validating':
       if (event.type === 'VALIDATION_PASSED') {
         return { status: 'optimizing', request: event.request, progress: 0 }
@@ -38,27 +38,27 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
         return { status: 'error', error: event.error }
       }
       break
-      
+
     case 'optimizing':
       if (event.type === 'UPDATE_PROGRESS') {
         return { ...state, progress: event.progress }
       }
       if (event.type === 'OPTIMIZATION_SUCCESS') {
-        return { 
-          status: 'success', 
+        return {
+          status: 'success',
           results: event.results,
-          request: state.request 
+          request: state.request,
         }
       }
       if (event.type === 'OPTIMIZATION_ERROR') {
-        return { 
-          status: 'error', 
+        return {
+          status: 'error',
           error: event.error,
-          request: state.request 
+          request: state.request,
         }
       }
       break
-      
+
     case 'success':
     case 'error':
       if (event.type === 'RESET') {
@@ -69,7 +69,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
       }
       break
   }
-  
+
   return state
 }
 
@@ -102,65 +102,68 @@ interface UsePromptOptimizationReturn {
 }
 
 export function usePromptOptimization(
-  options: UsePromptOptimizationOptions = {}
+  options: UsePromptOptimizationOptions = {},
 ): UsePromptOptimizationReturn {
   const { autoSort = true, autoValidate = true } = options
-  
+
   const [state, dispatch] = useReducer(promptOptimizationReducer, { status: 'idle' })
-  
+
   const promptDial = useCallback(
     () => new PromptDial({ sortByQuality: autoSort, autoValidate }),
-    [autoSort, autoValidate]
+    [autoSort, autoValidate],
   )
-  
-  const optimize = useCallback(async (request: OptimizationRequest) => {
-    // Start validation
-    dispatch({ type: 'START_VALIDATION', prompt: request.prompt })
-    
-    // Validate prompt
-    const validationError = validatePrompt(request.prompt)
-    if (validationError) {
-      dispatch({ type: 'VALIDATION_FAILED', error: validationError })
-      return
-    }
-    
-    // Validation passed, start optimization
-    dispatch({ type: 'VALIDATION_PASSED', request })
-    
-    // Simulate progress updates
-    const progressInterval = setInterval(() => {
-      dispatch({ type: 'UPDATE_PROGRESS', progress: Math.floor(Math.random() * 30) + 10 })
-    }, 500)
-    
-    try {
-      const pd = promptDial()
-      
-      // Update progress to 45% before optimization
-      dispatch({ type: 'UPDATE_PROGRESS', progress: 45 })
-      
-      const results = await pd.optimize(request)
-      
-      // Clear interval and set to 100% before success
-      clearInterval(progressInterval)
-      dispatch({ type: 'UPDATE_PROGRESS', progress: 100 })
-      
-      // Small delay to show 100% progress
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      dispatch({ type: 'OPTIMIZATION_SUCCESS', results })
-    } catch (error) {
-      clearInterval(progressInterval)
-      dispatch({ 
-        type: 'OPTIMIZATION_ERROR', 
-        error: error instanceof Error ? error : new Error('Optimization failed')
-      })
-    }
-  }, [promptDial])
-  
+
+  const optimize = useCallback(
+    async (request: OptimizationRequest) => {
+      // Start validation
+      dispatch({ type: 'START_VALIDATION', prompt: request.prompt })
+
+      // Validate prompt
+      const validationError = validatePrompt(request.prompt)
+      if (validationError) {
+        dispatch({ type: 'VALIDATION_FAILED', error: validationError })
+        return
+      }
+
+      // Validation passed, start optimization
+      dispatch({ type: 'VALIDATION_PASSED', request })
+
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        dispatch({ type: 'UPDATE_PROGRESS', progress: Math.floor(Math.random() * 30) + 10 })
+      }, 500)
+
+      try {
+        const pd = promptDial()
+
+        // Update progress to 45% before optimization
+        dispatch({ type: 'UPDATE_PROGRESS', progress: 45 })
+
+        const results = await pd.optimize(request)
+
+        // Clear interval and set to 100% before success
+        clearInterval(progressInterval)
+        dispatch({ type: 'UPDATE_PROGRESS', progress: 100 })
+
+        // Small delay to show 100% progress
+        await new Promise((resolve) => setTimeout(resolve, 200))
+
+        dispatch({ type: 'OPTIMIZATION_SUCCESS', results })
+      } catch (error) {
+        clearInterval(progressInterval)
+        dispatch({
+          type: 'OPTIMIZATION_ERROR',
+          error: error instanceof Error ? error : new Error('Optimization failed'),
+        })
+      }
+    },
+    [promptDial],
+  )
+
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' })
   }, [])
-  
+
   return {
     state,
     optimize,
