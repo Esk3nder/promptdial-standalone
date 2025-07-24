@@ -10,7 +10,7 @@
     "start": "node index.js",
     "start:core": "cd packages/core && npm run server",
     "start:ui": "cd packages/ui && npm run dev",
-    "dev": "npm run start:core",
+    "dev": "npx concurrently \"npm run start:core\" \"npm run start:ui\" --names \"API,UI\" --prefix-colors \"blue,green\"",
     "build": "npm run build:all",
     "build:all": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
@@ -27,7 +27,8 @@
   "dependencies": {
     "axios": "^1.10.0",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "concurrently": "^8.2.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
