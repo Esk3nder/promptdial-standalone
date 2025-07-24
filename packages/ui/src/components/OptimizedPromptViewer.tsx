@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { DeepLinkButtons } from './DeepLinkButtons'
 
 interface OptimizedPromptViewerProps {
   variants: Array<{
@@ -35,6 +36,7 @@ export function OptimizedPromptViewer({ variants, bestIndex }: OptimizedPromptVi
         <button onClick={handleCopy} className="copy-button">
           {copied ? '✅ Copied!' : '📋 Copy'}
         </button>
+        <DeepLinkButtons prompt={bestVariant.variant} />
       </div>
 
       {variants.length > 1 && (
