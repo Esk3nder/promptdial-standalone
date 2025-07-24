@@ -1,5 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleProvider } from '@promptdial/llm-runner'
 import type { TestResult } from '../types'
+import type { PromptVariant, LLMProviderConfig } from '@promptdial/shared'
 
 export async function testGoogle(prompt: string): Promise<TestResult> {
   const apiKey = process.env.GOOGLE_AI_API_KEY
@@ -13,26 +14,44 @@ export async function testGoogle(prompt: string): Promise<TestResult> {
     }
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-  
+  // Create configuration for the Google provider
+  const config: LLMProviderConfig = {
+    api_key: apiKey,
+    model: 'gemini-1.5-flash',
+    max_tokens: 500,
+    temperature: 0.7
+  }
+
+  // Create a PromptVariant from the simple prompt string
+  const variant: PromptVariant = {
+    id: 'test-variant',
+    technique: 'test',
+    prompt: prompt,
+    temperature: 0.7,
+    est_tokens: 100,
+    cost_usd: 0.001,
+    model: 'gemini-1.5-flash',
+    model_params: {
+      temperature: 0.7,
+      max_tokens: 500
+    }
+  }
+
   const startTime = Date.now()
   
   try {
-    const result = await model.generateContent(prompt)
-    const response = result.response
+    // Use the consolidated Google provider
+    const provider = new GoogleProvider(config)
+    const response = await provider.call(variant)
     
     const endTime = Date.now()
     
-    const text = response.text()
-    
-    // Google doesn't provide token count directly, estimate it
-    const estimatedTokens = Math.ceil(text.split(' ').length * 1.3)
-    
+    // Convert LLMResponse back to TestResult
     return {
       responseTime: endTime - startTime,
-      tokenCount: estimatedTokens,
-      responseText: text
+      tokenCount: response.tokens_used,
+      responseText: response.content,
+      error: response.error
     }
   } catch (error) {
     const endTime = Date.now()
