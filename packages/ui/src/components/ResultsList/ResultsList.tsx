@@ -1,5 +1,6 @@
 import type { OptimizedResult } from '@/types'
 import { LoadingSpinner, ErrorMessage, LiveRegion } from '@/components/common'
+import { DeepLinkButtons } from '@/components/DeepLinkButtons'
 import styles from './ResultsList.module.css'
 
 interface ResultsListProps {
@@ -93,6 +94,12 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
             Copy
           </button>
         </div>
+
+        {/* Deep Link Buttons */}
+        <DeepLinkButtons 
+          prompt={bestVariant.optimizedPrompt}
+          className={styles.deepLinkSection}
+        />
       </div>
     </div>
   )

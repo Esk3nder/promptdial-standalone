@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.linkButton:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.linkButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.linkButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+.requiresExtension {
+  border-style: dashed;
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fbbf24;
+}
+
+.requiresExtension:hover {
+  background: #fde68a;
+  border-color: #f59e0b;
+}
+
+.icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.name {
+  white-space: nowrap;
+}
+
+.extensionIndicator {
+  color: #f59e0b;
+  font-weight: bold;
+  font-size: 0.75rem;
+  margin-left: 0.125rem;
+}
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .buttons {
+    flex-direction: column;
+  }
+  
+  .linkButton {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .label {
+    color: #9ca3af;
+  }
+  
+  .linkButton {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .linkButton:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+  
+  .requiresExtension {
+    background: #451a03;
+    color: #fbbf24;
+    border-color: #92400e;
+  }
+  
+  .requiresExtension:hover {
+    background: #78350f;
+    border-color: #b45309;
+  }
+  
+  .disclaimer {
+    color: #9ca3af;
+  }
+}
