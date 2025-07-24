@@ -10,9 +10,10 @@ interface PromptFormProps {
   isLoading: boolean
   error?: string
   progress?: number
+  stage?: string
 }
 
-export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptFormProps) {
+export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: PromptFormProps) {
   const [prompt, setPrompt] = useState('')
   const [model, setModel] = useLocalStorage('promptdial-model', 'claude-3-opus')
   const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>(
@@ -230,7 +231,9 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0 }: PromptF
             <span className={styles.progressContainer}>
               <span className={styles.progressBar} style={{ width: `${progress}%` }} />
             </span>
-            <span className={styles.progressText}>Refining... ({progress}%)</span>
+            <span className={styles.progressText}>
+              {stage || 'Refining...'} ({progress}%)
+            </span>
           </>
         ) : (
           <>
