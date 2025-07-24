@@ -113,6 +113,39 @@
   border: 1px solid #e5e7eb;
   max-height: 300px;
   overflow-y: auto;
+  scroll-behavior: smooth;
+  position: relative;
+}
+
+.promptDisplay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.promptDisplay::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.promptDisplay::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.promptDisplay::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Streaming cursor */
+.cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+  color: #1e3a8a;
+  font-weight: 300;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 .actionButtons {
@@ -137,9 +170,14 @@
   gap: 0.375rem;
 }
 
-.copyButton:hover {
+.copyButton:hover:not(:disabled) {
   background: #f9fafb;
   border-color: #d1d5db;
+}
+
+.copyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .copyButton svg {

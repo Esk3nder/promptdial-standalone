@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import type { OptimizedResult } from '@/types'
 import { LoadingSpinner, ErrorMessage, LiveRegion } from '@/components/common'
 import { DeepLinkButtons } from '@/components/DeepLinkButtons'
@@ -11,6 +12,57 @@ interface ResultsListProps {
 }
 
 export function ResultsList({ isLoading, results, error, onCopy }: ResultsListProps) {
+  const [streamedText, setStreamedText] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [userHasScrolled, setUserHasScrolled] = useState(false)
+  const promptDisplayRef = useRef<HTMLDivElement>(null)
+  const bestVariant = results?.variants[0]
+  const fullText = bestVariant?.optimizedPrompt || ''
+  
+  // Stream the text when results change
+  useEffect(() => {
+    if (!fullText || !results) {
+      setStreamedText('')
+      return
+    }
+    
+    setIsStreaming(true)
+    setStreamedText('')
+    setUserHasScrolled(false)
+    
+    // Stream characters
+    let currentIndex = 0
+    const words = fullText.split(' ')
+    
+    const streamInterval = setInterval(() => {
+      if (currentIndex < words.length) {
+        const nextWords = words.slice(0, currentIndex + 1).join(' ')
+        setStreamedText(nextWords)
+        currentIndex++
+      } else {
+        clearInterval(streamInterval)
+        setIsStreaming(false)
+      }
+    }, 50) // Stream one word every 50ms
+    
+    return () => clearInterval(streamInterval)
+  }, [fullText, results])
+  
+  // Auto-scroll logic
+  useEffect(() => {
+    if (isStreaming && !userHasScrolled && promptDisplayRef.current) {
+      promptDisplayRef.current.scrollTop = promptDisplayRef.current.scrollHeight
+    }
+  }, [streamedText, isStreaming, userHasScrolled])
+  
+  // Detect user scroll
+  const handleScroll = () => {
+    if (promptDisplayRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = promptDisplayRef.current
+      const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10
+      setUserHasScrolled(!isAtBottom)
+    }
+  }
   // Loading state
   if (isLoading) {
     return (
@@ -51,10 +103,7 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
     )
   }
 
-  const { variants, summary } = results
-  // For simplicity, show the best variant
-  const bestVariant = variants[0]
-  const score = bestVariant.quality?.score || 0
+  const score = bestVariant?.quality?.score || 0
   const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low'
 
   return (
@@ -77,15 +126,21 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
         </div>
 
         {/* Prompt Display */}
-        <div className={styles.promptDisplay}>
-          {bestVariant.optimizedPrompt}
+        <div 
+          ref={promptDisplayRef}
+          className={styles.promptDisplay}
+          onScroll={handleScroll}
+        >
+          {streamedText}
+          {isStreaming && <span className={styles.cursor}>▊</span>}
         </div>
 
         {/* Action Buttons */}
         <div className={styles.actionButtons}>
           <button 
             className={styles.copyButton}
-            onClick={() => onCopy(bestVariant.optimizedPrompt)}
+            onClick={() => onCopy(fullText)}
+            disabled={isStreaming}
             aria-label="Copy optimized prompt to clipboard"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
