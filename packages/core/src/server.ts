@@ -16,7 +16,7 @@ app.use(cors())
 app.use(express.json())
 
 // Serve static files from public directory
-const publicPath = path.join(__dirname, '../../../public')
+const publicPath = path.join(__dirname, '../../../tianjin/public')
 app.use(express.static(publicPath))
 
 // Server-Sent Events endpoint for real-time progress
