@@ -24,54 +24,58 @@ const progressSteps: Record<string, ProgressStep> = {
 }
 
 export function OptimizationProgress({ stage, progress, isVisible }: OptimizationProgressProps) {
-  const [steps, setSteps] = useState<ProgressStep[]>([])
+  const [currentStep, setCurrentStep] = useState<ProgressStep | null>(null)
+  const [completedSteps, setCompletedSteps] = useState<string[]>([])
 
   useEffect(() => {
     if (!stage) return
 
-    // Update steps based on current stage
-    const allSteps = Object.keys(progressSteps).map(key => {
-      const step = { ...progressSteps[key] }
-      const stepIndex = Object.keys(progressSteps).indexOf(key)
-      const currentIndex = Object.keys(progressSteps).indexOf(stage)
+    // Get current step info
+    const current = progressSteps[stage]
+    if (current) {
+      setCurrentStep(current)
       
-      if (stepIndex < currentIndex) {
-        step.status = 'complete'
-      } else if (stepIndex === currentIndex) {
-        step.status = 'active'
-      } else {
-        step.status = 'pending'
-      }
-      
-      return step
-    })
-    
-    setSteps(allSteps)
+      // Update completed steps
+      const stepKeys = Object.keys(progressSteps)
+      const currentIndex = stepKeys.indexOf(stage)
+      const completed = stepKeys.slice(0, currentIndex)
+      setCompletedSteps(completed)
+    }
   }, [stage])
 
   if (!isVisible) return null
 
   return (
     <div className={styles.container}>
+      {/* Progress bar */}
       <div className={styles.progressBar}>
         <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+        <div className={styles.progressText}>{progress}%</div>
       </div>
       
-      <div className={styles.steps}>
-        {steps.map((step, index) => (
-          <div key={index} className={`${styles.step} ${styles[step.status]}`}>
-            <div className={styles.stepIcon}>
-              {step.status === 'complete' ? '✓' : step.status === 'active' ? '●' : '○'}
-            </div>
-            <div className={styles.stepInfo}>
-              <div className={styles.stepName}>{step.name}</div>
-              {step.status === 'active' && (
-                <div className={styles.stepMessage}>{step.message}</div>
-              )}
-            </div>
+      {/* Current stage indicator */}
+      {currentStep && (
+        <div className={styles.currentStage}>
+          <div className={styles.stageIcon}>
+            <div className={styles.spinner}></div>
           </div>
-        ))}
-      </div>
+          <div className={styles.stageInfo}>
+            <div className={styles.stageName}>{currentStep.name}</div>
+            <div className={styles.stageMessage}>{currentStep.message}</div>
+          </div>
+        </div>
+      )}
+      
+      {/* Completed steps summary */}
+      {completedSteps.length > 0 && (
+        <div className={styles.completedSteps}>
+          {completedSteps.map(stepKey => (
+            <span key={stepKey} className={styles.completedStep}>
+              ✓ {progressSteps[stepKey].name}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

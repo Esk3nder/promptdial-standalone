@@ -42,50 +42,51 @@ const googleAI = process.env.GOOGLE_AI_API_KEY
   : null
 
 export class AIMetaPromptDesigner {
-  // Helper to clean and parse JSON from LLM responses
+  // Helper to extract and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
+    console.log('Raw Claude response:', text.substring(0, 200) + '...')
+    
+    // Strategy 1: Try direct parsing (if Claude returns pure JSON)
     try {
-      // First try direct parsing
-      return JSON.parse(text)
+      return JSON.parse(text.trim())
     } catch (e) {
-      // Extract JSON object from text
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('No JSON found in response')
+      // Continue to other strategies
+    }
 
-      let jsonStr = jsonMatch[0]
-
-      // More robust cleaning approach
-      // 1. First, handle string literals properly
-      const stringLiterals: string[] = []
-      let cleanedJson = jsonStr.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
-        const index = stringLiterals.length
-        stringLiterals.push(match)
-        return `"__STRING_${index}__"`
-      })
-
-      // 2. Clean control characters outside strings
-      cleanedJson = cleanedJson.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-
-      // 3. Restore string literals with proper escaping
-      cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (_match, index) => {
-        let str = stringLiterals[parseInt(index)]
-        // Ensure newlines are properly escaped within the string
-        str = str.slice(1, -1) // Remove quotes
-        str = str.replace(/\\/g, '\\\\')
-        str = str.replace(/"/g, '\\"')
-        str = str.replace(/\n/g, '\\n')
-        str = str.replace(/\r/g, '\\r')
-        str = str.replace(/\t/g, '\\t')
-        return '"' + str + '"'
-      })
-
+    // Strategy 2: Extract from markdown code blocks
+    const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+    if (codeBlockMatch) {
       try {
-        return JSON.parse(cleanedJson)
-      } catch (e2) {
-        // Failed to parse cleaned JSON
-        throw new Error(`JSON parsing failed: ${e2 instanceof Error ? e2.message : String(e2)}`)
+        return JSON.parse(codeBlockMatch[1])
+      } catch (e) {
+        // Continue to other strategies
       }
     }
+
+    // Strategy 3: Find JSON object in text (first occurrence)
+    const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/)
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0])
+      } catch (e) {
+        // Continue to other strategies  
+      }
+    }
+
+    // Strategy 4: Try to find and extract a more complex nested JSON
+    const complexJsonMatch = text.match(/\{[\s\S]*\}/)
+    if (complexJsonMatch) {
+      try {
+        return JSON.parse(complexJsonMatch[0])
+      } catch (e) {
+        // Log the actual failure for debugging
+        console.error('JSON parsing failed on extracted JSON:', complexJsonMatch[0].substring(0, 300))
+        console.error('Parse error:', e instanceof Error ? e.message : String(e))
+      }
+    }
+
+    // All strategies failed
+    throw new Error(`Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`)
   }
 
   private systemPrompts = {
@@ -510,6 +511,11 @@ Generate an optimized version that maximizes this model's capabilities. Return y
     const variants: OptimizedVariant[] = []
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
 
+    // Check if Anthropic API is available
+    if (!anthropic) {
+      throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.')
+    }
+
     // Detect task type and suggested techniques
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
     // Task type and techniques detected
@@ -568,7 +574,9 @@ Transform the prompt to:
 - Enable emergent understanding
 - Maintain elegant simplicity while encoding complexity
 
-Return your Ultra-Think transformation:
+IMPORTANT: Return ONLY valid JSON in your response. No explanations, no markdown, no code blocks. Just the JSON object.
+
+Required JSON format:
 {
   "optimizedPrompt": "the cognitively enhanced prompt",
   "changes": [
@@ -598,7 +606,7 @@ Return your Ultra-Think transformation:
         // Claude API response received
         // Parse the response using our helper
         const result = this.parseJsonResponse(content.text)
-
+        
         variants.push({
           id: `claude-${Date.now()}-${i}`,
           originalPrompt: request.prompt,
@@ -610,13 +618,13 @@ Return your Ultra-Think transformation:
         // Successfully created Claude variant
       } catch (error) {
         console.error('Claude API Error:', error)
-        // Error generating Claude variant - continuing to next attempt
+        // Let the error propagate - no fake fallbacks
+        throw error
       }
     }
 
     if (variants.length === 0) {
-      // Failed to generate any Claude variants
-      throw new Error('Failed to generate any Claude variants')
+      throw new Error('Failed to generate any Claude variants - all API calls failed')
     }
 
     // Claude variants generated successfully
@@ -707,6 +715,7 @@ Return ONLY a JSON object:
     }
     return counts[level]
   }
+
 
   private estimateTokens(text: string): number {
     // Rough estimation: ~4 characters per token
