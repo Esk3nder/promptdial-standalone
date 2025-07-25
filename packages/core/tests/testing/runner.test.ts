@@ -114,7 +114,6 @@ describe('Performance Test Runner', () => {
       expect(mockOptimize).toHaveBeenCalledWith({
         prompt: 'Test prompt',
         targetModel: 'gpt-4',
-        optimizationLevel: 'advanced',
       })
 
       // Verify console logs
@@ -126,13 +125,11 @@ describe('Performance Test Runner', () => {
     it('should use custom options when provided', async () => {
       await runPerformanceTest('Test prompt', {
         targetModel: 'claude-3-opus',
-        optimizationLevel: 'expert',
       })
 
       expect(mockOptimize).toHaveBeenCalledWith({
         prompt: 'Test prompt',
         targetModel: 'claude-3-opus',
-        optimizationLevel: 'expert',
       })
     })
 

@@ -28,7 +28,7 @@ app.get('/api/optimize/stream', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   
   // Parse query params
-  const { prompt, targetModel, optimizationLevel } = req.query as any
+  const { prompt, targetModel } = req.query as any
   
   if (!prompt) {
     res.write(`data: ${JSON.stringify({ error: 'Prompt is required' })}\n\n`)
@@ -72,7 +72,6 @@ app.get('/api/optimize/stream', async (req, res) => {
     const optimizationRequest: OptimizationRequest = {
       prompt: prompt as string,
       targetModel: targetModel as string || 'gpt-4o-mini',
-      optimizationLevel: (optimizationLevel as any) || 'advanced',
     }
     
     // Generate variants
@@ -131,9 +130,9 @@ app.post('/api/optimize', async (req, res) => {
     // New optimization request received
 
     // Validate request
-    if (!request.prompt || !request.targetModel || !request.optimizationLevel) {
+    if (!request.prompt || !request.targetModel) {
       return res.status(400).json({
-        error: 'Missing required fields: prompt, targetModel, optimizationLevel',
+        error: 'Missing required fields: prompt, targetModel',
       })
     }
 
@@ -202,7 +201,6 @@ app.get('/debug', async (req, res) => {
     // Test prompt for debugging
     const testPrompt = req.query.prompt as string || 'hello world'
     const testModel = req.query.model as string || 'claude-3-opus'
-    const testLevel = req.query.level as string || 'basic'
 
     let debugInfo: any = {
       timestamp: new Date().toISOString(),
@@ -215,8 +213,7 @@ app.get('/debug', async (req, res) => {
       },
       testRequest: {
         prompt: testPrompt,
-        targetModel: testModel,  
-        optimizationLevel: testLevel
+        targetModel: testModel,
       },
       steps: []
     }
@@ -238,7 +235,6 @@ app.get('/debug', async (req, res) => {
         const result = await promptDial.optimize({
           prompt: testPrompt,
           targetModel: testModel,
-          optimizationLevel: testLevel as any
         })
 
         debugInfo.steps.push({ step: 'optimization', status: 'complete', message: 'Optimization completed successfully' })
@@ -358,14 +354,6 @@ app.get('/debug', async (req, res) => {
                     </select>
                 </div>
                 <div>
-                    <label>Level:</label><br>
-                    <select name="level">
-                        <option value="basic" ${testLevel === 'basic' ? 'selected' : ''}>Basic</option>
-                        <option value="advanced" ${testLevel === 'advanced' ? 'selected' : ''}>Advanced</option>
-                        <option value="expert" ${testLevel === 'expert' ? 'selected' : ''}>Expert</option>
-                    </select>
-                </div>
-                <div>
                     <input type="hidden" name="test" value="true">
                     <button type="submit">🚀 Run Test</button>
                 </div>
@@ -427,7 +415,7 @@ app.get('/debug', async (req, res) => {
         <div class="card">
             <h2>🔗 Quick Actions</h2>
             <p><a href="/debug?test=true&prompt=hello%20world">🔍 Test with "hello world"</a></p>
-            <p><a href="/debug?test=true&prompt=explain%20quantum%20physics&level=expert">🧠 Test Expert Level</a></p>
+            <p><a href="/debug?test=true&prompt=explain%20quantum%20physics">🧠 Test Advanced Optimization</a></p>
             <p><a href="/debug">🔄 Refresh System Status</a></p>
             <p><a href="/">🏠 Back to Main App</a></p>
         </div>
@@ -457,27 +445,28 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'))
 })
 
-// Start server
-app.listen(PORT, () => {
-  const hasAPIKeys = !!(
-    process.env.OPENAI_API_KEY ||
-    process.env.ANTHROPIC_API_KEY ||
-    process.env.GOOGLE_AI_API_KEY
-  )
+// Start server only when not running tests
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    const hasAPIKeys = !!(
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.GOOGLE_AI_API_KEY
+    )
 
-  const getOptimizationMode = () => {
-    if (!hasAPIKeys) return '⚠️  STATIC MODE - Using template-based optimization only'
-    
-    const providers = [
-      process.env.ANTHROPIC_API_KEY && '🤖 Anthropic Claude',
-      process.env.OPENAI_API_KEY && '🤖 OpenAI GPT',
-      process.env.GOOGLE_AI_API_KEY && '🤖 Google Gemini',
-    ].filter(Boolean)
-    
-    return `🧠 DYNAMIC AI MODE - Using ${providers.join(', ')}`
-  }
+    const getOptimizationMode = () => {
+      if (!hasAPIKeys) return '⚠️  STATIC MODE - Using template-based optimization only'
+      
+      const providers = [
+        process.env.ANTHROPIC_API_KEY && '🤖 Anthropic Claude',
+        process.env.OPENAI_API_KEY && '🤖 OpenAI GPT',
+        process.env.GOOGLE_AI_API_KEY && '🤖 Google Gemini',
+      ].filter(Boolean)
+      
+      return `🧠 DYNAMIC AI MODE - Using ${providers.join(', ')}`
+    }
 
-  console.log(`
+    console.log(`
 🚀 PromptDial Server Running!
 ================================ 
 ✅ Server: http://localhost:${PORT}
@@ -492,20 +481,21 @@ ${hasAPIKeys
 }
 
 Ready to optimize prompts!
-  `)
+    `)
 
-  // Open browser automatically (optional)
-  if (process.env.NODE_ENV !== 'production') {
-    // Dynamic import for optional dependency
-    ;(async () => {
-      try {
-        const open = await import('open')
-        open.default(`http://localhost:${PORT}`)
-      } catch {
-        // Ignore if open package is not available
-      }
-    })()
-  }
-})
+    // Open browser automatically (optional)
+    if (process.env.NODE_ENV !== 'production') {
+      // Dynamic import for optional dependency
+      ;(async () => {
+        try {
+          const open = await import('open')
+          open.default(`http://localhost:${PORT}`)
+        } catch {
+          // Ignore if open package is not available
+        }
+      })()
+    }
+  })
+}
 
 export default app

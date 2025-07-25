@@ -2,7 +2,6 @@
 export interface OptimizationRequest {
   prompt: string
   targetModel: string
-  optimizationLevel: 'basic' | 'advanced' | 'expert'
   language?: string
   taskType?: 'creative' | 'analytical' | 'coding' | 'general'
   constraints?: {
@@ -77,11 +76,11 @@ export class MetaPromptDesigner {
     // Generate improvements
     const improvements = this.generateImprovements(request.prompt, taskType, strategy)
 
-    // Generate variants based on optimization level
-    const variantCount = this.getVariantCount(request.optimizationLevel)
+    // Generate all optimization variants in a single comprehensive process
     const variants: OptimizedVariant[] = []
 
-    for (let i = 0; i < variantCount; i++) {
+    // Generate 5 progressively optimized variants
+    for (let i = 0; i < 5; i++) {
       const variant = this.createVariant(request.prompt, improvements, strategy, i, request)
       variant.score = this.calculateInitialScore(variant)
       variants.push(variant)
@@ -341,14 +340,6 @@ export class MetaPromptDesigner {
     )
   }
 
-  private getVariantCount(level: 'basic' | 'advanced' | 'expert'): number {
-    const counts = {
-      basic: 1,
-      advanced: 3,
-      expert: 5,
-    }
-    return counts[level]
-  }
 
   private createVariant(
     originalPrompt: string,
@@ -380,12 +371,9 @@ export class MetaPromptDesigner {
       description: 'Added specific requirements and constraints',
     })
 
-    // Apply structure for advanced and expert levels
-    const isExpertFirstVariant =
-      index === 0 && request && this.getVariantCount(request.optimizationLevel) >= 5
-
-    if (isExpertFirstVariant) {
-      // For expert level first variant, add extra changes to meet 5+ requirement
+    // Apply structure and context progressively
+    if (index === 0) {
+      // First variant adds context
       optimizedPrompt = this.applyContext(optimizedPrompt)
       changes.push({
         type: 'context',
@@ -399,7 +387,7 @@ export class MetaPromptDesigner {
       description: 'Organized with numbered steps',
     })
 
-    if (index >= 1 && !isExpertFirstVariant) {
+    if (index >= 1) {
       optimizedPrompt = this.applyContext(optimizedPrompt)
       changes.push({
         type: 'context',

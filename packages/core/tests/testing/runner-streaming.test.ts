@@ -156,7 +156,6 @@ describe('StreamingTestRunner', () => {
       expect(mockOptimize).toHaveBeenCalledWith({
         prompt: 'Test prompt',
         targetModel: 'gpt-4',
-        optimizationLevel: 'advanced',
       })
 
       // Verify events were emitted in correct order
@@ -170,13 +169,11 @@ describe('StreamingTestRunner', () => {
     it('should use custom options when provided', async () => {
       await runner.runTest('Test prompt', {
         targetModel: 'claude-3-opus',
-        optimizationLevel: 'expert',
       })
 
       expect(mockOptimize).toHaveBeenCalledWith({
         prompt: 'Test prompt',
         targetModel: 'claude-3-opus',
-        optimizationLevel: 'expert',
       })
     })
 
@@ -277,7 +274,6 @@ describe('StreamingTestRunner', () => {
 
       await runner.runTest('Test prompt', {
         targetModel: 'gemini-pro',
-        optimizationLevel: 'basic',
       })
 
       // Check test_started event
@@ -286,7 +282,6 @@ describe('StreamingTestRunner', () => {
         type: 'test_started',
         prompt: 'Test prompt',
         targetModel: 'gemini-pro',
-        optimizationLevel: 'basic',
         testId: expect.any(String),
         timestamp: expect.any(Date),
       })

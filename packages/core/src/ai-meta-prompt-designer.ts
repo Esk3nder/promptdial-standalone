@@ -7,7 +7,6 @@ import 'dotenv/config'
 export interface OptimizationRequest {
   prompt: string
   targetModel: string
-  optimizationLevel: 'basic' | 'advanced' | 'expert'
   language?: string
   taskType?: 'creative' | 'analytical' | 'coding' | 'general'
   constraints?: {
@@ -89,37 +88,7 @@ export class AIMetaPromptDesigner {
     throw new Error(`Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`)
   }
 
-  private systemPrompts = {
-    basic: `You are an expert at enhancing prompts using cognitive amplification techniques. Transform prompts to activate deeper reasoning patterns.
-
-Core principles:
-- Activate multi-dimensional thinking through open-ended framing
-- Encourage cognitive exploration without constraining pathways
-- Use metacognitive triggers that prompt self-reflection
-- Enable emergent understanding through discovery-oriented language`,
-
-    advanced: `You are an expert at applying Ultra-Think cognitive framework for enhanced AI reasoning. Transform prompts using advanced cognitive architectures.
-
-Ultra-Think Framework:
-1. Cognitive Activation Patterns:
-   - Multi-perspective exploration triggers
-   - Recursive reasoning loops
-   - Emergent insight pathways
-   - Metacognitive reflection points
-
-2. Advanced Techniques:
-   - Thought Decomposition: Break complex ideas into cognitive atoms
-   - Perspective Synthesis: Merge multiple viewpoints into coherent understanding
-   - Reasoning Chains: Create self-reinforcing logic pathways
-   - Cognitive Scaffolding: Build supportive thinking structures
-
-3. Implementation Strategy:
-   - Use questions that activate curiosity
-   - Embed reasoning patterns implicitly
-   - Create cognitive tension that drives exploration
-   - Enable self-directed discovery`,
-
-    expert: `You are an expert at implementing Ultra-Think cognitive enhancement for maximum AI performance. Transform prompts using state-of-the-art cognitive science.
+  private systemPrompt = `You are an expert at implementing Ultra-Think cognitive enhancement for maximum AI performance. Transform prompts using state-of-the-art cognitive science.
 
 ULTRA-THINK COGNITIVE ARCHITECTURE:
 
@@ -147,8 +116,7 @@ ULTRA-THINK COGNITIVE ARCHITECTURE:
    - Spontaneous insight generation
    - Recursive self-improvement
 
-Transform prompts to activate these cognitive systems naturally, without explicit instruction.`,
-  }
+Transform prompts to activate these cognitive systems naturally, without explicit instruction.`
 
   private getModelSpecificStrategies(model: string): {
     strengths: string[]
@@ -391,7 +359,8 @@ Transform prompts to activate these cognitive systems naturally, without explici
 
     this.validateInput(request)
 
-    const variantCount = this.getVariantCount(request.optimizationLevel)
+    // Generate 5 progressively optimized variants
+    const variantCount = 5
 
     try {
       // Generate variants based on target model
@@ -441,7 +410,7 @@ Transform prompts to activate these cognitive systems naturally, without explici
     count: number,
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
-    const systemPrompt = this.systemPrompts[request.optimizationLevel]
+    const systemPrompt = this.systemPrompt
 
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
@@ -509,7 +478,7 @@ Generate an optimized version that maximizes this model's capabilities. Return y
     count: number,
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
-    const systemPrompt = this.systemPrompts[request.optimizationLevel]
+    const systemPrompt = this.systemPrompt
 
     // Check if Anthropic API is available
     if (!anthropic) {
@@ -637,7 +606,7 @@ Required JSON format:
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const model = googleAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const systemPrompt = this.systemPrompts[request.optimizationLevel]
+    const systemPrompt = this.systemPrompt
     const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
 
@@ -707,14 +676,6 @@ Return ONLY a JSON object:
     }
   }
 
-  private getVariantCount(level: 'basic' | 'advanced' | 'expert'): number {
-    const counts = {
-      basic: 1,
-      advanced: 3,
-      expert: 5,
-    }
-    return counts[level]
-  }
 
 
   private estimateTokens(text: string): number {
