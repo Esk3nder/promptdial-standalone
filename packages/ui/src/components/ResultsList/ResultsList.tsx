@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { OptimizedResult } from '@/types'
 import { LoadingSpinner, ErrorMessage, LiveRegion } from '@/components/common'
-import { DeepLinkButtons } from '@/components/DeepLinkButtons'
+import { VariantComparison } from '@/components/VariantComparison'
 import styles from './ResultsList.module.css'
 
 interface ResultsListProps {
@@ -12,57 +12,14 @@ interface ResultsListProps {
 }
 
 export function ResultsList({ isLoading, results, error, onCopy }: ResultsListProps) {
-  const [streamedText, setStreamedText] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [userHasScrolled, setUserHasScrolled] = useState(false)
-  const promptDisplayRef = useRef<HTMLDivElement>(null)
-  const bestVariant = results?.variants[0]
-  const fullText = bestVariant?.optimizedPrompt || ''
+  const [showAllVariants, setShowAllVariants] = useState(false)
 
-  // Stream the text when results change
+  // Reset view when new results come in
   useEffect(() => {
-    if (!fullText || !results) {
-      setStreamedText('')
-      return
+    if (results) {
+      setShowAllVariants(false)
     }
-
-    setIsStreaming(true)
-    setStreamedText('')
-    setUserHasScrolled(false)
-
-    // Stream characters
-    let currentIndex = 0
-    const words = fullText.split(' ')
-
-    const streamInterval = setInterval(() => {
-      if (currentIndex < words.length) {
-        const nextWords = words.slice(0, currentIndex + 1).join(' ')
-        setStreamedText(nextWords)
-        currentIndex++
-      } else {
-        clearInterval(streamInterval)
-        setIsStreaming(false)
-      }
-    }, 50) // Stream one word every 50ms
-
-    return () => clearInterval(streamInterval)
-  }, [fullText, results])
-
-  // Auto-scroll logic
-  useEffect(() => {
-    if (isStreaming && !userHasScrolled && promptDisplayRef.current) {
-      promptDisplayRef.current.scrollTop = promptDisplayRef.current.scrollHeight
-    }
-  }, [streamedText, isStreaming, userHasScrolled])
-
-  // Detect user scroll
-  const handleScroll = () => {
-    if (promptDisplayRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = promptDisplayRef.current
-      const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10
-      setUserHasScrolled(!isAtBottom)
-    }
-  }
+  }, [results])
   // Loading state
   if (isLoading) {
     return (
@@ -119,49 +76,24 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
     )
   }
 
-  const score = bestVariant?.quality?.score || 0
-  const scoreClass = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low'
+  const bestVariant = results.variants[0]
+  const hasMultipleVariants = results.variants.length > 1
 
   return (
     <div className={styles.container}>
-      <div className={styles.resultContainer}>
-        {/* Screen reader announcement */}
-        <LiveRegion message="Optimized prompt ready" />
+      {/* Screen reader announcement */}
+      <LiveRegion message="Optimized prompt ready" />
 
-        {/* Result Header */}
-        <div className={styles.resultHeader}>
-          <h3 className={styles.resultTitle}>Optimized Result</h3>
-          <div className={`${styles.scoreBadge} ${styles[scoreClass]}`}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
-              />
-            </svg>
-            Score: {score}/100
-          </div>
-        </div>
-
-        {/* Prompt Display */}
-        <div ref={promptDisplayRef} className={styles.promptDisplay} onScroll={handleScroll}>
-          {streamedText}
-          {isStreaming && <span className={styles.cursor}>▊</span>}
-        </div>
-
-        {/* Action Buttons */}
-        <div className={styles.actionButtons}>
+      {/* Result Header */}
+      <div className={styles.resultHeader}>
+        <h3 className={styles.resultTitle}>
+          {showAllVariants ? 'All Optimization Variants' : 'Best Optimized Result'}
+        </h3>
+        {hasMultipleVariants && (
           <button
-            className={styles.copyButton}
-            onClick={() => onCopy(fullText)}
-            disabled={isStreaming}
-            aria-label="Copy optimized prompt to clipboard"
+            className={styles.toggleButton}
+            onClick={() => setShowAllVariants(!showAllVariants)}
+            aria-label={showAllVariants ? 'Show best result only' : 'Show all variants'}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -170,19 +102,90 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
               strokeWidth="2"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
-              />
+              {showAllVariants ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375a1.125 1.125 0 01-1.125-1.125V7.125z"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+                />
+              )}
             </svg>
-            Copy
+            {showAllVariants ? 'Show Best Only' : `Compare All ${results.variants.length} Variants`}
           </button>
-        </div>
-
-        {/* Deep Link Buttons */}
-        <DeepLinkButtons prompt={bestVariant.optimizedPrompt} className={styles.deepLinkSection} />
+        )}
       </div>
+
+      {/* Show either single best result or all variants */}
+      {showAllVariants ? (
+        <VariantComparison variants={results.variants} onCopy={onCopy} />
+      ) : (
+        <div className={styles.bestResult}>
+          {/* Best Result Card */}
+          <div className={styles.resultCard}>
+            <div className={styles.cardHeader}>
+              <div className={styles.scoreSection}>
+                <span className={styles.scoreLabel}>Quality Score</span>
+                <span className={`${styles.scoreValue} ${styles[bestVariant.quality?.score >= 80 ? 'high' : bestVariant.quality?.score >= 60 ? 'medium' : 'low']}`}>
+                  {bestVariant.quality?.score || 0}/100
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.promptBox}>
+              <p className={styles.promptText}>{bestVariant.optimizedPrompt}</p>
+            </div>
+
+            <div className={styles.actionButtons}>
+              <button
+                className={styles.copyButton}
+                onClick={() => onCopy(bestVariant.optimizedPrompt)}
+                aria-label="Copy optimized prompt"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+                  />
+                </svg>
+                Copy to Clipboard
+              </button>
+            </div>
+
+            {/* Quick Stats */}
+            {results.summary && (
+              <div className={styles.statsSection}>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Variants Generated</span>
+                  <span className={styles.statValue}>{results.summary.totalVariants}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Average Score</span>
+                  <span className={styles.statValue}>{Math.round(results.summary.averageScore)}</span>
+                </div>
+                {results.metadata?.activeProvider && (
+                  <div className={styles.stat}>
+                    <span className={styles.statLabel}>Optimized By</span>
+                    <span className={styles.statValue}>{results.metadata.activeProvider}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

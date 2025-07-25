@@ -1,18 +1,46 @@
-import { usePromptOptimization, useClipboard } from '@/hooks'
+import { useState, useEffect } from 'react'
+import { usePromptOptimization, useClipboard, useOptimizationHistory } from '@/hooks'
 import { PromptForm } from '@/components/PromptForm'
 import { ResultsList } from '@/components/ResultsList'
+import { OptimizationHistory } from '@/components/OptimizationHistory'
+import { OptimizationProgress } from '@/components/OptimizationProgress'
 import { LiveRegion } from '@/components/common'
 import type { OptimizationRequest } from '@/types'
+import type { HistoryItem } from '@/hooks/useOptimizationHistory'
 import './App.css'
 
 export function App() {
   const { state, optimize, progress } = usePromptOptimization()
+  const stage = state.status === 'optimizing' ? state.stage : undefined
   const { copy, copied } = useClipboard({
     timeout: 2000,
   })
+  const { 
+    history, 
+    addToHistory, 
+    removeFromHistory, 
+    toggleFavorite, 
+    clearHistory 
+  } = useOptimizationHistory()
+  
+  const [showHistory, setShowHistory] = useState(false)
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null)
+
+  // Add successful results to history
+  useEffect(() => {
+    if (state.status === 'success' && state.results && state.request) {
+      addToHistory(state.request, state.results)
+    }
+  }, [state, addToHistory])
 
   const handleOptimize = async (request: OptimizationRequest) => {
+    setSelectedHistoryItem(null)
     await optimize(request)
+  }
+  
+  const handleSelectHistoryItem = (item: HistoryItem) => {
+    setSelectedHistoryItem(item)
+    setShowHistory(false)
   }
 
   const handleCopy = async (text: string) => {
@@ -22,7 +50,8 @@ export function App() {
   // Derive UI state
   const isLoading = state.status === 'validating' || state.status === 'optimizing'
   const error = state.status === 'error' ? state.error?.message : undefined
-  const results = state.status === 'success' ? state.results : null
+  const results = selectedHistoryItem ? selectedHistoryItem.result : 
+                 state.status === 'success' ? state.results : null
 
   return (
     <div className="app">
@@ -63,21 +92,75 @@ export function App() {
 
       {/* Main Content */}
       <main className="app-main">
-        {/* Input Panel */}
-        <div className="app-input-panel">
-          <h2 className="panel-title">Your Prompt</h2>
-          <PromptForm
-            onSubmit={handleOptimize}
-            isLoading={isLoading}
-            error={error}
-            progress={progress}
-          />
-        </div>
+        {/* History Sidebar */}
+        <aside className={`app-sidebar ${showHistory ? 'visible' : ''}`}>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setShowHistory(!showHistory)}
+            aria-label={showHistory ? 'Hide history' : 'Show history'}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth="2" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" 
+              />
+            </svg>
+            History
+          </button>
+          
+          <div className="sidebar-content">
+            <OptimizationHistory
+              history={history}
+              onSelect={handleSelectHistoryItem}
+              onToggleFavorite={toggleFavorite}
+              onRemove={removeFromHistory}
+              onClear={clearHistory}
+            />
+          </div>
+        </aside>
+      
+        <div className="app-content">
+          {/* Input Panel */}
+          <div className="app-input-panel">
+            <h2 className="panel-title">Your Prompt</h2>
+            <PromptForm
+              onSubmit={handleOptimize}
+              isLoading={isLoading}
+              error={error}
+              progress={progress}
+              stage={stage}
+            />
+          </div>
 
-        {/* Output Panel */}
-        <div className="app-output-panel">
-          <h2 className="panel-title">Refined Prompt</h2>
-          <ResultsList isLoading={isLoading} results={results} error={error} onCopy={handleCopy} />
+          {/* Output Panel */}
+          <div className="app-output-panel">
+            <h2 className="panel-title">
+              {selectedHistoryItem ? 'History Result' : 'Refined Prompt'}
+            </h2>
+            
+            {/* Progress Indicator */}
+            {isLoading && (
+              <OptimizationProgress 
+                stage={stage} 
+                progress={progress} 
+                isVisible={true} 
+              />
+            )}
+            
+            <ResultsList 
+              isLoading={isLoading} 
+              results={results} 
+              error={error} 
+              onCopy={handleCopy} 
+            />
+          </div>
         </div>
       </main>
 

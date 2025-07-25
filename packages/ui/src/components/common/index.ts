@@ -1,4 +1,5 @@
 export { ErrorMessage } from './ErrorMessage'
+export { ErrorBoundary } from './ErrorBoundary'
 export { LiveRegion } from './LiveRegion'
 export { LoadingSpinner } from './LoadingSpinner'
 export { VisuallyHidden } from './VisuallyHidden'

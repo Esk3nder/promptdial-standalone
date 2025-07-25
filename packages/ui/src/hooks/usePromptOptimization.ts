@@ -1,12 +1,12 @@
-import { useReducer, useCallback } from 'react'
-import { PromptDial } from '@/types/promptdial'
+import { useReducer, useCallback, useRef } from 'react'
+import { useSSEOptimization, type SSEProgress } from './useSSEOptimization'
 import type { OptimizationRequest, OptimizedResult } from '@/types'
 
 // State machine states
 type UIState =
   | { status: 'idle' }
   | { status: 'validating'; prompt: string }
-  | { status: 'optimizing'; request: OptimizationRequest; progress: number }
+  | { status: 'optimizing'; request: OptimizationRequest; progress: number; stage?: string }
   | { status: 'success'; results: OptimizedResult; request: OptimizationRequest }
   | { status: 'error'; error: Error; request?: OptimizationRequest }
 
@@ -16,7 +16,7 @@ type UIEvent =
   | { type: 'VALIDATION_PASSED'; request: OptimizationRequest }
   | { type: 'VALIDATION_FAILED'; error: Error }
   | { type: 'START_OPTIMIZATION' }
-  | { type: 'UPDATE_PROGRESS'; progress: number }
+  | { type: 'UPDATE_PROGRESS'; progress: number; stage?: string }
   | { type: 'OPTIMIZATION_SUCCESS'; results: OptimizedResult }
   | { type: 'OPTIMIZATION_ERROR'; error: Error }
   | { type: 'RESET' }
@@ -41,7 +41,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
 
     case 'optimizing':
       if (event.type === 'UPDATE_PROGRESS') {
-        return { ...state, progress: event.progress }
+        return { ...state, progress: event.progress, stage: event.stage }
       }
       if (event.type === 'OPTIMIZATION_SUCCESS') {
         return {
@@ -107,11 +107,33 @@ export function usePromptOptimization(
   const { autoSort = true, autoValidate = true } = options
 
   const [state, dispatch] = useReducer(promptOptimizationReducer, { status: 'idle' })
+  const activeRequestRef = useRef<OptimizationRequest | null>(null)
 
-  const promptDial = useCallback(
-    () => new PromptDial({ sortByQuality: autoSort, autoValidate }),
-    [autoSort, autoValidate],
-  )
+  // Setup SSE connection
+  const { connect, disconnect } = useSSEOptimization({
+    onProgress: (progress: SSEProgress) => {
+      if (progress.status === 'complete' && progress.results) {
+        dispatch({ type: 'OPTIMIZATION_SUCCESS', results: progress.results })
+      } else if (progress.status === 'error') {
+        dispatch({ 
+          type: 'OPTIMIZATION_ERROR', 
+          error: new Error(progress.error || 'Optimization failed') 
+        })
+      } else {
+        dispatch({ 
+          type: 'UPDATE_PROGRESS', 
+          progress: progress.progress,
+          stage: progress.message
+        })
+      }
+    },
+    onComplete: (results: OptimizedResult) => {
+      dispatch({ type: 'OPTIMIZATION_SUCCESS', results })
+    },
+    onError: (error: string) => {
+      dispatch({ type: 'OPTIMIZATION_ERROR', error: new Error(error) })
+    }
+  })
 
   const optimize = useCallback(
     async (request: OptimizationRequest) => {
@@ -127,42 +149,26 @@ export function usePromptOptimization(
 
       // Validation passed, start optimization
       dispatch({ type: 'VALIDATION_PASSED', request })
+      activeRequestRef.current = request
 
-      // Simulate progress updates
-      const progressInterval = setInterval(() => {
-        dispatch({ type: 'UPDATE_PROGRESS', progress: Math.floor(Math.random() * 30) + 10 })
-      }, 500)
-
+      // Connect to SSE for real-time updates
       try {
-        const pd = promptDial()
-
-        // Update progress to 45% before optimization
-        dispatch({ type: 'UPDATE_PROGRESS', progress: 45 })
-
-        const results = await pd.optimize(request)
-
-        // Clear interval and set to 100% before success
-        clearInterval(progressInterval)
-        dispatch({ type: 'UPDATE_PROGRESS', progress: 100 })
-
-        // Small delay to show 100% progress
-        await new Promise((resolve) => setTimeout(resolve, 200))
-
-        dispatch({ type: 'OPTIMIZATION_SUCCESS', results })
+        connect(request)
       } catch (error) {
-        clearInterval(progressInterval)
         dispatch({
           type: 'OPTIMIZATION_ERROR',
-          error: error instanceof Error ? error : new Error('Optimization failed'),
+          error: error instanceof Error ? error : new Error('Failed to connect to optimization service'),
         })
       }
     },
-    [promptDial],
+    [connect],
   )
 
   const reset = useCallback(() => {
+    disconnect()
+    activeRequestRef.current = null
     dispatch({ type: 'RESET' })
-  }, [])
+  }, [disconnect])
 
   return {
     state,

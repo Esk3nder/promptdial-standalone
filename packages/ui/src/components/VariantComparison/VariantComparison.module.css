@@ -1,0 +1,352 @@
+.container {
+  width: 100%;
+}
+
+/* Tabs Section */
+.tabs {
+  margin-bottom: 2rem;
+}
+
+.tabsTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--color-text-primary);
+}
+
+.tabList {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-primary-light);
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.tabLabel {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.tabScore {
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.tabScore.high {
+  color: var(--color-success);
+}
+
+.tabScore.medium {
+  color: var(--color-warning);
+}
+
+.tabScore.low {
+  color: var(--color-error);
+}
+
+.tab.active .tabScore {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Variant Panel */
+.variantPanel {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--color-border);
+}
+
+.variantHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.variantTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.qualityBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qualityScore {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Prompt Section */
+.promptSection {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.promptBox {
+  position: relative;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.promptText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.copyButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.copyButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.copyButton:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Techniques Section */
+.techniquesSection {
+  margin-bottom: 2rem;
+}
+
+.techniquesList {
+  display: grid;
+  gap: 1rem;
+}
+
+.technique {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+}
+
+.techniqueIcon {
+  font-size: 1.5rem;
+}
+
+.techniqueContent {
+  flex: 1;
+}
+
+.techniqueName {
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: var(--color-text-primary);
+}
+
+.techniqueDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Features Section */
+.featuresSection {
+  margin-bottom: 2rem;
+}
+
+.featuresList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+}
+
+.featureIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Factors Section */
+.factorsSection {
+  margin-bottom: 2rem;
+}
+
+.factorsGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.factor {
+  display: grid;
+  grid-template-columns: 120px 1fr 40px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.factorName {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.factorBar {
+  height: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.factorFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.factorFill.high {
+  background: var(--color-success);
+}
+
+.factorFill.medium {
+  background: var(--color-warning);
+}
+
+.factorFill.low {
+  background: var(--color-error);
+}
+
+.factorScore {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Suggestions Section */
+.suggestionsSection {
+  margin-bottom: 2rem;
+}
+
+.suggestionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0;
+}
+
+.suggestionIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Deep Links */
+.deepLinks {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .variantPanel {
+    padding: 1.5rem;
+  }
+  
+  .variantHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .copyButton {
+    position: static;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .factor {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .factorName {
+    margin-bottom: 0.25rem;
+  }
+  
+  .factorScore {
+    position: absolute;
+    right: 1rem;
+    top: 0;
+  }
+  
+  .factor {
+    position: relative;
+    padding-right: 3rem;
+  }
+}
