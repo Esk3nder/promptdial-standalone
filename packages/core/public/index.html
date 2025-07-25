@@ -512,17 +512,6 @@
                     </div>
                 </div>
                 
-                <!-- Toggle Switch -->
-                <div class="toggle-group">
-                    <div class="toggle-label">
-                        <span>Chain-of-Thought</span>
-                        <span class="badge">Advanced</span>
-                    </div>
-                    <div class="toggle-switch" id="toggleCot">
-                        <input type="checkbox" id="chainOfThought" name="chainOfThought">
-                        <span class="toggle-slider"></span>
-                    </div>
-                </div>
                 
                 <button type="submit" class="button" id="optimizeBtn">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -557,15 +546,8 @@
         const resultsDiv = document.getElementById('results');
         const readyState = document.getElementById('readyState');
         const optimizeBtn = document.getElementById('optimizeBtn');
-        const toggleSwitch = document.getElementById('toggleCot');
-        const cotCheckbox = document.getElementById('chainOfThought');
         
         
-        // Toggle switch
-        toggleSwitch.addEventListener('click', () => {
-            toggleSwitch.classList.toggle('active');
-            cotCheckbox.checked = !cotCheckbox.checked;
-        });
         
         // Form submission
         form.addEventListener('submit', async (e) => {
@@ -578,7 +560,6 @@
                 targetModel: formData.get('model'),
                 optimizationLevel: formData.get('level'),
                 outputFormat: formData.get('outputFormat'),
-                chainOfThought: formData.get('chainOfThought') === 'on'
             };
             
             // Show loading state

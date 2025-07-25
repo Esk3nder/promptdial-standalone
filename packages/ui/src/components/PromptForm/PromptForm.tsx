@@ -23,7 +23,6 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
   const [outputFormat, setOutputFormat] = useLocalStorage('promptdial-format', 'markdown')
   const [taskType] = useState<string | undefined>(undefined)
   const [validationError, setValidationError] = useState<string>('')
-  const [chainOfThought, setChainOfThought] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -70,7 +69,6 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
       targetModel: model,
       optimizationLevel: level,
       ...(taskType && taskType !== 'undefined' && { taskType }),
-      ...(chainOfThought && { chainOfThought }),
     }
 
     onSubmit(request)
@@ -197,24 +195,6 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
         </div>
       )}
 
-      {/* Toggle Switch - Only show when Advanced is open */}
-      {showAdvanced && (
-        <div className={styles.toggleGroup}>
-          <div className={styles.toggleLabel}>
-            <span>Chain-of-Thought</span>
-            <span className={styles.toggleBadge}>Advanced</span>
-          </div>
-          <button
-            type="button"
-            className={`${styles.toggleSwitch} ${chainOfThought ? styles.active : ''}`}
-            onClick={() => setChainOfThought(!chainOfThought)}
-            aria-pressed={chainOfThought}
-            aria-label="Toggle chain of thought"
-          >
-            <span className={styles.toggleSlider}></span>
-          </button>
-        </div>
-      )}
 
       {/* Error Message */}
       {displayError && (
