@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { FormEvent } from 'react'
 import type { OptimizationRequest } from '@/types'
-import { MODEL_OPTIONS, LEVEL_OPTIONS } from '@/types'
+import { MODEL_OPTIONS_BY_PROVIDER, PROVIDER_NAMES, LEVEL_OPTIONS } from '@/types'
 import { useKeyboardShortcuts, useLocalStorage } from '@/hooks'
 import styles from './PromptForm.module.css'
 
@@ -15,7 +15,7 @@ interface PromptFormProps {
 
 export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: PromptFormProps) {
   const [prompt, setPrompt] = useState('')
-  const [model, setModel] = useLocalStorage('promptdial-model', 'claude-3-opus')
+  const [model, setModel] = useLocalStorage('promptdial-model', 'gpt-4o-mini')
   const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>(
     'promptdial-level',
     'advanced',
@@ -141,10 +141,14 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
               aria-label="Select target AI model"
               className={styles.select}
             >
-              {MODEL_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+              {Object.entries(MODEL_OPTIONS_BY_PROVIDER).map(([provider, models]) => (
+                <optgroup key={provider} label={PROVIDER_NAMES[provider as keyof typeof PROVIDER_NAMES]}>
+                  {models.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} {option.isDefault ? '(Default)' : ''} - ${option.cost}/1K tokens
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

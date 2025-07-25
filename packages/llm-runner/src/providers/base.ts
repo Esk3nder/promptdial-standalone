@@ -102,15 +102,19 @@ export abstract class BaseLLMProvider {
    * Calculate cost for token usage
    */
   protected calculateCost(tokens: number, model: string): number {
-    // Provider-specific pricing
+    // Provider-specific pricing (2025 rates - input tokens, using cheapest models as defaults)
     const pricing: Record<string, number> = {
-      'gpt-4': 0.03,
-      'gpt-3.5-turbo': 0.002,
+      'gpt-4o-mini': 0.00015,
+      'gpt-4o': 0.005,
+      'gpt-4': 0.01,
+      'gpt-3.5-turbo': 0.0005,
+      'claude-3.5-sonnet': 0.003,
+      'claude-sonnet-4': 0.003,
       'claude-3-opus': 0.015,
-      'claude-3-sonnet': 0.003,
-      'claude-3-5-sonnet': 0.003,
-      'gemini-pro': 0.001,
-      'gemini-1.5-flash': 0.0005,
+      'gemini-1.5-flash': 0.00125,
+      'gemini-2.0-flash': 0.0001,
+      'gemini-2.5-pro': 0.00125,
+      'gemini-pro': 0.00125,
     }
 
     const rate = pricing[model] || 0.01

@@ -68,14 +68,19 @@ export function estimateTokens(text: string): number {
 }
 
 export function estimateCost(tokens: number, provider: string, model: string): number {
-  // Simplified cost estimation - in production, use actual pricing
+  // 2025 pricing rates (input tokens) - cheapest models as defaults per provider
   const costPer1kTokens: Record<string, number> = {
-    'openai:gpt-4': 0.03,
-    'openai:gpt-3.5-turbo': 0.002,
+    'openai:gpt-4o-mini': 0.00015,
+    'openai:gpt-4o': 0.005,
+    'openai:gpt-4': 0.01,
+    'openai:gpt-3.5-turbo': 0.0005,
+    'anthropic:claude-3.5-sonnet': 0.003,
+    'anthropic:claude-sonnet-4': 0.003,
     'anthropic:claude-3-opus': 0.015,
-    'anthropic:claude-3-sonnet': 0.003,
-    'google:gemini-pro': 0.001,
-    'google:gemini-1.5-flash': 0.0005,
+    'google:gemini-2.0-flash': 0.0001,
+    'google:gemini-1.5-flash': 0.00125,
+    'google:gemini-2.5-pro': 0.00125,
+    'google:gemini-pro': 0.00125,
   }
 
   const key = `${provider}:${model}`

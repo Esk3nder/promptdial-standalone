@@ -71,7 +71,7 @@ app.get('/api/optimize/stream', async (req, res) => {
     // Create request object
     const optimizationRequest: OptimizationRequest = {
       prompt: prompt as string,
-      targetModel: targetModel as string || 'claude-3-opus',
+      targetModel: targetModel as string || 'gpt-4o-mini',
       optimizationLevel: (optimizationLevel as any) || 'advanced',
     }
     
