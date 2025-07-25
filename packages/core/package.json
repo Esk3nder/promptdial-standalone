@@ -13,13 +13,13 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:performance": "tsx src/test-performance.ts",
-    "server": "tsx src/start-server.ts",
-    "server:dev": "tsx watch src/start-server.ts",
+    "server": "tsx src/server.ts",
+    "server:dev": "tsx watch src/server.ts",
     "server:ui": "tsx src/server.ts",
     "start": "tsx src/server.ts",
     "build": "tsc",
     "prepublishOnly": "npm run build && npm test",
-    "dev": "tsx watch src/start-server.ts"
+    "dev": "tsx watch src/server.ts"
   },
   "keywords": [
     "ai",

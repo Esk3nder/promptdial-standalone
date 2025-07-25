@@ -99,6 +99,7 @@ interface UsePromptOptimizationReturn {
   isError: boolean
   isSuccess: boolean
   progress: number
+  stage?: string
 }
 
 export function usePromptOptimization(
@@ -123,7 +124,7 @@ export function usePromptOptimization(
         dispatch({ 
           type: 'UPDATE_PROGRESS', 
           progress: progress.progress,
-          stage: progress.message
+          stage: progress.status
         })
       }
     },
@@ -178,5 +179,6 @@ export function usePromptOptimization(
     isError: state.status === 'error',
     isSuccess: state.status === 'success',
     progress: state.status === 'optimizing' ? state.progress : 0,
+    stage: state.status === 'optimizing' ? state.stage : undefined,
   }
 }

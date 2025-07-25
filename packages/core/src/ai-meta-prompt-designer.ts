@@ -83,6 +83,10 @@ export class AIMetaPromptDesigner {
         return JSON.parse(cleanedJson)
       } catch (e2) {
         // Failed to parse cleaned JSON
+        console.error('JSON Parsing Debug Info:')
+        console.error('Original text:', text.substring(0, 500))
+        console.error('Extracted JSON:', jsonStr.substring(0, 500))  
+        console.error('Cleaned JSON:', cleanedJson.substring(0, 500))
         throw new Error(`JSON parsing failed: ${e2 instanceof Error ? e2.message : String(e2)}`)
       }
     }
@@ -404,8 +408,7 @@ Transform prompts to activate these cognitive systems naturally, without explici
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
-          if (!anthropic) throw new Error('Anthropic API key not configured')
-          // Using Anthropic Claude API for optimization
+          // Using Anthropic Claude API for optimization (with fallback if no key)
           return await this.generateClaudeVariants(request, variantCount)
 
         case 'gemini-pro':
@@ -510,6 +513,24 @@ Generate an optimized version that maximizes this model's capabilities. Return y
     const variants: OptimizedVariant[] = []
     const systemPrompt = this.systemPrompts[request.optimizationLevel]
 
+    // Check if Anthropic API is available
+    if (!anthropic) {
+      console.warn('Anthropic API key not configured, using fallback optimization')
+      // Create fallback variants when no API key is available
+      for (let i = 0; i < count; i++) {
+        const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
+        variants.push({
+          id: `claude-no-api-${Date.now()}-${i}`,
+          originalPrompt: request.prompt,
+          optimizedPrompt: fallbackPrompt,
+          changes: [{ type: 'no_api_fallback', description: 'Applied cognitive enhancement without API (no key configured)' }],
+          modelSpecificFeatures: ['Fallback optimization - no API key available'],
+          estimatedTokens: this.estimateTokens(fallbackPrompt),
+        })
+      }
+      return variants
+    }
+
     // Detect task type and suggested techniques
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
     // Task type and techniques detected
@@ -596,27 +617,61 @@ Return your Ultra-Think transformation:
         if (content.type !== 'text') continue
 
         // Claude API response received
-        // Parse the response using our helper
-        const result = this.parseJsonResponse(content.text)
-
-        variants.push({
-          id: `claude-${Date.now()}-${i}`,
-          originalPrompt: request.prompt,
-          optimizedPrompt: result.optimizedPrompt,
-          changes: result.changes || [],
-          modelSpecificFeatures: result.modelSpecificFeatures || [],
-          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
-        })
-        // Successfully created Claude variant
+        try {
+          // Parse the response using our helper
+          const result = this.parseJsonResponse(content.text)
+          
+          variants.push({
+            id: `claude-${Date.now()}-${i}`,
+            originalPrompt: request.prompt,
+            optimizedPrompt: result.optimizedPrompt,
+            changes: result.changes || [],
+            modelSpecificFeatures: result.modelSpecificFeatures || [],
+            estimatedTokens: this.estimateTokens(result.optimizedPrompt),
+          })
+          // Successfully created Claude variant
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError)
+          // Fallback: create variant with basic optimization if JSON parsing fails
+          const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
+          variants.push({
+            id: `claude-fallback-${Date.now()}-${i}`,
+            originalPrompt: request.prompt,
+            optimizedPrompt: fallbackPrompt,
+            changes: [{ type: 'fallback', description: 'Applied basic cognitive enhancement due to parsing error' }],
+            modelSpecificFeatures: ['Fallback optimization applied'],
+            estimatedTokens: this.estimateTokens(fallbackPrompt),
+          })
+          console.log('Created fallback variant due to JSON parsing error')
+        }
       } catch (error) {
         console.error('Claude API Error:', error)
-        // Error generating Claude variant - continuing to next attempt
+        // Create fallback variant even when API call fails
+        const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
+        variants.push({
+          id: `claude-api-fallback-${Date.now()}-${i}`,
+          originalPrompt: request.prompt,
+          optimizedPrompt: fallbackPrompt,
+          changes: [{ type: 'fallback', description: 'Applied fallback cognitive enhancement due to API error' }],
+          modelSpecificFeatures: ['Fallback optimization applied due to API failure'],
+          estimatedTokens: this.estimateTokens(fallbackPrompt),
+        })
+        console.log('Created API fallback variant due to Claude API error')
       }
     }
 
     if (variants.length === 0) {
-      // Failed to generate any Claude variants
-      throw new Error('Failed to generate any Claude variants')
+      // Last resort fallback - create at least one variant
+      console.warn('All Claude variant generation attempts failed, creating emergency fallback')
+      const emergencyPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
+      variants.push({
+        id: `claude-emergency-${Date.now()}`,
+        originalPrompt: request.prompt,
+        optimizedPrompt: emergencyPrompt,
+        changes: [{ type: 'emergency_fallback', description: 'Emergency cognitive enhancement applied' }],
+        modelSpecificFeatures: ['Emergency fallback optimization'],
+        estimatedTokens: this.estimateTokens(emergencyPrompt),
+      })
     }
 
     // Claude variants generated successfully
@@ -706,6 +761,32 @@ Return ONLY a JSON object:
       expert: 5,
     }
     return counts[level]
+  }
+
+  private createFallbackOptimization(prompt: string, level: OptimizationLevel): string {
+    // Basic cognitive enhancement patterns when JSON parsing fails
+    const enhancements = {
+      basic: [
+        'Consider the deeper implications of',
+        'Explore the multifaceted nature of',
+        'Reflect on the interconnected aspects of'
+      ],
+      advanced: [
+        'Apply systematic cognitive analysis to understand the complex dynamics underlying',
+        'Engage in meta-cognitive reflection while examining the layered dimensions of',
+        'Synthesize multiple perspectives to develop comprehensive insights about'
+      ],
+      expert: [
+        'Deploy advanced analytical frameworks to deconstruct and reconstruct the cognitive architecture surrounding',
+        'Establish recursive feedback loops between analytical and intuitive processing to illuminate the emergent properties of',
+        'Integrate cross-domain pattern recognition with recursive self-reflection to unveil the underlying principles governing'
+      ]
+    }
+
+    const patterns = enhancements[level]
+    const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)]
+    
+    return `${selectedPattern} ${prompt}. What insights emerge from this deeper cognitive engagement?`
   }
 
   private estimateTokens(text: string): number {
