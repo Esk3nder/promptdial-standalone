@@ -8,9 +8,9 @@ interface OptimizationInsightsProps {
 
 export function OptimizationInsights({ result }: OptimizationInsightsProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
-  
+
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(section)) {
         newSet.delete(section)
@@ -22,13 +22,13 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
   }
 
   const bestVariant = result.variants[0]
-  
+
   // Extract unique techniques used across all variants
   const allTechniques = new Set<string>()
   const techniqueDescriptions = new Map<string, string[]>()
-  
-  result.variants.forEach(variant => {
-    variant.changes?.forEach(change => {
+
+  result.variants.forEach((variant) => {
+    variant.changes?.forEach((change) => {
       allTechniques.add(change.type)
       if (!techniqueDescriptions.has(change.type)) {
         techniqueDescriptions.set(change.type, [])
@@ -40,7 +40,7 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
   return (
     <div className={styles.container}>
       <h3 className={styles.title}>Optimization Insights</h3>
-      
+
       {/* Summary Section */}
       <div className={styles.summarySection}>
         <div className={styles.summaryCard}>
@@ -61,7 +61,7 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
               </span>
             </div>
           </div>
-          
+
           {result.metadata && (
             <div className={styles.metadata}>
               <span className={styles.metaLabel}>Optimization Mode:</span>
@@ -84,12 +84,12 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
           onClick={() => toggleSection('techniques')}
           aria-expanded={expandedSections.has('techniques')}
         >
-          <svg 
+          <svg
             className={`${styles.sectionIcon} ${expandedSections.has('techniques') ? styles.expanded : ''}`}
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth="2" 
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -98,16 +98,18 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
             Cognitive Techniques Applied ({allTechniques.size})
           </h4>
         </button>
-        
+
         {expandedSections.has('techniques') && (
           <div className={styles.sectionContent}>
-            {Array.from(allTechniques).map(technique => (
+            {Array.from(allTechniques).map((technique) => (
               <div key={technique} className={styles.techniqueCard}>
                 <h5 className={styles.techniqueName}>{technique}</h5>
                 <ul className={styles.techniqueDescriptions}>
-                  {Array.from(new Set(techniqueDescriptions.get(technique) || [])).map((desc, i) => (
-                    <li key={i}>{desc}</li>
-                  ))}
+                  {Array.from(new Set(techniqueDescriptions.get(technique) || [])).map(
+                    (desc, i) => (
+                      <li key={i}>{desc}</li>
+                    ),
+                  )}
                 </ul>
               </div>
             ))}
@@ -122,53 +124,54 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
           onClick={() => toggleSection('why')}
           aria-expanded={expandedSections.has('why')}
         >
-          <svg 
+          <svg
             className={`${styles.sectionIcon} ${expandedSections.has('why') ? styles.expanded : ''}`}
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth="2" 
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
           <h4 className={styles.sectionTitle}>Why These Optimizations?</h4>
         </button>
-        
+
         {expandedSections.has('why') && (
           <div className={styles.sectionContent}>
             <div className={styles.explanationCard}>
               <p className={styles.explanation}>
-                Based on the analysis of your prompt, the system identified it as a 
-                <strong> {result.request.taskType || 'general'} </strong> 
-                task requiring 
-                <strong> {result.request.optimizationLevel} </strong> 
+                Based on the analysis of your prompt, the system identified it as a
+                <strong> {result.request.taskType || 'general'} </strong>
+                task requiring
+                <strong> {result.request.optimizationLevel} </strong>
                 level optimization.
               </p>
-              
+
               <p className={styles.explanation}>
-                The Ultra-Think cognitive framework was applied to enhance your prompt by:
+                The Meta-Prompt Designer cognitive framework was applied to enhance your prompt by:
               </p>
-              
+
               <ul className={styles.enhancementList}>
                 <li>Activating deeper reasoning patterns through open-ended framing</li>
                 <li>Creating cognitive bridges between concepts for better understanding</li>
                 <li>Embedding metacognitive triggers to promote self-reflection</li>
                 <li>Enabling emergent insights through discovery-oriented language</li>
               </ul>
-              
-              {bestVariant.modelSpecificFeatures && bestVariant.modelSpecificFeatures.length > 0 && (
-                <>
-                  <p className={styles.explanation}>
-                    Model-specific optimizations for {result.request.targetModel}:
-                  </p>
-                  <ul className={styles.enhancementList}>
-                    {bestVariant.modelSpecificFeatures.map((feature, i) => (
-                      <li key={i}>{feature}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
+
+              {bestVariant.modelSpecificFeatures &&
+                bestVariant.modelSpecificFeatures.length > 0 && (
+                  <>
+                    <p className={styles.explanation}>
+                      Model-specific optimizations for {result.request.targetModel}:
+                    </p>
+                    <ul className={styles.enhancementList}>
+                      {bestVariant.modelSpecificFeatures.map((feature, i) => (
+                        <li key={i}>{feature}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
             </div>
           </div>
         )}
@@ -182,19 +185,19 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
             onClick={() => toggleSection('quality')}
             aria-expanded={expandedSections.has('quality')}
           >
-            <svg 
+            <svg
               className={`${styles.sectionIcon} ${expandedSections.has('quality') ? styles.expanded : ''}`}
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth="2" 
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
             <h4 className={styles.sectionTitle}>Quality Analysis</h4>
           </button>
-          
+
           {expandedSections.has('quality') && (
             <div className={styles.sectionContent}>
               <div className={styles.qualityGrid}>
@@ -205,11 +208,12 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
                     </h5>
                     <div className={styles.factorScore}>
                       <div className={styles.factorBar}>
-                        <div 
+                        <div
                           className={styles.factorFill}
-                          style={{ 
+                          style={{
                             width: `${score}%`,
-                            backgroundColor: score >= 80 ? '#22c55e' : score >= 60 ? '#f59e0b' : '#ef4444'
+                            backgroundColor:
+                              score >= 80 ? '#22c55e' : score >= 60 ? '#f59e0b' : '#ef4444',
                           }}
                         />
                       </div>
@@ -233,19 +237,19 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
           onClick={() => toggleSection('learn')}
           aria-expanded={expandedSections.has('learn')}
         >
-          <svg 
+          <svg
             className={`${styles.sectionIcon} ${expandedSections.has('learn') ? styles.expanded : ''}`}
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth="2" 
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
           <h4 className={styles.sectionTitle}>Learn More</h4>
         </button>
-        
+
         {expandedSections.has('learn') && (
           <div className={styles.sectionContent}>
             <div className={styles.resourceCard}>
@@ -265,13 +269,13 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
                 </li>
               </ul>
             </div>
-            
+
             <div className={styles.resourceCard}>
               <h5 className={styles.resourceTitle}>Cognitive Enhancement Techniques</h5>
               <p className={styles.resourceText}>
-                The Ultra-Think framework leverages cognitive science principles to enhance
-                AI reasoning. Key techniques include thought decomposition, perspective
-                synthesis, and recursive enhancement patterns.
+                The Meta-Prompt Designer framework leverages cognitive science principles to enhance
+                AI reasoning. Key techniques include thought decomposition, perspective synthesis,
+                and recursive enhancement patterns.
               </p>
             </div>
           </div>
@@ -284,42 +288,42 @@ export function OptimizationInsights({ result }: OptimizationInsightsProps) {
 function getFactorDescription(factor: string, score: number): string {
   const descriptions: Record<string, Record<string, string>> = {
     clarity: {
-      high: "The prompt is exceptionally clear and unambiguous",
-      medium: "The prompt is reasonably clear with minor ambiguities",
-      low: "The prompt could be clearer and more specific"
+      high: 'The prompt is exceptionally clear and unambiguous',
+      medium: 'The prompt is reasonably clear with minor ambiguities',
+      low: 'The prompt could be clearer and more specific',
     },
     specificity: {
-      high: "Contains precise details and requirements",
-      medium: "Has good specificity but could include more details",
-      low: "Lacks specific details and requirements"
+      high: 'Contains precise details and requirements',
+      medium: 'Has good specificity but could include more details',
+      low: 'Lacks specific details and requirements',
     },
     structure: {
-      high: "Well-organized with logical flow",
-      medium: "Has decent structure with room for improvement",
-      low: "Could benefit from better organization"
+      high: 'Well-organized with logical flow',
+      medium: 'Has decent structure with room for improvement',
+      low: 'Could benefit from better organization',
     },
     completeness: {
-      high: "Covers all necessary aspects comprehensively",
-      medium: "Covers main points but missing some details",
-      low: "Missing important information or context"
+      high: 'Covers all necessary aspects comprehensively',
+      medium: 'Covers main points but missing some details',
+      low: 'Missing important information or context',
     },
     efficiency: {
-      high: "Concise yet comprehensive",
-      medium: "Good balance of brevity and detail",
-      low: "Could be more concise without losing meaning"
+      high: 'Concise yet comprehensive',
+      medium: 'Good balance of brevity and detail',
+      low: 'Could be more concise without losing meaning',
     },
     modelAlignment: {
-      high: "Perfectly optimized for the target model",
-      medium: "Well-suited for the model with minor adjustments",
-      low: "Could be better tailored to the model's strengths"
+      high: 'Perfectly optimized for the target model',
+      medium: 'Well-suited for the model with minor adjustments',
+      low: "Could be better tailored to the model's strengths",
     },
     safety: {
-      high: "No safety concerns detected",
-      medium: "Minor safety considerations",
-      low: "Contains potentially problematic content"
-    }
+      high: 'No safety concerns detected',
+      medium: 'Minor safety considerations',
+      low: 'Contains potentially problematic content',
+    },
   }
-  
+
   const level = score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low'
   return descriptions[factor]?.[level] || `Score: ${score}%`
 }

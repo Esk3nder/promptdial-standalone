@@ -26,10 +26,10 @@ app.get('/api/optimize/stream', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
   res.setHeader('Access-Control-Allow-Origin', '*')
-  
+
   // Parse query params
   const { prompt, targetModel } = req.query as any
-  
+
   if (!prompt) {
     res.write(`data: ${JSON.stringify({ error: 'Prompt is required' })}\n\n`)
     res.end()
@@ -41,11 +41,9 @@ app.get('/api/optimize/stream', async (req, res) => {
 
   // Check for API keys
   const hasAPIKeys = Boolean(
-    process.env.OPENAI_API_KEY ||
-    process.env.ANTHROPIC_API_KEY ||
-    process.env.GOOGLE_AI_API_KEY
+    process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY,
   )
-  
+
   const getActiveProvider = () => {
     if (process.env.ANTHROPIC_API_KEY) return 'Anthropic Claude'
     if (process.env.GOOGLE_AI_API_KEY) return 'Google Gemini'
@@ -55,48 +53,60 @@ app.get('/api/optimize/stream', async (req, res) => {
 
   try {
     // Validation phase
-    res.write(`data: ${JSON.stringify({ status: 'validating', progress: 10, message: 'Validating prompt...' })}\n\n`)
-    await new Promise(resolve => setTimeout(resolve, 300)) // Small delay for UI
-    
+    res.write(
+      `data: ${JSON.stringify({ status: 'validating', progress: 10, message: 'Validating prompt...' })}\n\n`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 300)) // Small delay for UI
+
     // Task detection phase
-    res.write(`data: ${JSON.stringify({ status: 'analyzing', progress: 25, message: 'Analyzing task type and cognitive requirements...' })}\n\n`)
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    res.write(
+      `data: ${JSON.stringify({ status: 'analyzing', progress: 25, message: 'Analyzing task type and cognitive requirements...' })}\n\n`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     // Optimization phase
-    res.write(`data: ${JSON.stringify({ status: 'optimizing', progress: 40, message: 'Applying Ultra-Think cognitive enhancements...' })}\n\n`)
-    
+    res.write(
+      `data: ${JSON.stringify({ status: 'optimizing', progress: 40, message: 'Applying meta-prompt cognitive enhancements...' })}\n\n`,
+    )
+
     const optimizationMode = hasAPIKeys ? 'dynamic-ai' : 'static-template'
     const activeProvider = getActiveProvider()
 
     // Create request object
     const optimizationRequest: OptimizationRequest = {
       prompt: prompt as string,
-      targetModel: targetModel as string || 'gpt-4o-mini',
+      targetModel: (targetModel as string) || 'gpt-4o-mini',
     }
-    
+
     // Generate variants
-    res.write(`data: ${JSON.stringify({ status: 'generating', progress: 60, message: `Generating cognitive variants with ${activeProvider}...` })}\n\n`)
-    
+    res.write(
+      `data: ${JSON.stringify({ status: 'generating', progress: 60, message: `Generating cognitive variants with ${activeProvider}...` })}\n\n`,
+    )
+
     // Create PromptDial instance
     const promptDial = new PromptDial({
       autoValidate: true,
       sortByQuality: true,
       useAI: true,
     })
-    
+
     // Optimize with progress callback and timeout
-    const results = await Promise.race([
+    const results = (await Promise.race([
       promptDial.optimize(optimizationRequest),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Optimization timeout after 60 seconds')), 60000)
-      )
-    ]) as any
-    
-    res.write(`data: ${JSON.stringify({ status: 'evaluating', progress: 85, message: 'Evaluating quality scores...' })}\n\n`)
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    res.write(`data: ${JSON.stringify({ status: 'finalizing', progress: 95, message: 'Finalizing results...' })}\n\n`)
-    await new Promise(resolve => setTimeout(resolve, 200))
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Optimization timeout after 60 seconds')), 60000),
+      ),
+    ])) as any
+
+    res.write(
+      `data: ${JSON.stringify({ status: 'evaluating', progress: 85, message: 'Evaluating quality scores...' })}\n\n`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    res.write(
+      `data: ${JSON.stringify({ status: 'finalizing', progress: 95, message: 'Finalizing results...' })}\n\n`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     // Send final results
     const finalResult = {
@@ -107,12 +117,14 @@ app.get('/api/optimize/stream', async (req, res) => {
         metadata: {
           optimizationMode,
           activeProvider,
-          optimizedUsing: hasAPIKeys ? 'AI-powered dynamic optimization' : 'Template-based optimization',
+          optimizedUsing: hasAPIKeys
+            ? 'AI-powered dynamic optimization'
+            : 'Template-based optimization',
           timestamp: new Date().toISOString(),
         },
       },
     }
-    
+
     res.write(`data: ${JSON.stringify(finalResult)}\n\n`)
     res.end()
   } catch (error: any) {
@@ -154,10 +166,10 @@ app.post('/api/optimize', async (req, res) => {
       process.env.ANTHROPIC_API_KEY ||
       process.env.GOOGLE_AI_API_KEY
     )
-    
+
     const getActiveProvider = () => {
       if (process.env.ANTHROPIC_API_KEY) return 'Anthropic Claude'
-      if (process.env.GOOGLE_AI_API_KEY) return 'Google Gemini'  
+      if (process.env.GOOGLE_AI_API_KEY) return 'Google Gemini'
       if (process.env.OPENAI_API_KEY) return 'OpenAI GPT'
       return 'None'
     }
@@ -167,7 +179,9 @@ app.post('/api/optimize', async (req, res) => {
       metadata: {
         optimizationMode: hasAPIKeys ? 'dynamic-ai' : 'static-template',
         activeProvider: hasAPIKeys ? getActiveProvider() : 'None',
-        optimizedUsing: hasAPIKeys ? 'AI-powered dynamic optimization' : 'Static template-based optimization',
+        optimizedUsing: hasAPIKeys
+          ? 'AI-powered dynamic optimization'
+          : 'Static template-based optimization',
         timestamp: new Date().toISOString(),
       },
     }
@@ -179,7 +193,7 @@ app.post('/api/optimize', async (req, res) => {
     console.error('Request body was:', req.body)
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Optimization failed',
-      details: error instanceof Error ? error.stack : String(error)
+      details: error instanceof Error ? error.stack : String(error),
     })
   }
 })
@@ -194,13 +208,17 @@ app.get('/debug', async (req, res) => {
       google: !!process.env.GOOGLE_AI_API_KEY,
     }
 
-    const activeProvider = apiKeys.anthropic ? 'Anthropic Claude' :
-                          apiKeys.google ? 'Google Gemini' :
-                          apiKeys.openai ? 'OpenAI GPT' : 'None'
+    const activeProvider = apiKeys.anthropic
+      ? 'Anthropic Claude'
+      : apiKeys.google
+        ? 'Google Gemini'
+        : apiKeys.openai
+          ? 'OpenAI GPT'
+          : 'None'
 
     // Test prompt for debugging
-    const testPrompt = req.query.prompt as string || 'hello world'
-    const testModel = req.query.model as string || 'claude-3-opus'
+    const testPrompt = (req.query.prompt as string) || 'hello world'
+    const testModel = (req.query.model as string) || 'claude-3-opus'
 
     let debugInfo: any = {
       timestamp: new Date().toISOString(),
@@ -209,75 +227,96 @@ app.get('/debug', async (req, res) => {
         environment: process.env.NODE_ENV || 'development',
         apiKeys,
         activeProvider,
-        hasAnyApiKey: Object.values(apiKeys).some(Boolean)
+        hasAnyApiKey: Object.values(apiKeys).some(Boolean),
       },
       testRequest: {
         prompt: testPrompt,
         targetModel: testModel,
       },
-      steps: []
+      steps: [],
     }
 
     // Only run optimization test if we have API keys or want to test fallback
     if (req.query.test === 'true') {
       try {
-        debugInfo.steps.push({ step: 'initialization', status: 'starting', message: 'Creating PromptDial instance' })
-        
+        debugInfo.steps.push({
+          step: 'initialization',
+          status: 'starting',
+          message: 'Creating PromptDial instance',
+        })
+
         const promptDial = new PromptDial({
           autoValidate: true,
           sortByQuality: true,
           useAI: true,
         })
-        
-        debugInfo.steps.push({ step: 'initialization', status: 'complete', message: 'PromptDial instance created' })
-        debugInfo.steps.push({ step: 'optimization', status: 'starting', message: 'Beginning optimization process' })
+
+        debugInfo.steps.push({
+          step: 'initialization',
+          status: 'complete',
+          message: 'PromptDial instance created',
+        })
+        debugInfo.steps.push({
+          step: 'optimization',
+          status: 'starting',
+          message: 'Beginning optimization process',
+        })
 
         const result = await promptDial.optimize({
           prompt: testPrompt,
           targetModel: testModel,
         })
 
-        debugInfo.steps.push({ step: 'optimization', status: 'complete', message: 'Optimization completed successfully' })
-        
+        debugInfo.steps.push({
+          step: 'optimization',
+          status: 'complete',
+          message: 'Optimization completed successfully',
+        })
+
         // Analyze the results to show what actually happened
-        const variantSources = result.variants?.map(v => {
-          if (v.id.includes('fallback') || v.id.includes('emergency') || v.id.includes('no-api')) {
-            return 'FAKE_FALLBACK'
-          } else if (v.id.includes('claude')) {
-            return 'REAL_CLAUDE_API'
-          } else if (v.id.includes('openai')) {
-            return 'REAL_OPENAI_API'
-          } else if (v.id.includes('gemini')) {
-            return 'REAL_GEMINI_API'
-          }
-          return 'UNKNOWN'
-        }) || []
+        const variantSources =
+          result.variants?.map((v) => {
+            if (
+              v.id.includes('fallback') ||
+              v.id.includes('emergency') ||
+              v.id.includes('no-api')
+            ) {
+              return 'FAKE_FALLBACK'
+            } else if (v.id.includes('claude')) {
+              return 'REAL_CLAUDE_API'
+            } else if (v.id.includes('openai')) {
+              return 'REAL_OPENAI_API'
+            } else if (v.id.includes('gemini')) {
+              return 'REAL_GEMINI_API'
+            }
+            return 'UNKNOWN'
+          }) || []
 
         debugInfo.result = {
           variantCount: result.variants?.length || 0,
           variantSources: variantSources,
-          realApiCallsSuccessful: variantSources.filter(s => s.startsWith('REAL_')).length,
-          fakeResponses: variantSources.filter(s => s === 'FAKE_FALLBACK').length,
-          variants: result.variants?.map(v => ({
-            id: v.id,
-            optimizedPrompt: v.optimizedPrompt?.substring(0, 100) + '...',
-            changes: v.changes,
-            modelSpecificFeatures: v.modelSpecificFeatures,
-            source: v.id.includes('fallback') ? '⚠️ FAKE FALLBACK' : '✅ REAL API CALL'
-          })) || [],
-          summary: result.summary
+          realApiCallsSuccessful: variantSources.filter((s) => s.startsWith('REAL_')).length,
+          fakeResponses: variantSources.filter((s) => s === 'FAKE_FALLBACK').length,
+          variants:
+            result.variants?.map((v) => ({
+              id: v.id,
+              optimizedPrompt: v.optimizedPrompt?.substring(0, 100) + '...',
+              changes: v.changes,
+              modelSpecificFeatures: v.modelSpecificFeatures,
+              source: v.id.includes('fallback') ? '⚠️ FAKE FALLBACK' : '✅ REAL API CALL',
+            })) || [],
+          summary: result.summary,
         }
-
       } catch (error) {
-        debugInfo.steps.push({ 
-          step: 'optimization', 
-          status: 'error', 
+        debugInfo.steps.push({
+          step: 'optimization',
+          status: 'error',
           message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined
+          stack: error instanceof Error ? error.stack : undefined,
         })
         debugInfo.error = {
           message: error instanceof Error ? error.message : String(error),
-          type: error instanceof Error ? error.constructor.name : typeof error
+          type: error instanceof Error ? error.constructor.name : typeof error,
         }
       }
     }
@@ -360,19 +399,29 @@ app.get('/debug', async (req, res) => {
             </form>
         </div>
 
-        ${debugInfo.steps.length > 0 ? `
+        ${
+          debugInfo.steps.length > 0
+            ? `
         <div class="card">
             <h2>📊 Test Results</h2>
-            ${debugInfo.steps.map(step => `
+            ${debugInfo.steps
+              .map(
+                (step) => `
                 <div class="step ${step.status}">
                     <strong>${step.step.toUpperCase()}:</strong> ${step.message}
                     ${step.stack ? `<pre class="code">${step.stack}</pre>` : ''}
                 </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${debugInfo.result ? `
+        ${
+          debugInfo.result
+            ? `
         <div class="card">
             <h2>✨ Optimization Results</h2>
             <div class="grid">
@@ -383,14 +432,19 @@ app.get('/debug', async (req, res) => {
                 </div>
                 <div>
                     <p><strong>Variant Sources:</strong></p>
-                    ${debugInfo.result.variantSources.map(source => 
-                        `<span class="${source.startsWith('REAL_') ? 'status-good' : 'status-bad'}">${source}</span>`
-                    ).join(', ')}
+                    ${debugInfo.result.variantSources
+                      .map(
+                        (source) =>
+                          `<span class="${source.startsWith('REAL_') ? 'status-good' : 'status-bad'}">${source}</span>`,
+                      )
+                      .join(', ')}
                 </div>
             </div>
             
             <h3>Generated Variants:</h3>
-            ${debugInfo.result.variants.map((variant, i) => `
+            ${debugInfo.result.variants
+              .map(
+                (variant, i) => `
                 <div class="code">
                     <strong>Variant ${i + 1}: ${variant.source}</strong><br>
                     <strong>ID:</strong> ${variant.id}<br>
@@ -398,11 +452,17 @@ app.get('/debug', async (req, res) => {
                     <strong>Changes:</strong> ${JSON.stringify(variant.changes, null, 2)}<br>
                     <strong>Features:</strong> ${JSON.stringify(variant.modelSpecificFeatures, null, 2)}
                 </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${debugInfo.error ? `
+        ${
+          debugInfo.error
+            ? `
         <div class="card">
             <h2>❌ Error Details</h2>
             <div class="code">
@@ -410,7 +470,9 @@ app.get('/debug', async (req, res) => {
                 <strong>Message:</strong> ${debugInfo.error.message}
             </div>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <div class="card">
             <h2>🔗 Quick Actions</h2>
@@ -422,15 +484,14 @@ app.get('/debug', async (req, res) => {
     </div>
 </body>
 </html>`
-      
+
       res.send(html)
     }
-
   } catch (error) {
     console.error('Debug endpoint error:', error)
-    res.status(500).json({ 
-      error: 'Debug endpoint failed', 
-      message: error instanceof Error ? error.message : String(error) 
+    res.status(500).json({
+      error: 'Debug endpoint failed',
+      message: error instanceof Error ? error.message : String(error),
     })
   }
 })
@@ -456,13 +517,13 @@ if (process.env.NODE_ENV !== 'test') {
 
     const getOptimizationMode = () => {
       if (!hasAPIKeys) return '⚠️  STATIC MODE - Using template-based optimization only'
-      
+
       const providers = [
         process.env.ANTHROPIC_API_KEY && '🤖 Anthropic Claude',
         process.env.OPENAI_API_KEY && '🤖 OpenAI GPT',
         process.env.GOOGLE_AI_API_KEY && '🤖 Google Gemini',
       ].filter(Boolean)
-      
+
       return `🧠 DYNAMIC AI MODE - Using ${providers.join(', ')}`
     }
 
@@ -475,9 +536,10 @@ if (process.env.NODE_ENV !== 'test') {
 
 ${getOptimizationMode()}
 
-${hasAPIKeys 
-  ? '🎯 Dynamic prompt optimization using AI models'
-  : '📝 Static template optimization (add API keys to .env for AI features)'
+${
+  hasAPIKeys
+    ? '🎯 Dynamic prompt optimization using AI models'
+    : '📝 Static template optimization (add API keys to .env for AI features)'
 }
 
 Ready to optimize prompts!

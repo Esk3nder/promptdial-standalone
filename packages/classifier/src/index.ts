@@ -137,7 +137,7 @@ export class TaskRiskClassifier {
     try {
       // Detect task type with cognitive profiling
       const taskType = this.detectTaskType(prompt)
-      
+
       // Analyze cognitive requirements
       const cognitiveProfile = this.analyzeCognitiveProfile(prompt, taskType)
 
@@ -154,7 +154,12 @@ export class TaskRiskClassifier {
       const needsRetrieval = this.needsRetrieval(prompt, taskType)
 
       // Suggest techniques based on cognitive profile
-      const suggestedTechniques = this.suggestTechniques(taskType, complexity, needsRetrieval, cognitiveProfile)
+      const suggestedTechniques = this.suggestTechniques(
+        taskType,
+        complexity,
+        needsRetrieval,
+        cognitiveProfile,
+      )
 
       const classification: TaskClassification = {
         task_type: taskType,
@@ -237,7 +242,7 @@ export class TaskRiskClassifier {
       'analytical-exploratory': 0.6,
       'task-focused': 0.5,
     }
-    
+
     const profileScore = profileComplexity[cognitiveProfile] || 0.5
     complexityScore = (complexityScore + profileScore) / 2
 
@@ -253,7 +258,7 @@ export class TaskRiskClassifier {
     if (/\b(then|after|before|first|second|finally|step)\b/i.test(lowerPrompt)) {
       complexityScore += 0.1
     }
-    
+
     // Check for abstract concepts
     if (/\b(concept|theory|principle|philosophy|abstract)\b/i.test(lowerPrompt)) {
       complexityScore += 0.05
@@ -297,13 +302,21 @@ export class TaskRiskClassifier {
 
   private analyzeCognitiveProfile(prompt: string, taskType: TaskType): string {
     const lowerPrompt = prompt.toLowerCase()
-    
+
     // Analyze thinking patterns required
-    const requiresAnalysis = /\b(analyze|examine|investigate|explore|understand|explain)\b/i.test(lowerPrompt)
-    const requiresSynthesis = /\b(create|generate|design|build|compose|combine)\b/i.test(lowerPrompt)
-    const requiresEvaluation = /\b(evaluate|assess|judge|compare|critique|review)\b/i.test(lowerPrompt)
-    const requiresAbstraction = /\b(conceptualize|abstract|generalize|theorize|model)\b/i.test(lowerPrompt)
-    
+    const requiresAnalysis = /\b(analyze|examine|investigate|explore|understand|explain)\b/i.test(
+      lowerPrompt,
+    )
+    const requiresSynthesis = /\b(create|generate|design|build|compose|combine)\b/i.test(
+      lowerPrompt,
+    )
+    const requiresEvaluation = /\b(evaluate|assess|judge|compare|critique|review)\b/i.test(
+      lowerPrompt,
+    )
+    const requiresAbstraction = /\b(conceptualize|abstract|generalize|theorize|model)\b/i.test(
+      lowerPrompt,
+    )
+
     // Determine cognitive profile
     if (requiresAnalysis && requiresSynthesis && requiresEvaluation) {
       return 'full-spectrum-cognitive'
@@ -330,18 +343,14 @@ export class TaskRiskClassifier {
   ): string[] {
     const techniques: string[] = []
 
-    // Ultra-Think cognitive technique mapping
+    // Meta-prompt cognitive technique mapping
     const cognitiveMapping: Record<string, string[]> = {
       'full-spectrum-cognitive': [
         TECHNIQUES.TREE_OF_THOUGHT,
         TECHNIQUES.SELF_CONSISTENCY,
         TECHNIQUES.DSPY_GRIPS,
       ],
-      'analytical-synthetic': [
-        TECHNIQUES.FEW_SHOT_COT,
-        TECHNIQUES.AUTO_DICOT,
-        TECHNIQUES.REACT,
-      ],
+      'analytical-synthetic': [TECHNIQUES.FEW_SHOT_COT, TECHNIQUES.AUTO_DICOT, TECHNIQUES.REACT],
       'creative-abstract': [
         TECHNIQUES.TREE_OF_THOUGHT,
         TECHNIQUES.UNIVERSAL_SELF_PROMPT,
@@ -352,24 +361,16 @@ export class TaskRiskClassifier {
         TECHNIQUES.FEW_SHOT_COT,
         TECHNIQUES.AUTO_DICOT,
       ],
-      'generative-creative': [
-        TECHNIQUES.TREE_OF_THOUGHT,
-        TECHNIQUES.UNIVERSAL_SELF_PROMPT,
-      ],
-      'analytical-exploratory': [
-        TECHNIQUES.FEW_SHOT_COT,
-        TECHNIQUES.REACT,
-      ],
-      'task-focused': [
-        TECHNIQUES.FEW_SHOT_COT,
-      ],
+      'generative-creative': [TECHNIQUES.TREE_OF_THOUGHT, TECHNIQUES.UNIVERSAL_SELF_PROMPT],
+      'analytical-exploratory': [TECHNIQUES.FEW_SHOT_COT, TECHNIQUES.REACT],
+      'task-focused': [TECHNIQUES.FEW_SHOT_COT],
     }
 
     // Apply cognitive profile techniques
     const profileTechniques = cognitiveMapping[cognitiveProfile] || []
     techniques.push(...profileTechniques)
 
-    // Enhanced task-specific techniques  
+    // Enhanced task-specific techniques
     switch (taskType) {
       case 'math_reasoning':
         if (!techniques.includes(TECHNIQUES.SELF_CONSISTENCY)) {
