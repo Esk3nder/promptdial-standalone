@@ -12,7 +12,6 @@ const createOptimizationRequest = (
 ): OptimizationRequest => ({
   prompt: 'Write a blog post about artificial intelligence',
   targetModel: 'gpt-4',
-  optimizationLevel: 'advanced',
   ...overrides,
 })
 
@@ -29,14 +28,13 @@ describe('MetaPromptDesigner', () => {
       const request = createOptimizationRequest({
         prompt: 'Write about artificial intelligence',
         targetModel: 'gpt-4',
-        optimizationLevel: 'advanced',
       })
 
       // Act
       const variants = await designer.generateVariants(request)
 
       // Assert
-      expect(variants).toHaveLength(3)
+      expect(variants).toHaveLength(5) // Now always generates 5 variants
 
       // Each variant should have required properties
       expect(variants[0]).toMatchObject({
@@ -129,25 +127,17 @@ describe('MetaPromptDesigner', () => {
       }
     })
 
-    it('should handle different optimization levels', async () => {
-      const levels = ['basic', 'advanced', 'expert'] as const
-      const expectedCounts = { basic: 1, advanced: 3, expert: 5 }
+    it('should always generate 5 variants', async () => {
+      const request = createOptimizationRequest({
+        prompt: 'Write a story',
+      })
 
-      for (const level of levels) {
-        const request = createOptimizationRequest({
-          prompt: 'Write a story',
-          optimizationLevel: level,
-        })
+      const variants = await designer.generateVariants(request)
 
-        const variants = await designer.generateVariants(request)
+      expect(variants).toHaveLength(5)
 
-        expect(variants).toHaveLength(expectedCounts[level])
-
-        // Higher levels should produce more sophisticated optimizations
-        if (level === 'expert') {
-          expect(variants[0].changes.length).toBeGreaterThanOrEqual(5)
-        }
-      }
+      // All variants should have sophisticated optimizations
+      expect(variants[0].changes.length).toBeGreaterThanOrEqual(5)
     })
 
     it('should detect and optimize based on task type', async () => {
@@ -217,7 +207,7 @@ describe('MetaPromptDesigner', () => {
 
     it('should sort variants by quality score', async () => {
       const request = createOptimizationRequest({
-        optimizationLevel: 'advanced', // Generate multiple variants
+        // Always generates 5 variants now
       })
 
       const variants = await designer.generateVariants(request)

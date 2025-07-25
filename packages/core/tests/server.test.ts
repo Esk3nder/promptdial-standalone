@@ -121,7 +121,6 @@ describe('Server', () => {
           .send({
             prompt: 'Test prompt',
             targetModel: 'gpt-4',
-            optimizationLevel: 'basic',
           })
           .expect(200)
 
@@ -142,7 +141,6 @@ describe('Server', () => {
         expect(mockOptimize).toHaveBeenCalledWith({
           prompt: 'Test prompt',
           targetModel: 'gpt-4',
-          optimizationLevel: 'basic',
         })
       })
 
@@ -151,12 +149,11 @@ describe('Server', () => {
           .post('/api/optimize')
           .send({
             targetModel: 'gpt-4',
-            optimizationLevel: 'basic',
           })
           .expect(400)
 
         expect(response.body).toEqual({
-          error: 'Missing required fields: prompt, targetModel, optimizationLevel',
+          error: 'Missing required fields: prompt, targetModel',
         })
 
         expect(mockOptimize).not.toHaveBeenCalled()
@@ -167,28 +164,15 @@ describe('Server', () => {
           .post('/api/optimize')
           .send({
             prompt: 'Test prompt',
-            optimizationLevel: 'basic',
           })
           .expect(400)
 
         expect(response.body).toEqual({
-          error: 'Missing required fields: prompt, targetModel, optimizationLevel',
+          error: 'Missing required fields: prompt, targetModel',
         })
       })
 
-      it('should return 400 for missing optimizationLevel', async () => {
-        const response = await request(app)
-          .post('/api/optimize')
-          .send({
-            prompt: 'Test prompt',
-            targetModel: 'gpt-4',
-          })
-          .expect(400)
-
-        expect(response.body).toEqual({
-          error: 'Missing required fields: prompt, targetModel, optimizationLevel',
-        })
-      })
+      // optimizationLevel is no longer required - test removed
 
       it('should handle optimization errors gracefully', async () => {
         const errorMessage = 'API key not configured'
@@ -199,7 +183,6 @@ describe('Server', () => {
           .send({
             prompt: 'Test prompt',
             targetModel: 'gpt-4',
-            optimizationLevel: 'basic',
           })
           .expect(500)
 
@@ -218,7 +201,6 @@ describe('Server', () => {
           .send({
             prompt: 'Test prompt',
             targetModel: 'gpt-4',
-            optimizationLevel: 'basic',
           })
           .expect(500)
 
@@ -249,7 +231,6 @@ describe('Server', () => {
           .send({
             prompt: 'Test prompt',
             targetModel: 'gpt-4',
-            optimizationLevel: 'basic',
           })
           .expect(200)
 
@@ -469,7 +450,6 @@ describe('Server', () => {
       const jsonBody = {
         prompt: 'Test',
         targetModel: 'gpt-4',
-        optimizationLevel: 'basic',
       }
 
       await request(app).post('/api/optimize').send(jsonBody).expect(200)

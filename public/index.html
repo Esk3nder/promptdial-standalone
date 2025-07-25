@@ -244,12 +244,6 @@
                         <option value="gemini-pro">Gemini Pro</option>
                     </select>
                     
-                    <label for="level">Optimization Level</label>
-                    <select id="level">
-                        <option value="basic">Basic - Quick improvements</option>
-                        <option value="advanced">Advanced - Deeper optimization</option>
-                        <option value="expert">Expert - Maximum optimization</option>
-                    </select>
                     
                     <button id="optimizeBtn" onclick="optimizePrompt()">
                         Optimize Prompt
@@ -276,7 +270,6 @@
             // Get input values
             const prompt = document.getElementById('prompt').value;
             const model = document.getElementById('model').value;
-            const level = document.getElementById('level').value;
             
             if (!prompt.trim()) {
                 alert('Please enter a prompt');
@@ -296,8 +289,7 @@
                     },
                     body: JSON.stringify({
                         prompt: prompt,
-                        targetModel: model,
-                        optimizationLevel: level
+                        targetModel: model
                     })
                 });
                 

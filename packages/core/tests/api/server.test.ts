@@ -82,7 +82,6 @@ describe('API Server', () => {
         .send({
           prompt: 'Test prompt',
           targetModel: 'gpt-4',
-          optimizationLevel: 'basic',
         })
         .expect(200)
 
@@ -99,7 +98,6 @@ describe('API Server', () => {
 
       expect(mockRunner.runTest).toHaveBeenCalledWith('Test prompt', {
         targetModel: 'gpt-4',
-        optimizationLevel: 'basic',
       })
     })
 
@@ -108,7 +106,6 @@ describe('API Server', () => {
         .post('/api/test')
         .send({
           targetModel: 'gpt-4',
-          optimizationLevel: 'basic',
         })
         .expect(400)
 
@@ -157,7 +154,6 @@ describe('API Server', () => {
 
       expect(mockRunner.runTest).toHaveBeenCalledWith('Minimal test', {
         targetModel: undefined,
-        optimizationLevel: undefined,
       })
     })
   })
@@ -262,7 +258,6 @@ describe('API Server', () => {
       expect(mockRunner.onEvent).toHaveBeenCalled()
       expect(mockRunner.runTest).toHaveBeenCalledWith('Integration test', {
         targetModel: undefined,
-        optimizationLevel: undefined,
       })
 
       // Verify events were emitted
