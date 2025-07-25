@@ -44,7 +44,7 @@ export class AIMetaPromptDesigner {
   // Helper to extract and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
     console.log('Raw Claude response:', text.substring(0, 200) + '...')
-    
+
     // Strategy 1: Try direct parsing (if Claude returns pure JSON)
     try {
       return JSON.parse(text.trim())
@@ -68,7 +68,7 @@ export class AIMetaPromptDesigner {
       try {
         return JSON.parse(jsonMatch[0])
       } catch (e) {
-        // Continue to other strategies  
+        // Continue to other strategies
       }
     }
 
@@ -79,18 +79,23 @@ export class AIMetaPromptDesigner {
         return JSON.parse(complexJsonMatch[0])
       } catch (e) {
         // Log the actual failure for debugging
-        console.error('JSON parsing failed on extracted JSON:', complexJsonMatch[0].substring(0, 300))
+        console.error(
+          'JSON parsing failed on extracted JSON:',
+          complexJsonMatch[0].substring(0, 300),
+        )
         console.error('Parse error:', e instanceof Error ? e.message : String(e))
       }
     }
 
     // All strategies failed
-    throw new Error(`Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`)
+    throw new Error(
+      `Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`,
+    )
   }
 
-  private systemPrompt = `You are an expert at implementing Ultra-Think cognitive enhancement for maximum AI performance. Transform prompts using state-of-the-art cognitive science.
+  private systemPrompt = `You are an expert at implementing AIMetaPromptDesigner cognitive enhancement for maximum AI performance. Transform prompts using state-of-the-art cognitive science.
 
-ULTRA-THINK COGNITIVE ARCHITECTURE:
+AIMETAPROMPTDESIGNER COGNITIVE ARCHITECTURE:
 
 1. Cognitive Enhancement Layers:
    - Perceptual Layer: Frame problems to activate pattern recognition
@@ -130,20 +135,20 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Complex reasoning chains',
           'Nuanced understanding',
           'Multi-perspective synthesis',
-          'Ethical reasoning'
+          'Ethical reasoning',
         ],
         optimizationFocus: [
           'Cognitive depth through open-ended exploration',
           'Multi-layered analysis with emergent insights',
           'Conceptual bridges between disparate ideas',
-          'Recursive thought patterns for deep understanding'
+          'Recursive thought patterns for deep understanding',
         ],
         structuralPreferences: [
           'Natural language flow over rigid formatting',
           'Contextual framing that invites exploration',
           'Questions that activate curiosity',
-          'Implicit structure through cognitive cues'
-        ]
+          'Implicit structure through cognitive cues',
+        ],
       },
       'gpt-4': {
         strengths: [
@@ -151,20 +156,20 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Structured analysis',
           'Technical precision',
           'Creative problem-solving',
-          'Systematic thinking'
+          'Systematic thinking',
         ],
         optimizationFocus: [
           'Clear task decomposition',
           'Systematic exploration of solution space',
           'Balance of creativity and structure',
-          'Integration of diverse knowledge domains'
+          'Integration of diverse knowledge domains',
         ],
         structuralPreferences: [
           'Well-defined objectives with flexibility',
           'Scaffolded complexity',
           'Examples that illustrate patterns',
-          'Logical flow with creative freedom'
-        ]
+          'Logical flow with creative freedom',
+        ],
       },
       'gemini-pro': {
         strengths: [
@@ -172,27 +177,27 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Real-time information synthesis',
           'Efficient processing',
           'Practical applications',
-          'Clear communication'
+          'Clear communication',
         ],
         optimizationFocus: [
           'Direct and efficient problem-solving',
           'Practical application focus',
           'Clear objective mapping',
-          'Actionable insights'
+          'Actionable insights',
         ],
         structuralPreferences: [
           'Concise and clear instructions',
           'Goal-oriented framing',
           'Practical examples',
-          'Direct path to solutions'
-        ]
-      }
+          'Direct path to solutions',
+        ],
+      },
     }
 
     // Extract base model name
     const baseModel = model.split('-')[0] + '-' + (model.split('-')[1] || '')
-    const modelKey = Object.keys(strategies).find(key => model.startsWith(key.split('-')[0]))
-    
+    const modelKey = Object.keys(strategies).find((key) => model.startsWith(key.split('-')[0]))
+
     return strategies[modelKey || 'claude-3-opus'] || strategies['claude-3-opus']
   }
 
@@ -205,7 +210,7 @@ Transform prompts to activate these cognitive systems naturally, without explici
     const promptLength = prompt.length
     const questionCount = (prompt.match(/\?/g) || []).length
     const imperativeWords = ['create', 'make', 'build', 'design', 'develop', 'generate']
-    const hasImperative = imperativeWords.some(word => lowerPrompt.includes(word))
+    const hasImperative = imperativeWords.some((word) => lowerPrompt.includes(word))
 
     // Creative synthesis tasks - highest cognitive load
     if (
@@ -222,9 +227,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Thought Crystallization',
           'Narrative Arc Discovery',
           'Conceptual Weaving',
-          'Emergent Structure Formation'
+          'Emergent Structure Formation',
         ],
-        cognitiveProfile: 'divergent-convergent-synthesis'
+        cognitiveProfile: 'divergent-convergent-synthesis',
       }
     }
 
@@ -242,9 +247,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Recursive Decomposition',
           'Perspective Synthesis',
           'Pattern Emergence',
-          'Cognitive Layering'
+          'Cognitive Layering',
         ],
-        cognitiveProfile: 'analytical-synthetic-recursive'
+        cognitiveProfile: 'analytical-synthetic-recursive',
       }
     }
 
@@ -262,9 +267,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Solution Space Mapping',
           'Constraint Navigation',
           'Path Optimization',
-          'Emergent Solution Discovery'
+          'Emergent Solution Discovery',
         ],
-        cognitiveProfile: 'exploratory-convergent-optimization'
+        cognitiveProfile: 'exploratory-convergent-optimization',
       }
     }
 
@@ -282,9 +287,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Pattern Instantiation',
           'Architectural Emergence',
           'Logic Flow Crystallization',
-          'Recursive Implementation'
+          'Recursive Implementation',
         ],
-        cognitiveProfile: 'structural-logical-implementation'
+        cognitiveProfile: 'structural-logical-implementation',
       }
     }
 
@@ -302,9 +307,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Information Crystallization',
           'Knowledge Graph Construction',
           'Insight Mining',
-          'Conceptual Integration'
+          'Conceptual Integration',
         ],
-        cognitiveProfile: 'exploratory-integrative-synthesis'
+        cognitiveProfile: 'exploratory-integrative-synthesis',
       }
     }
 
@@ -321,9 +326,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Future State Modeling',
           'Systems Thinking',
           'Scenario Synthesis',
-          'Strategic Crystallization'
+          'Strategic Crystallization',
         ],
-        cognitiveProfile: 'visionary-systematic-architectural'
+        cognitiveProfile: 'visionary-systematic-architectural',
       }
     }
 
@@ -335,9 +340,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
           'Question Cascading',
           'Curiosity Amplification',
           'Discovery Pathways',
-          'Insight Emergence'
+          'Insight Emergence',
         ],
-        cognitiveProfile: 'inquisitive-exploratory-discovery'
+        cognitiveProfile: 'inquisitive-exploratory-discovery',
       }
     }
 
@@ -348,9 +353,9 @@ Transform prompts to activate these cognitive systems naturally, without explici
         'Cognitive Flexibility',
         'Emergent Understanding',
         'Adaptive Reasoning',
-        'Context-Sensitive Optimization'
+        'Context-Sensitive Optimization',
       ],
-      cognitiveProfile: 'adaptive-responsive-emergent'
+      cognitiveProfile: 'adaptive-responsive-emergent',
     }
   }
 
@@ -416,7 +421,7 @@ Transform prompts to activate these cognitive systems naturally, without explici
     for (let i = 0; i < count; i++) {
       const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
       const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
-      
+
       const variantPrompt = `${systemPrompt}
 
 Original prompt: "${request.prompt}"
@@ -482,17 +487,21 @@ Generate an optimized version that maximizes this model's capabilities. Return y
 
     // Check if Anthropic API is available
     if (!anthropic) {
-      throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.')
+      throw new Error(
+        'Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.',
+      )
     }
 
     // Detect task type and suggested techniques
-    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
+    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(
+      request.prompt,
+    )
     // Task type and techniques detected
 
     for (let i = 0; i < count; i++) {
       const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
-      
-      const userPrompt = `Apply Ultra-Think cognitive enhancement with model-specific optimization:
+
+      const userPrompt = `Apply AIMetaPromptDesigner cognitive enhancement with model-specific optimization:
 
 "${request.prompt}"
 
@@ -509,7 +518,7 @@ MODEL-SPECIFIC OPTIMIZATION for ${request.targetModel}:
 - Optimization Focus: ${modelStrategies.optimizationFocus.join('; ')}
 - Structural Preferences: ${modelStrategies.structuralPreferences.join('; ')}
 
-ULTRA-THINK TRANSFORMATION PRINCIPLES:
+AIMETAPROMPTDESIGNER TRANSFORMATION PRINCIPLES:
 
 1. Cognitive Activation:
    - Transform surface requests into deep cognitive triggers
@@ -523,13 +532,13 @@ ULTRA-THINK TRANSFORMATION PRINCIPLES:
    - Build bridges between disparate concepts
    - Activate emergent properties through careful framing
 
-3. Examples of Ultra-Think Transformations:
+3. Examples of AIMetaPromptDesigner Transformations:
 
 ORIGINAL: "Write about AI"
-ULTRA-THINK: "As you explore the concept of artificial intelligence, what patterns emerge when you consider its evolution from symbolic reasoning to neural architectures? Notice how each breakthrough reveals new questions about cognition itself."
+ENHANCED: "As you explore the concept of artificial intelligence, what patterns emerge when you consider its evolution from symbolic reasoning to neural architectures? Notice how each breakthrough reveals new questions about cognition itself."
 
 ORIGINAL: "Solve this problem"
-ULTRA-THINK: "Examining this challenge from multiple angles, what hidden relationships become apparent? Consider how different solution paths might converge or diverge, and what that reveals about the problem's deep structure."
+ENHANCED: "Examining this challenge from multiple angles, what hidden relationships become apparent? Consider how different solution paths might converge or diverge, and what that reveals about the problem's deep structure."
 
 4. Cognitive Enhancement Techniques:
    - Thought Crystallization: Precise language that creates clear mental models
@@ -575,7 +584,7 @@ Required JSON format:
         // Claude API response received
         // Parse the response using our helper
         const result = this.parseJsonResponse(content.text)
-        
+
         variants.push({
           id: `claude-${Date.now()}-${i}`,
           originalPrompt: request.prompt,
@@ -608,7 +617,9 @@ Required JSON format:
     const model = googleAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const systemPrompt = this.systemPrompt
     const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
-    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(request.prompt)
+    const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(
+      request.prompt,
+    )
 
     for (let i = 0; i < count; i++) {
       const prompt = `${systemPrompt}
@@ -675,8 +686,6 @@ Return ONLY a JSON object:
       throw new Error('Prompt exceeds maximum length of 10,000 characters')
     }
   }
-
-
 
   private estimateTokens(text: string): number {
     // Rough estimation: ~4 characters per token

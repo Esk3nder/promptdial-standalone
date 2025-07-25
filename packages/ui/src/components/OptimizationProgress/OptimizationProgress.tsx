@@ -14,10 +14,22 @@ interface OptimizationProgressProps {
 }
 
 const progressSteps: Record<string, ProgressStep> = {
-  initializing: { name: 'Initializing', status: 'active', message: 'Starting optimization process...' },
+  initializing: {
+    name: 'Initializing',
+    status: 'active',
+    message: 'Starting optimization process...',
+  },
   validating: { name: 'Validating', status: 'active', message: 'Checking prompt validity...' },
-  analyzing: { name: 'Analyzing', status: 'active', message: 'Understanding cognitive requirements...' },
-  optimizing: { name: 'Optimizing', status: 'active', message: 'Applying Ultra-Think enhancements...' },
+  analyzing: {
+    name: 'Analyzing',
+    status: 'active',
+    message: 'Understanding cognitive requirements...',
+  },
+  optimizing: {
+    name: 'Optimizing',
+    status: 'active',
+    message: 'Applying advanced prompt enhancements...',
+  },
   generating: { name: 'Generating', status: 'active', message: 'Creating cognitive variants...' },
   evaluating: { name: 'Evaluating', status: 'active', message: 'Scoring quality metrics...' },
   finalizing: { name: 'Finalizing', status: 'active', message: 'Preparing results...' },
@@ -34,7 +46,7 @@ export function OptimizationProgress({ stage, progress, isVisible }: Optimizatio
     const current = progressSteps[stage]
     if (current) {
       setCurrentStep(current)
-      
+
       // Update completed steps
       const stepKeys = Object.keys(progressSteps)
       const currentIndex = stepKeys.indexOf(stage)
@@ -52,7 +64,7 @@ export function OptimizationProgress({ stage, progress, isVisible }: Optimizatio
         <div className={styles.progressFill} style={{ width: `${progress}%` }} />
         <div className={styles.progressText}>{progress}%</div>
       </div>
-      
+
       {/* Current stage indicator */}
       {currentStep && (
         <div className={styles.currentStage}>
@@ -65,11 +77,11 @@ export function OptimizationProgress({ stage, progress, isVisible }: Optimizatio
           </div>
         </div>
       )}
-      
+
       {/* Completed steps summary */}
       {completedSteps.length > 0 && (
         <div className={styles.completedSteps}>
-          {completedSteps.map(stepKey => (
+          {completedSteps.map((stepKey) => (
             <span key={stepKey} className={styles.completedStep}>
               ✓ {progressSteps[stepKey].name}
             </span>
