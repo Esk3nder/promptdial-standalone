@@ -42,54 +42,51 @@ const googleAI = process.env.GOOGLE_AI_API_KEY
   : null
 
 export class AIMetaPromptDesigner {
-  // Helper to clean and parse JSON from LLM responses
+  // Helper to extract and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
+    console.log('Raw Claude response:', text.substring(0, 200) + '...')
+    
+    // Strategy 1: Try direct parsing (if Claude returns pure JSON)
     try {
-      // First try direct parsing
-      return JSON.parse(text)
+      return JSON.parse(text.trim())
     } catch (e) {
-      // Extract JSON object from text
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('No JSON found in response')
+      // Continue to other strategies
+    }
 
-      let jsonStr = jsonMatch[0]
-
-      // More robust cleaning approach
-      // 1. First, handle string literals properly
-      const stringLiterals: string[] = []
-      let cleanedJson = jsonStr.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
-        const index = stringLiterals.length
-        stringLiterals.push(match)
-        return `"__STRING_${index}__"`
-      })
-
-      // 2. Clean control characters outside strings
-      cleanedJson = cleanedJson.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-
-      // 3. Restore string literals with proper escaping
-      cleanedJson = cleanedJson.replace(/"__STRING_(\d+)__"/g, (_match, index) => {
-        let str = stringLiterals[parseInt(index)]
-        // Ensure newlines are properly escaped within the string
-        str = str.slice(1, -1) // Remove quotes
-        str = str.replace(/\\/g, '\\\\')
-        str = str.replace(/"/g, '\\"')
-        str = str.replace(/\n/g, '\\n')
-        str = str.replace(/\r/g, '\\r')
-        str = str.replace(/\t/g, '\\t')
-        return '"' + str + '"'
-      })
-
+    // Strategy 2: Extract from markdown code blocks
+    const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+    if (codeBlockMatch) {
       try {
-        return JSON.parse(cleanedJson)
-      } catch (e2) {
-        // Failed to parse cleaned JSON
-        console.error('JSON Parsing Debug Info:')
-        console.error('Original text:', text.substring(0, 500))
-        console.error('Extracted JSON:', jsonStr.substring(0, 500))  
-        console.error('Cleaned JSON:', cleanedJson.substring(0, 500))
-        throw new Error(`JSON parsing failed: ${e2 instanceof Error ? e2.message : String(e2)}`)
+        return JSON.parse(codeBlockMatch[1])
+      } catch (e) {
+        // Continue to other strategies
       }
     }
+
+    // Strategy 3: Find JSON object in text (first occurrence)
+    const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/)
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0])
+      } catch (e) {
+        // Continue to other strategies  
+      }
+    }
+
+    // Strategy 4: Try to find and extract a more complex nested JSON
+    const complexJsonMatch = text.match(/\{[\s\S]*\}/)
+    if (complexJsonMatch) {
+      try {
+        return JSON.parse(complexJsonMatch[0])
+      } catch (e) {
+        // Log the actual failure for debugging
+        console.error('JSON parsing failed on extracted JSON:', complexJsonMatch[0].substring(0, 300))
+        console.error('Parse error:', e instanceof Error ? e.message : String(e))
+      }
+    }
+
+    // All strategies failed
+    throw new Error(`Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`)
   }
 
   private systemPrompts = {
@@ -408,7 +405,8 @@ Transform prompts to activate these cognitive systems naturally, without explici
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
-          // Using Anthropic Claude API for optimization (with fallback if no key)
+          if (!anthropic) throw new Error('Anthropic API key not configured')
+          // Using Anthropic Claude API for optimization
           return await this.generateClaudeVariants(request, variantCount)
 
         case 'gemini-pro':
@@ -515,20 +513,7 @@ Generate an optimized version that maximizes this model's capabilities. Return y
 
     // Check if Anthropic API is available
     if (!anthropic) {
-      console.warn('Anthropic API key not configured, using fallback optimization')
-      // Create fallback variants when no API key is available
-      for (let i = 0; i < count; i++) {
-        const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
-        variants.push({
-          id: `claude-no-api-${Date.now()}-${i}`,
-          originalPrompt: request.prompt,
-          optimizedPrompt: fallbackPrompt,
-          changes: [{ type: 'no_api_fallback', description: 'Applied cognitive enhancement without API (no key configured)' }],
-          modelSpecificFeatures: ['Fallback optimization - no API key available'],
-          estimatedTokens: this.estimateTokens(fallbackPrompt),
-        })
-      }
-      return variants
+      throw new Error('Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.')
     }
 
     // Detect task type and suggested techniques
@@ -589,7 +574,9 @@ Transform the prompt to:
 - Enable emergent understanding
 - Maintain elegant simplicity while encoding complexity
 
-Return your Ultra-Think transformation:
+IMPORTANT: Return ONLY valid JSON in your response. No explanations, no markdown, no code blocks. Just the JSON object.
+
+Required JSON format:
 {
   "optimizedPrompt": "the cognitively enhanced prompt",
   "changes": [
@@ -617,61 +604,27 @@ Return your Ultra-Think transformation:
         if (content.type !== 'text') continue
 
         // Claude API response received
-        try {
-          // Parse the response using our helper
-          const result = this.parseJsonResponse(content.text)
-          
-          variants.push({
-            id: `claude-${Date.now()}-${i}`,
-            originalPrompt: request.prompt,
-            optimizedPrompt: result.optimizedPrompt,
-            changes: result.changes || [],
-            modelSpecificFeatures: result.modelSpecificFeatures || [],
-            estimatedTokens: this.estimateTokens(result.optimizedPrompt),
-          })
-          // Successfully created Claude variant
-        } catch (parseError) {
-          console.error('JSON Parse Error:', parseError)
-          // Fallback: create variant with basic optimization if JSON parsing fails
-          const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
-          variants.push({
-            id: `claude-fallback-${Date.now()}-${i}`,
-            originalPrompt: request.prompt,
-            optimizedPrompt: fallbackPrompt,
-            changes: [{ type: 'fallback', description: 'Applied basic cognitive enhancement due to parsing error' }],
-            modelSpecificFeatures: ['Fallback optimization applied'],
-            estimatedTokens: this.estimateTokens(fallbackPrompt),
-          })
-          console.log('Created fallback variant due to JSON parsing error')
-        }
+        // Parse the response using our helper
+        const result = this.parseJsonResponse(content.text)
+        
+        variants.push({
+          id: `claude-${Date.now()}-${i}`,
+          originalPrompt: request.prompt,
+          optimizedPrompt: result.optimizedPrompt,
+          changes: result.changes || [],
+          modelSpecificFeatures: result.modelSpecificFeatures || [],
+          estimatedTokens: this.estimateTokens(result.optimizedPrompt),
+        })
+        // Successfully created Claude variant
       } catch (error) {
         console.error('Claude API Error:', error)
-        // Create fallback variant even when API call fails
-        const fallbackPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
-        variants.push({
-          id: `claude-api-fallback-${Date.now()}-${i}`,
-          originalPrompt: request.prompt,
-          optimizedPrompt: fallbackPrompt,
-          changes: [{ type: 'fallback', description: 'Applied fallback cognitive enhancement due to API error' }],
-          modelSpecificFeatures: ['Fallback optimization applied due to API failure'],
-          estimatedTokens: this.estimateTokens(fallbackPrompt),
-        })
-        console.log('Created API fallback variant due to Claude API error')
+        // Let the error propagate - no fake fallbacks
+        throw error
       }
     }
 
     if (variants.length === 0) {
-      // Last resort fallback - create at least one variant
-      console.warn('All Claude variant generation attempts failed, creating emergency fallback')
-      const emergencyPrompt = this.createFallbackOptimization(request.prompt, request.optimizationLevel)
-      variants.push({
-        id: `claude-emergency-${Date.now()}`,
-        originalPrompt: request.prompt,
-        optimizedPrompt: emergencyPrompt,
-        changes: [{ type: 'emergency_fallback', description: 'Emergency cognitive enhancement applied' }],
-        modelSpecificFeatures: ['Emergency fallback optimization'],
-        estimatedTokens: this.estimateTokens(emergencyPrompt),
-      })
+      throw new Error('Failed to generate any Claude variants - all API calls failed')
     }
 
     // Claude variants generated successfully
@@ -763,31 +716,6 @@ Return ONLY a JSON object:
     return counts[level]
   }
 
-  private createFallbackOptimization(prompt: string, level: OptimizationLevel): string {
-    // Basic cognitive enhancement patterns when JSON parsing fails
-    const enhancements = {
-      basic: [
-        'Consider the deeper implications of',
-        'Explore the multifaceted nature of',
-        'Reflect on the interconnected aspects of'
-      ],
-      advanced: [
-        'Apply systematic cognitive analysis to understand the complex dynamics underlying',
-        'Engage in meta-cognitive reflection while examining the layered dimensions of',
-        'Synthesize multiple perspectives to develop comprehensive insights about'
-      ],
-      expert: [
-        'Deploy advanced analytical frameworks to deconstruct and reconstruct the cognitive architecture surrounding',
-        'Establish recursive feedback loops between analytical and intuitive processing to illuminate the emergent properties of',
-        'Integrate cross-domain pattern recognition with recursive self-reflection to unveil the underlying principles governing'
-      ]
-    }
-
-    const patterns = enhancements[level]
-    const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)]
-    
-    return `${selectedPattern} ${prompt}. What insights emerge from this deeper cognitive engagement?`
-  }
 
   private estimateTokens(text: string): number {
     // Rough estimation: ~4 characters per token

@@ -242,13 +242,32 @@ app.get('/debug', async (req, res) => {
         })
 
         debugInfo.steps.push({ step: 'optimization', status: 'complete', message: 'Optimization completed successfully' })
+        
+        // Analyze the results to show what actually happened
+        const variantSources = result.variants?.map(v => {
+          if (v.id.includes('fallback') || v.id.includes('emergency') || v.id.includes('no-api')) {
+            return 'FAKE_FALLBACK'
+          } else if (v.id.includes('claude')) {
+            return 'REAL_CLAUDE_API'
+          } else if (v.id.includes('openai')) {
+            return 'REAL_OPENAI_API'
+          } else if (v.id.includes('gemini')) {
+            return 'REAL_GEMINI_API'
+          }
+          return 'UNKNOWN'
+        }) || []
+
         debugInfo.result = {
           variantCount: result.variants?.length || 0,
+          variantSources: variantSources,
+          realApiCallsSuccessful: variantSources.filter(s => s.startsWith('REAL_')).length,
+          fakeResponses: variantSources.filter(s => s === 'FAKE_FALLBACK').length,
           variants: result.variants?.map(v => ({
             id: v.id,
             optimizedPrompt: v.optimizedPrompt?.substring(0, 100) + '...',
             changes: v.changes,
-            modelSpecificFeatures: v.modelSpecificFeatures
+            modelSpecificFeatures: v.modelSpecificFeatures,
+            source: v.id.includes('fallback') ? '⚠️ FAKE FALLBACK' : '✅ REAL API CALL'
           })) || [],
           summary: result.summary
         }
@@ -368,11 +387,26 @@ app.get('/debug', async (req, res) => {
         ${debugInfo.result ? `
         <div class="card">
             <h2>✨ Optimization Results</h2>
-            <p><strong>Variants Generated:</strong> ${debugInfo.result.variantCount}</p>
+            <div class="grid">
+                <div>
+                    <p><strong>Total Variants:</strong> ${debugInfo.result.variantCount}</p>
+                    <p><strong>Real API Calls:</strong> <span class="${debugInfo.result.realApiCallsSuccessful > 0 ? 'status-good' : 'status-bad'}">${debugInfo.result.realApiCallsSuccessful}</span></p>
+                    <p><strong>Fake Responses:</strong> <span class="${debugInfo.result.fakeResponses > 0 ? 'status-bad' : 'status-good'}">${debugInfo.result.fakeResponses}</span></p>
+                </div>
+                <div>
+                    <p><strong>Variant Sources:</strong></p>
+                    ${debugInfo.result.variantSources.map(source => 
+                        `<span class="${source.startsWith('REAL_') ? 'status-good' : 'status-bad'}">${source}</span>`
+                    ).join(', ')}
+                </div>
+            </div>
+            
+            <h3>Generated Variants:</h3>
             ${debugInfo.result.variants.map((variant, i) => `
                 <div class="code">
-                    <strong>Variant ${i + 1} (${variant.id}):</strong><br>
-                    ${variant.optimizedPrompt}<br><br>
+                    <strong>Variant ${i + 1}: ${variant.source}</strong><br>
+                    <strong>ID:</strong> ${variant.id}<br>
+                    <strong>Content:</strong> ${variant.optimizedPrompt}<br><br>
                     <strong>Changes:</strong> ${JSON.stringify(variant.changes, null, 2)}<br>
                     <strong>Features:</strong> ${JSON.stringify(variant.modelSpecificFeatures, null, 2)}
                 </div>
