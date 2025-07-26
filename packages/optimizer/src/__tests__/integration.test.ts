@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Optimizer Integration Tests
+ * PromptDial 3.0 - Optimizer Integration Tests
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'

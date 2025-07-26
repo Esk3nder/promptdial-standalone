@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 PromptDial 2.0 - Starting Services${NC}"
+echo -e "${BLUE}🚀 PromptDial 3.0 - Starting Services${NC}"
 echo "======================================"
 
 # Kill any existing processes

@@ -251,7 +251,7 @@ describe('SelfConsistencyHandler', () => {
       ])
 
       const variant = createTestPromptVariant({
-        optimized_prompt: 'What is 6 * 7?',
+        prompt: 'What is 6 * 7?',
       })
 
       const result = await handler.execute(mockProvider, variant, 5)

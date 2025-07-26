@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - ChatEval Evaluator
+ * PromptDial 3.0 - ChatEval Evaluator
  *
  * Multi-turn conversation evaluation
  */

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PromptDial 2.0 - Service Startup Script
+# PromptDial 3.0 - Service Startup Script
 
 set -e
 
@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 Starting PromptDial 2.0 Services${NC}"
+echo -e "${GREEN}🚀 Starting PromptDial 3.0 Services${NC}"
 echo "=================================="
 
 # Check if running in Docker mode

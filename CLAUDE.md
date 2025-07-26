@@ -56,7 +56,7 @@ docker-compose build
 
 ## Architecture Overview
 
-PromptDial 2.0 is a microservices-based prompt optimization platform that automatically enhances AI prompts using advanced techniques.
+PromptDial 3.0 is a microservices-based prompt optimization platform that automatically enhances AI prompts using advanced techniques.
 
 ### Microservices Architecture
 

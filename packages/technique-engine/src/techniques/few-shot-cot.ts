@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Few-Shot Chain-of-Thought Technique
+ * PromptDial 3.0 - Few-Shot Chain-of-Thought Technique
  *
  * Combines few-shot learning with step-by-step reasoning
  */

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Base LLM Provider
+ * PromptDial 3.0 - Base LLM Provider
  *
  * Abstract base class for all LLM providers
  */

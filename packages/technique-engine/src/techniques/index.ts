@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Technique Registry
+ * PromptDial 3.0 - Technique Registry
  *
  * Central export and registration of all optimization techniques
  */

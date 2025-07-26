@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Role Debate Evaluator
+ * PromptDial 3.0 - Role Debate Evaluator
  *
  * Multiple AI agents debate the quality of responses
  */

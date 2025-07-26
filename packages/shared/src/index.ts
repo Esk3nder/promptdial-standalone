@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Shared Package
+ * PromptDial 3.0 - Shared Package
  *
  * Central exports for types, constants, and utilities
  */

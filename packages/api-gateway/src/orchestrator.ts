@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Request Orchestrator
+ * PromptDial 3.0 - Request Orchestrator
  *
  * Coordinates requests across microservices
  */

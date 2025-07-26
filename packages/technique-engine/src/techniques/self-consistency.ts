@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Self-Consistency Technique
+ * PromptDial 3.0 - Self-Consistency Technique
  *
  * Generates multiple reasoning paths and selects the most consistent answer
  */

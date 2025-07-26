@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Prompt Sanitizer
+ * PromptDial 3.0 - Prompt Sanitizer
  *
  * Cleans and rewrites prompts for safety
  */

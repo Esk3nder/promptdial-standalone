@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Tree of Thought (ToT) Technique
+ * PromptDial 3.0 - Tree of Thought (ToT) Technique
  *
  * Explores multiple reasoning paths in a tree structure
  */

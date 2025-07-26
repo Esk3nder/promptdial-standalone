@@ -1,8 +1,8 @@
-# PromptDial 2.0 - Complete Testing Guide
+# PromptDial 3.0 - Complete Testing Guide
 
 ## 🚀 Full End-to-End Testing with Real API Calls
 
-This guide explains how to test PromptDial 2.0 with actual LLM API calls.
+This guide explains how to test PromptDial 3.0 with actual LLM API calls.
 
 ## Prerequisites
 
@@ -232,4 +232,4 @@ You know the system is working when:
 
 ---
 
-**Ready to test?** Run `./test-real-api.js` and watch PromptDial 2.0 optimize prompts with real AI!
+**Ready to test?** Run `./test-real-api.js` and watch PromptDial 3.0 optimize prompts with real AI!

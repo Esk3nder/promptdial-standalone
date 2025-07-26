@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PromptDial 2.0 - Local Deployment Script
+# PromptDial 3.0 - Local Deployment Script
 # This script sets up a minimal working deployment for testing
 
 set -e
@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 PromptDial 2.0 - Local Deployment${NC}"
+echo -e "${BLUE}🚀 PromptDial 3.0 - Local Deployment${NC}"
 echo "===================================="
 
 # Function to check if a command exists

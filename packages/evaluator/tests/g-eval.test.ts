@@ -140,7 +140,7 @@ describe('GEvalEvaluator', () => {
       })
 
       const variant = createTestPromptVariant({
-        optimized_prompt: 'Explain quantum computing',
+        prompt: 'Explain quantum computing',
       })
       const response = 'Quantum computing uses quantum bits...'
       const taskMeta = createTestTaskClassification()
