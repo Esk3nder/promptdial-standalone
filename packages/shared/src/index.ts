@@ -18,3 +18,6 @@ export * from './test-utils'
 
 // Export Claude tools utilities
 export * from './claude-tools'
+
+// Export enhanced telemetry
+export * from './enhanced-telemetry'
