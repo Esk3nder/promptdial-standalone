@@ -1,7 +1,30 @@
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load environment variables from multiple possible locations
+const envPaths = [
+  resolve(process.cwd(), '../../.env'),      // From packages/core
+  resolve(process.cwd(), '../../../.env'),   // From packages/core/dist
+  resolve(process.cwd(), '.env'),            // Local .env
+  resolve(__dirname, '../../../.env'),       // Relative to this file
+  resolve(__dirname, '../../../../.env'),    // From dist build
+]
+
+for (const envPath of envPaths) {
+  config({ path: envPath })
+}
+
+// Debug environment variable loading
+console.log('Environment check:', {
+  cwd: process.cwd(),
+  dirname: __dirname,
+  hasOpenAI: !!process.env.OPENAI_API_KEY,
+  hasAnthropic: !!process.env.ANTHROPIC_API_KEY,
+  hasGoogle: !!process.env.GOOGLE_AI_API_KEY
+})
 
 // Types
 export interface OptimizationRequest {
@@ -9,6 +32,7 @@ export interface OptimizationRequest {
   targetModel: string
   language?: string
   taskType?: 'creative' | 'analytical' | 'coding' | 'general'
+  optimizationLevel?: 'cheap' | 'normal' | 'explore'
   constraints?: {
     maxLength?: number
     format?: string
@@ -29,16 +53,38 @@ export interface OptimizedVariant {
   estimatedTokens: number
 }
 
-// Initialize AI clients
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-  : null
-const anthropic = process.env.ANTHROPIC_API_KEY
-  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  : null
-const googleAI = process.env.GOOGLE_AI_API_KEY
-  ? new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
-  : null
+// Lazy-initialize AI clients
+let openai: OpenAI | null = null
+let anthropic: Anthropic | null = null
+let googleAI: GoogleGenerativeAI | null = null
+
+function getOpenAI(): OpenAI | null {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  }
+  return openai
+}
+
+function getAnthropic(): Anthropic | null {
+  console.log('🔍 Checking Anthropic client:', {
+    hasClient: !!anthropic,
+    hasApiKey: !!process.env.ANTHROPIC_API_KEY,
+    apiKeyLength: process.env.ANTHROPIC_API_KEY?.length || 0
+  })
+  
+  if (!anthropic && process.env.ANTHROPIC_API_KEY) {
+    console.log('🚀 Initializing Anthropic client with API key')
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  }
+  return anthropic
+}
+
+function getGoogleAI(): GoogleGenerativeAI | null {
+  if (!googleAI && process.env.GOOGLE_AI_API_KEY) {
+    googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+  }
+  return googleAI
+}
 
 export class AIMetaPromptDesigner {
   // Helper to extract and parse JSON from LLM responses
@@ -195,7 +241,6 @@ Transform prompts to activate these cognitive systems naturally, without explici
     }
 
     // Extract base model name
-    const baseModel = model.split('-')[0] + '-' + (model.split('-')[1] || '')
     const modelKey = Object.keys(strategies).find((key) => model.startsWith(key.split('-')[0]))
 
     return strategies[modelKey || 'claude-3-opus'] || strategies['claude-3-opus']
@@ -207,10 +252,7 @@ Transform prompts to activate these cognitive systems naturally, without explici
     cognitiveProfile: string
   } {
     const lowerPrompt = prompt.toLowerCase()
-    const promptLength = prompt.length
     const questionCount = (prompt.match(/\?/g) || []).length
-    const imperativeWords = ['create', 'make', 'build', 'design', 'develop', 'generate']
-    const hasImperative = imperativeWords.some((word) => lowerPrompt.includes(word))
 
     // Creative synthesis tasks - highest cognitive load
     if (
@@ -372,31 +414,31 @@ Transform prompts to activate these cognitive systems naturally, without explici
       switch (request.targetModel) {
         case 'gpt-4':
         case 'gpt-3.5-turbo':
-          if (!openai) throw new Error('OpenAI API key not configured')
+          if (!getOpenAI()) throw new Error('OpenAI API key not configured')
           // Using OpenAI API for optimization
           return await this.generateOpenAIVariants(request, variantCount)
 
         case 'claude-3-opus':
         case 'claude-3-sonnet':
         case 'claude-2':
-          if (!anthropic) throw new Error('Anthropic API key not configured')
+          if (!getAnthropic()) throw new Error('Anthropic API key not configured')
           // Using Anthropic Claude API for optimization
           return await this.generateClaudeVariants(request, variantCount)
 
         case 'gemini-pro':
-          if (!googleAI) throw new Error('Google AI API key not configured')
+          if (!getGoogleAI()) throw new Error('Google AI API key not configured')
           // Using Google Gemini API for optimization
           return await this.generateGeminiVariants(request, variantCount)
 
         default:
           // Try available providers in order (Claude first now as requested)
-          if (anthropic) {
+          if (getAnthropic()) {
             // Using Anthropic Claude as default provider
             return await this.generateClaudeVariants(request, variantCount)
-          } else if (googleAI) {
+          } else if (getGoogleAI()) {
             // Using Google AI as fallback provider
             return await this.generateGeminiVariants(request, variantCount)
-          } else if (openai) {
+          } else if (getOpenAI()) {
             // Using OpenAI as fallback provider
             return await this.generateOpenAIVariants(request, variantCount)
           }
@@ -446,7 +488,7 @@ Generate an optimized version that maximizes this model's capabilities. Return y
 }`
 
       try {
-        const response = await openai!.chat.completions.create({
+        const response = await getOpenAI()!.chat.completions.create({
           model: 'gpt-3.5-turbo',
           messages: [
             { role: 'system', content: systemPrompt },
@@ -486,7 +528,7 @@ Generate an optimized version that maximizes this model's capabilities. Return y
     const systemPrompt = this.systemPrompt
 
     // Check if Anthropic API is available
-    if (!anthropic) {
+    if (!getAnthropic()) {
       throw new Error(
         'Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.',
       )
@@ -565,7 +607,7 @@ Required JSON format:
 
       try {
         // Calling Claude API for variant generation
-        const response = await anthropic!.messages.create({
+        const response = await getAnthropic()!.messages.create({
           model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1000,
           temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0
@@ -614,7 +656,7 @@ Required JSON format:
     count: number,
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
-    const model = googleAI!.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = getGoogleAI()!.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const systemPrompt = this.systemPrompt
     const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(

@@ -18,6 +18,7 @@ services:
       - EVALUATOR_URL=http://evaluator:3005
       - SAFETY_URL=http://safety:3006
       - OPTIMIZER_URL=http://optimizer:3007
+      - STRATEGY_PLANNER_URL=http://strategy-planner:3008
       - RATE_LIMIT=60
     depends_on:
       - classifier
@@ -27,6 +28,7 @@ services:
       - evaluator
       - safety
       - optimizer
+      - strategy-planner
     networks:
       - promptdial
 
@@ -107,6 +109,19 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3007
+    networks:
+      - promptdial
+
+  # Strategy Planner (PromptDial 3.0)
+  strategy-planner:
+    build:
+      context: .
+      dockerfile: ./packages/strategy-planner/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3008
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     networks:
       - promptdial
 

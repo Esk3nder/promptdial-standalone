@@ -1,0 +1,28 @@
+{
+  "name": "@promptdial/strategy-planner",
+  "version": "3.0.0",
+  "description": "PromptDial 3.0 - Strategy Planner Service (Prompt Brain)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@promptdial/shared": "*",
+    "@promptdial/llm-runner": "*",
+    "express": "^4.21.2",
+    "axios": "^1.10.0",
+    "ajv": "^8.12.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
+  }
+}

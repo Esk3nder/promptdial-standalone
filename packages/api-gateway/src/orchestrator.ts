@@ -53,8 +53,42 @@ export class RequestOrchestrator {
       const taskMeta: TaskClassification = classificationResult.data
       telemetry.recordMetric('task_complexity', taskMeta.complexity)
 
-      // Step 3: Retrieve relevant examples (if retrieval is enabled)
-      logger.info('Step 3: Retrieval (if applicable)', { traceId })
+      // Step 3: Strategy Planning (PromptDial 3.0)
+      logger.info('Step 3: Strategy planning', { traceId })
+      let suggestedTechniques: string[] = []
+      let strategyConfidence = 0.5
+      
+      try {
+        const strategyResult = await this.callService('strategyPlanner', '/plan', {
+          prompt: sanitizedPrompt,
+          context: {
+            taskType: taskMeta.task_type,
+            modelName: request.constraints?.model || 'default',
+            optimizationLevel: this.getOptimizationLevel(request.constraints),
+            metadata: {
+              complexity: taskMeta.complexity,
+              domain: taskMeta.domain
+            }
+          },
+          trace_id: traceId,
+        })
+        
+        suggestedTechniques = strategyResult.data.suggested_techniques || []
+        strategyConfidence = strategyResult.data.confidence || 0.5
+        
+        logger.info('Strategy planning complete', { 
+          traceId, 
+          techniques: suggestedTechniques,
+          confidence: strategyConfidence 
+        })
+      } catch (error) {
+        logger.warn('Strategy planning failed, using default techniques', { error, traceId })
+        // Fall back to default techniques based on task type
+        suggestedTechniques = ['chain_of_thought']
+      }
+
+      // Step 4: Retrieve relevant examples (if retrieval is enabled)
+      logger.info('Step 4: Retrieval (if applicable)', { traceId })
       let retrievedExamples: any[] = []
 
       if (request.context?.examples || taskMeta.complexity > 0.7) {
@@ -71,12 +105,13 @@ export class RequestOrchestrator {
         }
       }
 
-      // Step 4: Generate variants using techniques
-      logger.info('Step 4: Variant generation', { traceId })
+      // Step 5: Generate variants using techniques
+      logger.info('Step 5: Variant generation', { traceId })
       const techniqueResult = await this.callService('technique', '/generate', {
         prompt: sanitizedPrompt,
         task_meta: taskMeta,
         retrieved_examples: retrievedExamples,
+        suggested_techniques: suggestedTechniques, // Pass strategy planner suggestions
         constraints: request.constraints,
         trace_id: traceId,
       })
@@ -84,12 +119,12 @@ export class RequestOrchestrator {
       const variants: PromptVariant[] = techniqueResult.data.variants
       logger.info(`Generated ${variants.length} variants`, { traceId })
 
-      // Step 5: Run variants through LLM (sample responses)
-      logger.info('Step 5: LLM execution', { traceId })
+      // Step 6: Run variants through LLM (sample responses)
+      logger.info('Step 6: LLM execution', { traceId })
       const variantResponses = await this.executeVariants(variants, traceId)
 
-      // Step 6: Evaluate variants
-      logger.info('Step 6: Evaluation', { traceId })
+      // Step 7: Evaluate variants
+      logger.info('Step 7: Evaluation', { traceId })
       const evaluations = await this.evaluateVariants(
         variantResponses,
         taskMeta,
@@ -97,8 +132,8 @@ export class RequestOrchestrator {
         traceId,
       )
 
-      // Step 7: Optimize selection
-      logger.info('Step 7: Optimization', { traceId })
+      // Step 8: Optimize selection
+      logger.info('Step 8: Optimization', { traceId })
       const optimizationResult = await this.callService('optimizer', '/optimize', {
         variants: variantResponses.map((vr, i) => ({
           variant: vr.variant,
@@ -112,8 +147,8 @@ export class RequestOrchestrator {
 
       const optimization = optimizationResult.data
 
-      // Step 8: Final safety check on recommended variant
-      logger.info('Step 8: Final safety check', { traceId })
+      // Step 9: Final safety check on recommended variant
+      logger.info('Step 9: Final safety check', { traceId })
       const finalSafetyResult = await this.callService('safety', '/check-variant', {
         variant: optimization.recommended.variant,
         task_meta: taskMeta,
@@ -142,6 +177,8 @@ export class RequestOrchestrator {
           total_variants_generated: variants.length,
           pareto_frontier_size: optimization.pareto_frontier.length,
           techniques_used: [...new Set(variants.map((v) => v.technique))],
+          suggested_techniques: suggestedTechniques,
+          strategy_confidence: strategyConfidence,
           safety_modifications: sanitizedPrompt !== request.prompt,
         },
       }
@@ -205,6 +242,25 @@ export class RequestOrchestrator {
   private shouldRetry(error: AxiosError): boolean {
     // Retry on network errors or 5xx status codes
     return !error.response || error.response.status >= 500
+  }
+
+  private getOptimizationLevel(constraints?: OptimizationRequest['constraints']): 'cheap' | 'normal' | 'explore' {
+    if (!constraints) return 'normal'
+    
+    // Determine based on constraints
+    if (constraints.cost_cap_usd && constraints.cost_cap_usd < 0.01) {
+      return 'cheap'
+    }
+    
+    if (constraints.max_variants && constraints.max_variants > 5) {
+      return 'explore'
+    }
+    
+    if (constraints.latency_cap_ms && constraints.latency_cap_ms < 1000) {
+      return 'cheap'
+    }
+    
+    return 'normal'
   }
 
   private async executeVariants(
