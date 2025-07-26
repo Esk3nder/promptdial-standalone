@@ -21,6 +21,7 @@ import {
 import { BaseLLMProvider, LLMResponse, StreamingCallback } from './providers/base'
 import { OpenAIProvider } from './providers/openai'
 import { AnthropicProvider } from './providers/anthropic'
+import { SafeAnthropicProvider } from './providers/anthropic-safe'
 import { GoogleAIProvider } from './providers/google'
 import { SelfConsistencyHandler, SelfConsistencyResult } from './self-consistency'
 
@@ -41,7 +42,8 @@ class ProviderRegistry {
         provider = new OpenAIProvider(config)
         break
       case 'anthropic':
-        provider = new AnthropicProvider(config)
+        // Use SafeAnthropicProvider to handle tool_use/tool_result fixing
+        provider = new SafeAnthropicProvider(config)
         break
       case 'google':
         provider = new GoogleAIProvider(config)
