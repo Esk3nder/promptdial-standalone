@@ -6,11 +6,11 @@ import { resolve } from 'path'
 
 // Load environment variables from multiple possible locations
 const envPaths = [
-  resolve(process.cwd(), '../../.env'),      // From packages/core
-  resolve(process.cwd(), '../../../.env'),   // From packages/core/dist
-  resolve(process.cwd(), '.env'),            // Local .env
-  resolve(__dirname, '../../../.env'),       // Relative to this file
-  resolve(__dirname, '../../../../.env'),    // From dist build
+  resolve(process.cwd(), '../../.env'), // From packages/core
+  resolve(process.cwd(), '../../../.env'), // From packages/core/dist
+  resolve(process.cwd(), '.env'), // Local .env
+  resolve(__dirname, '../../../.env'), // Relative to this file
+  resolve(__dirname, '../../../../.env'), // From dist build
 ]
 
 for (const envPath of envPaths) {
@@ -23,7 +23,7 @@ console.log('Environment check:', {
   dirname: __dirname,
   hasOpenAI: !!process.env.OPENAI_API_KEY,
   hasAnthropic: !!process.env.ANTHROPIC_API_KEY,
-  hasGoogle: !!process.env.GOOGLE_AI_API_KEY
+  hasGoogle: !!process.env.GOOGLE_AI_API_KEY,
 })
 
 // Types
@@ -69,9 +69,9 @@ function getAnthropic(): Anthropic | null {
   console.log('🔍 Checking Anthropic client:', {
     hasClient: !!anthropic,
     hasApiKey: !!process.env.ANTHROPIC_API_KEY,
-    apiKeyLength: process.env.ANTHROPIC_API_KEY?.length || 0
+    apiKeyLength: process.env.ANTHROPIC_API_KEY?.length || 0,
   })
-  
+
   if (!anthropic && process.env.ANTHROPIC_API_KEY) {
     console.log('🚀 Initializing Anthropic client with API key')
     anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })

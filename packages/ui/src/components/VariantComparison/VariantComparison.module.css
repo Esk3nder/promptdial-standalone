@@ -2,6 +2,112 @@
   width: 100%;
 }
 
+/* Filter Section */
+.filterSection {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-secondary);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.scoreFilter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.filterSelect {
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+/* No Results */
+.noResults {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-secondary);
+}
+
+.noResults p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.clearFiltersButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearFiltersButton:hover {
+  background: var(--color-primary-dark);
+}
+
 /* Tabs Section */
 .tabs {
   margin-bottom: 2rem;
@@ -111,6 +217,39 @@
   margin-bottom: 2rem;
 }
 
+.promptHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.expandButton:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.expandButton svg {
+  width: 16px;
+  height: 16px;
+}
+
 .sectionTitle {
   font-size: 1rem;
   font-weight: 600;
@@ -124,6 +263,32 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1.5rem;
+  padding-right: 6rem;
+  max-height: 200px;
+  overflow-y: auto;
+  transition: max-height 0.3s ease;
+}
+
+.promptBox.expanded {
+  max-height: 600px;
+}
+
+.promptBox::-webkit-scrollbar {
+  width: 8px;
+}
+
+.promptBox::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+
+.promptBox::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.promptBox::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
 }
 
 .promptText {
@@ -131,6 +296,9 @@
   line-height: 1.6;
   color: var(--color-text-primary);
   margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .copyButton {
@@ -196,6 +364,7 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   margin: 0;
+  line-height: 1.5;
 }
 
 /* Features Section */
@@ -217,6 +386,8 @@
   gap: 0.75rem;
   font-size: 0.9375rem;
   color: var(--color-text-primary);
+  line-height: 1.5;
+  padding: 0.5rem 0;
 }
 
 .featureIcon {
@@ -297,6 +468,7 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   padding: 0.5rem 0;
+  line-height: 1.5;
 }
 
 .suggestionIcon {

@@ -116,15 +116,15 @@ export function usePromptOptimization(
       if (progress.status === 'complete' && progress.results) {
         dispatch({ type: 'OPTIMIZATION_SUCCESS', results: progress.results })
       } else if (progress.status === 'error') {
-        dispatch({ 
-          type: 'OPTIMIZATION_ERROR', 
-          error: new Error(progress.error || 'Optimization failed') 
+        dispatch({
+          type: 'OPTIMIZATION_ERROR',
+          error: new Error(progress.error || 'Optimization failed'),
         })
       } else {
-        dispatch({ 
-          type: 'UPDATE_PROGRESS', 
+        dispatch({
+          type: 'UPDATE_PROGRESS',
           progress: progress.progress,
-          stage: progress.status
+          stage: progress.status,
         })
       }
     },
@@ -133,7 +133,7 @@ export function usePromptOptimization(
     },
     onError: (error: string) => {
       dispatch({ type: 'OPTIMIZATION_ERROR', error: new Error(error) })
-    }
+    },
   })
 
   const optimize = useCallback(
@@ -158,7 +158,8 @@ export function usePromptOptimization(
       } catch (error) {
         dispatch({
           type: 'OPTIMIZATION_ERROR',
-          error: error instanceof Error ? error : new Error('Failed to connect to optimization service'),
+          error:
+            error instanceof Error ? error : new Error('Failed to connect to optimization service'),
         })
       }
     },

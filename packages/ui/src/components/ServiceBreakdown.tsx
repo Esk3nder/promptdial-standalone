@@ -21,30 +21,33 @@ interface ServiceBreakdownProps {
 
 export function ServiceBreakdown({ events }: ServiceBreakdownProps) {
   // Group events by service
-  const serviceGroups = events.reduce((acc, event) => {
-    if (!event.service) return acc
-    
-    if (!acc[event.service]) {
-      acc[event.service] = []
-    }
-    acc[event.service].push(event)
-    return acc
-  }, {} as Record<string, ServiceEvent[]>)
+  const serviceGroups = events.reduce(
+    (acc, event) => {
+      if (!event.service) return acc
+
+      if (!acc[event.service]) {
+        acc[event.service] = []
+      }
+      acc[event.service].push(event)
+      return acc
+    },
+    {} as Record<string, ServiceEvent[]>,
+  )
 
   // Extract key metrics
   const metrics = {
-    totalServiceCalls: events.filter(e => e.type === 'service_request').length,
+    totalServiceCalls: events.filter((e) => e.type === 'service_request').length,
     totalResponseTime: events
-      .filter(e => e.type === 'service_response' && e.responseTime)
+      .filter((e) => e.type === 'service_response' && e.responseTime)
       .reduce((sum, e) => sum + (e.responseTime || 0), 0),
-    techniques: events.find(e => e.type === 'technique_selected')?.techniques || [],
-    variantsGenerated: events.filter(e => e.type === 'variant_generated').length,
+    techniques: events.find((e) => e.type === 'technique_selected')?.techniques || [],
+    variantsGenerated: events.filter((e) => e.type === 'variant_generated').length,
   }
 
   return (
     <div className={styles.serviceBreakdown}>
       <h3>🔍 Service Breakdown</h3>
-      
+
       {/* Key Metrics */}
       <div className={styles.metrics}>
         <div className={styles.metric}>
@@ -83,7 +86,7 @@ export function ServiceBreakdown({ events }: ServiceBreakdownProps) {
                     <span className={styles.responseTime}>{event.responseTime}ms</span>
                   )}
                 </div>
-                
+
                 {(event.requestData || event.responseData) && (
                   <details className={styles.eventDetails}>
                     <summary>View Details</summary>
@@ -110,17 +113,15 @@ export function ServiceBreakdown({ events }: ServiceBreakdownProps) {
       </div>
 
       {/* Optimization Details */}
-      {events.some(e => e.type === 'variant_generated') && (
+      {events.some((e) => e.type === 'variant_generated') && (
         <div className={styles.optimizationDetails}>
           <h4>Optimization Details</h4>
           {events
-            .filter(e => e.type === 'variant_generated')
+            .filter((e) => e.type === 'variant_generated')
             .map((variant, index) => (
               <div key={index} className={styles.variantInfo}>
                 <span className={styles.variantLabel}>Variant {index + 1}</span>
-                <span className={styles.variantQuality}>
-                  Quality Score: {variant.quality}/100
-                </span>
+                <span className={styles.variantQuality}>Quality Score: {variant.quality}/100</span>
               </div>
             ))}
         </div>

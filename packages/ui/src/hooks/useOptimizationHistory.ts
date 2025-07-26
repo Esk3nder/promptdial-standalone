@@ -25,7 +25,7 @@ export function useOptimizationHistory() {
           // Convert timestamp strings back to Date objects
           const items = parsed.map((item: any) => ({
             ...item,
-            timestamp: new Date(item.timestamp)
+            timestamp: new Date(item.timestamp),
           }))
           setHistory(items)
         }
@@ -33,7 +33,7 @@ export function useOptimizationHistory() {
         console.error('Failed to load history:', error)
       }
     }
-    
+
     loadHistory()
   }, [])
 
@@ -52,10 +52,10 @@ export function useOptimizationHistory() {
       timestamp: new Date(),
       request,
       result,
-      favorite: false
+      favorite: false,
     }
 
-    setHistory(prev => {
+    setHistory((prev) => {
       // Add new item at the beginning and limit to MAX_HISTORY_ITEMS
       const updated = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS)
       return updated
@@ -63,14 +63,12 @@ export function useOptimizationHistory() {
   }, [])
 
   const removeFromHistory = useCallback((id: string) => {
-    setHistory(prev => prev.filter(item => item.id !== id))
+    setHistory((prev) => prev.filter((item) => item.id !== id))
   }, [])
 
   const toggleFavorite = useCallback((id: string) => {
-    setHistory(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, favorite: !item.favorite } : item
-      )
+    setHistory((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, favorite: !item.favorite } : item)),
     )
   }, [])
 
@@ -79,18 +77,20 @@ export function useOptimizationHistory() {
   }, [])
 
   const getFavorites = useCallback(() => {
-    return history.filter(item => item.favorite)
+    return history.filter((item) => item.favorite)
   }, [history])
 
-  const searchHistory = useCallback((query: string) => {
-    const lowerQuery = query.toLowerCase()
-    return history.filter(item => 
-      item.request.prompt.toLowerCase().includes(lowerQuery) ||
-      item.result.variants.some(v => 
-        v.optimizedPrompt.toLowerCase().includes(lowerQuery)
+  const searchHistory = useCallback(
+    (query: string) => {
+      const lowerQuery = query.toLowerCase()
+      return history.filter(
+        (item) =>
+          item.request.prompt.toLowerCase().includes(lowerQuery) ||
+          item.result.variants.some((v) => v.optimizedPrompt.toLowerCase().includes(lowerQuery)),
       )
-    )
-  }, [history])
+    },
+    [history],
+  )
 
   return {
     history,
@@ -99,6 +99,6 @@ export function useOptimizationHistory() {
     toggleFavorite,
     clearHistory,
     getFavorites,
-    searchHistory
+    searchHistory,
   }
 }

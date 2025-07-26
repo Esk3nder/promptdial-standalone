@@ -1,83 +1,83 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { FailClosedHandler } from '../src/fail-closed';
-import { ValidationError, PlannerError, Technique } from '../src/types';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { FailClosedHandler } from '../src/fail-closed'
+import { ValidationError, PlannerError, Technique } from '../src/types'
 
 describe('FailClosedHandler', () => {
-  let handler: FailClosedHandler;
+  let handler: FailClosedHandler
 
   beforeEach(() => {
-    handler = new FailClosedHandler();
-  });
+    handler = new FailClosedHandler()
+  })
 
   describe('handleError', () => {
     it('should return baseline response for validation errors', () => {
-      const error = new ValidationError('Invalid technique');
-      const startTime = Date.now() - 50;
+      const error = new ValidationError('Invalid technique')
+      const startTime = Date.now() - 50
 
-      const response = handler.handleError(error, startTime);
+      const response = handler.handleError(error, startTime)
 
-      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT]);
-      expect(response.confidence).toBe(0.5);
-      expect(response.metadata?.modelUsed).toBe('baseline');
-      expect(response.metadata?.failedValidations).toContain('Validation failed: Invalid technique');
-    });
+      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT])
+      expect(response.confidence).toBe(0.5)
+      expect(response.metadata?.modelUsed).toBe('baseline')
+      expect(response.metadata?.failedValidations).toContain('Validation failed: Invalid technique')
+    })
 
     it('should return baseline response for planner errors', () => {
-      const error = new PlannerError('LLM timeout');
-      const startTime = Date.now() - 100;
+      const error = new PlannerError('LLM timeout')
+      const startTime = Date.now() - 100
 
-      const response = handler.handleError(error, startTime);
+      const response = handler.handleError(error, startTime)
 
-      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT]);
-      expect(response.metadata?.failedValidations).toContain('Planner error: LLM timeout');
-    });
+      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT])
+      expect(response.metadata?.failedValidations).toContain('Planner error: LLM timeout')
+    })
 
     it('should handle unexpected errors', () => {
-      const error = new Error('Unexpected error');
-      const startTime = Date.now();
+      const error = new Error('Unexpected error')
+      const startTime = Date.now()
 
-      const response = handler.handleError(error, startTime);
+      const response = handler.handleError(error, startTime)
 
-      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT]);
-      expect(response.metadata?.failedValidations).toContain('Unexpected error: Unexpected error');
-    });
+      expect(response.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT])
+      expect(response.metadata?.failedValidations).toContain('Unexpected error: Unexpected error')
+    })
 
     it('should track processing time correctly', () => {
-      const error = new Error('Test error');
-      const startTime = Date.now() - 75;
+      const error = new Error('Test error')
+      const startTime = Date.now() - 75
 
-      const response = handler.handleError(error, startTime);
+      const response = handler.handleError(error, startTime)
 
-      expect(response.metadata?.processingTimeMs).toBeGreaterThanOrEqual(75);
-      expect(response.metadata?.processingTimeMs).toBeLessThan(100);
-    });
-  });
+      expect(response.metadata?.processingTimeMs).toBeGreaterThanOrEqual(75)
+      expect(response.metadata?.processingTimeMs).toBeLessThan(100)
+    })
+  })
 
   describe('wrapOperation', () => {
     it('should return result on success', async () => {
-      const operation = async () => 'success';
-      const fallback = (error: Error) => 'fallback';
+      const operation = async () => 'success'
+      const fallback = (error: Error) => 'fallback'
 
-      const result = await handler.wrapOperation(operation, fallback);
-      expect(result).toBe('success');
-    });
+      const result = await handler.wrapOperation(operation, fallback)
+      expect(result).toBe('success')
+    })
 
     it('should use fallback on error', async () => {
       const operation = async () => {
-        throw new Error('Operation failed');
-      };
-      const fallback = (error: Error) => 'fallback result';
+        throw new Error('Operation failed')
+      }
+      const fallback = (error: Error) => 'fallback result'
 
-      const result = await handler.wrapOperation(operation, fallback);
-      expect(result).toBe('fallback result');
-    });
-  });
+      const result = await handler.wrapOperation(operation, fallback)
+      expect(result).toBe('fallback result')
+    })
+  })
 
   describe('isBaselineResponse', () => {
     it('should identify baseline responses', () => {
-      const baseline = handler.getBaselineResponse();
-      expect(handler.isBaselineResponse(baseline)).toBe(true);
-    });
+      const baseline = handler.getBaselineResponse()
+      expect(handler.isBaselineResponse(baseline)).toBe(true)
+    })
 
     it('should reject non-baseline responses', () => {
       const nonBaseline = {
@@ -86,22 +86,22 @@ describe('FailClosedHandler', () => {
         confidence: 0.9,
         metadata: {
           processingTimeMs: 50,
-          modelUsed: 'gpt-4'
-        }
-      };
+          modelUsed: 'gpt-4',
+        },
+      }
 
-      expect(handler.isBaselineResponse(nonBaseline)).toBe(false);
-    });
-  });
+      expect(handler.isBaselineResponse(nonBaseline)).toBe(false)
+    })
+  })
 
   describe('getBaselineResponse', () => {
     it('should return consistent baseline response', () => {
-      const response1 = handler.getBaselineResponse();
-      const response2 = handler.getBaselineResponse();
+      const response1 = handler.getBaselineResponse()
+      const response2 = handler.getBaselineResponse()
 
-      expect(response1).toEqual(response2);
-      expect(response1.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT]);
-      expect(response1.confidence).toBe(0.5);
-    });
-  });
-});
+      expect(response1).toEqual(response2)
+      expect(response1.suggested_techniques).toEqual([Technique.CHAIN_OF_THOUGHT])
+      expect(response1.confidence).toBe(0.5)
+    })
+  })
+})

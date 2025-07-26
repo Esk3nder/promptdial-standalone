@@ -33,8 +33,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <ErrorMessage 
-            message={this.state.error?.message || 'Something went wrong'} 
+          <ErrorMessage
+            message={this.state.error?.message || 'Something went wrong'}
             details={this.state.error?.stack}
             onRetry={() => this.setState({ hasError: false, error: null })}
           />

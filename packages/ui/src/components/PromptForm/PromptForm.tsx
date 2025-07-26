@@ -140,10 +140,14 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
               className={styles.select}
             >
               {Object.entries(MODEL_OPTIONS_BY_PROVIDER).map(([provider, models]) => (
-                <optgroup key={provider} label={PROVIDER_NAMES[provider as keyof typeof PROVIDER_NAMES]}>
+                <optgroup
+                  key={provider}
+                  label={PROVIDER_NAMES[provider as keyof typeof PROVIDER_NAMES]}
+                >
                   {models.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label} {option.isDefault ? '(Default)' : ''} - ${option.cost}/1K tokens
+                      {option.label} {option.isDefault ? '(Default)' : ''} - ${option.cost}/1K
+                      tokens
                     </option>
                   ))}
                 </optgroup>
@@ -194,7 +198,6 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
           </div>
         </div>
       )}
-
 
       {/* Error Message */}
       {displayError && (

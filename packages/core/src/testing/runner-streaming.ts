@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid'
 import { PromptDial } from '../index'
 import { testPrompt } from './clients'
-import type { 
-  ModelProvider, 
-  TestOptions, 
-  TestRunResults, 
+import type {
+  ModelProvider,
+  TestOptions,
+  TestRunResults,
   ProviderResults,
-  ServiceTrace 
+  ServiceTrace,
 } from './types'
-import type { 
+import type {
   PerformanceTestEvent,
   ServiceRequestEvent,
   ServiceResponseEvent,
@@ -37,7 +37,7 @@ export class StreamingTestRunner {
       timestamp: new Date(),
     } as PerformanceTestEvent
 
-    this.eventHandlers.forEach(handler => handler(fullEvent))
+    this.eventHandlers.forEach((handler) => handler(fullEvent))
   }
 
   private emitServiceRequest(service: string, method: string, requestData: any) {
@@ -50,11 +50,11 @@ export class StreamingTestRunner {
   }
 
   private emitServiceResponse(
-    service: string, 
-    method: string, 
-    responseData: any, 
+    service: string,
+    method: string,
+    responseData: any,
     responseTime: number,
-    statusCode?: number
+    statusCode?: number,
   ) {
     this.emit({
       type: 'service_response',
@@ -68,7 +68,7 @@ export class StreamingTestRunner {
 
   async runTest(prompt: string, options: TestOptions = {}): Promise<TestRunResults> {
     this.startTime = Date.now()
-    
+
     const {
       targetModel = 'gpt-4',
       optimizationLevel = 'advanced',
@@ -87,43 +87,53 @@ export class StreamingTestRunner {
       // Step 1: Classify the task
       const classifyStart = Date.now()
       this.emitServiceRequest('classifier', 'classify', { prompt })
-      
+
       // Simulate classification (in real implementation, this would call the classifier service)
       const taskType = this.classifyTask(prompt)
       const classifyTime = Date.now() - classifyStart
-      
-      this.emitServiceResponse('classifier', 'classify', { 
-        taskType,
-        confidence: 0.95,
-        features: ['technical', 'specific']
-      }, classifyTime)
+
+      this.emitServiceResponse(
+        'classifier',
+        'classify',
+        {
+          taskType,
+          confidence: 0.95,
+          features: ['technical', 'specific'],
+        },
+        classifyTime,
+      )
 
       // Step 2: Select optimization techniques
       const techniqueStart = Date.now()
-      this.emitServiceRequest('technique-engine', 'selectTechniques', { 
-        taskType, 
-        optimizationLevel 
+      this.emitServiceRequest('technique-engine', 'selectTechniques', {
+        taskType,
+        optimizationLevel,
       })
-      
+
       const techniques = this.selectTechniques(taskType, optimizationLevel)
       const techniqueTime = Date.now() - techniqueStart
-      
-      this.emitServiceResponse('technique-engine', 'selectTechniques', {
-        techniques,
-        reasoning: 'Selected based on task type and optimization level'
-      }, techniqueTime)
+
+      this.emitServiceResponse(
+        'technique-engine',
+        'selectTechniques',
+        {
+          techniques,
+          reasoning: 'Selected based on task type and optimization level',
+        },
+        techniqueTime,
+      )
 
       this.emit({
         type: 'technique_selected',
         techniques,
         taskType,
-        reasoning: `Selected ${techniques.length} techniques for ${taskType} task`
+        reasoning: `Selected ${techniques.length} techniques for ${taskType} task`,
       } as TechniqueSelectedEvent)
 
       // Step 3: Generate optimized variants
       this.emit({ type: 'optimization_started' })
       const optimizeStart = Date.now()
-      
+
       this.emitServiceRequest('optimizer', 'optimize', {
         prompt,
         techniques,
@@ -137,13 +147,18 @@ export class StreamingTestRunner {
       })
 
       const optimizeTime = Date.now() - optimizeStart
-      this.emitServiceResponse('optimizer', 'optimize', {
-        variantCount: optimizationResult.variants.length,
-        variants: optimizationResult.variants.map(v => ({
-          id: v.id,
-          quality: v.quality?.score || 0,
-        }))
-      }, optimizeTime)
+      this.emitServiceResponse(
+        'optimizer',
+        'optimize',
+        {
+          variantCount: optimizationResult.variants.length,
+          variants: optimizationResult.variants.map((v) => ({
+            id: v.id,
+            quality: v.quality?.score || 0,
+          })),
+        },
+        optimizeTime,
+      )
 
       // Emit variant generation events
       for (const variant of optimizationResult.variants) {
@@ -153,15 +168,20 @@ export class StreamingTestRunner {
           prompt: variant.optimizedPrompt,
           variantId: variant.id,
         })
-        
+
         const safetyPassed = await this.checkSafety(variant.optimizedPrompt)
         const safetyTime = Date.now() - safetyStart
-        
-        this.emitServiceResponse('safety-guard', 'check', {
-          passed: safetyPassed,
-          issues: [],
-          variantId: variant.id,
-        }, safetyTime)
+
+        this.emitServiceResponse(
+          'safety-guard',
+          'check',
+          {
+            passed: safetyPassed,
+            issues: [],
+            variantId: variant.id,
+          },
+          safetyTime,
+        )
 
         this.emit({
           type: 'safety_check_completed',
@@ -178,21 +198,26 @@ export class StreamingTestRunner {
 
         const qualityScore = variant.quality?.score || 85
         const evalTime = Date.now() - evalStart
-        
-        this.emitServiceResponse('evaluator', 'evaluate', {
-          scores: {
-            clarity: qualityScore + 5,
-            specificity: qualityScore,
-            coherence: qualityScore + 3,
-            overall: qualityScore,
+
+        this.emitServiceResponse(
+          'evaluator',
+          'evaluate',
+          {
+            scores: {
+              clarity: qualityScore + 5,
+              specificity: qualityScore,
+              coherence: qualityScore + 3,
+              overall: qualityScore,
+            },
+            variantId: variant.id,
           },
-          variantId: variant.id,
-        }, evalTime)
+          evalTime,
+        )
 
         this.emit({
           type: 'variant_generated',
           variantId: variant.id,
-          techniques: variant.changes.map(c => c.description),
+          techniques: variant.changes.map((c) => c.description),
           quality: qualityScore,
           optimizedPrompt: variant.optimizedPrompt,
         } as VariantGeneratedEvent)
@@ -206,7 +231,7 @@ export class StreamingTestRunner {
 
       // Step 4: Test original prompt with all providers
       const originalResults: Partial<ProviderResults> = {}
-      
+
       for (const provider of providers) {
         this.emit({
           type: 'provider_test_started',
@@ -223,12 +248,17 @@ export class StreamingTestRunner {
 
         const result = await testPrompt(prompt, provider, targetModel)
         const llmTime = Date.now() - llmStart
-        
-        this.emitServiceResponse('llm-runner', `test-${provider}`, {
-          success: result.success,
-          tokenCount: result.tokenCount,
-          responsePreview: result.responseText?.substring(0, 100),
-        }, llmTime)
+
+        this.emitServiceResponse(
+          'llm-runner',
+          `test-${provider}`,
+          {
+            success: result.success,
+            tokenCount: result.tokenCount,
+            responsePreview: result.responseText?.substring(0, 100),
+          },
+          llmTime,
+        )
 
         originalResults[provider] = result
 
@@ -246,11 +276,11 @@ export class StreamingTestRunner {
 
       // Step 5: Test optimized variants
       const optimizedResults = []
-      
+
       for (let i = 0; i < Math.min(3, optimizationResult.variants.length); i++) {
         const variant = optimizationResult.variants[i]
         const variantResults: Partial<ProviderResults> = {}
-        
+
         for (const provider of providers) {
           this.emit({
             type: 'provider_test_started',
@@ -268,13 +298,18 @@ export class StreamingTestRunner {
 
           const result = await testPrompt(variant.optimizedPrompt, provider, targetModel)
           const llmTime = Date.now() - llmStart
-          
-          this.emitServiceResponse('llm-runner', `test-${provider}`, {
-            success: result.success,
-            tokenCount: result.tokenCount,
-            responsePreview: result.responseText?.substring(0, 100),
-            variantId: variant.id,
-          }, llmTime)
+
+          this.emitServiceResponse(
+            'llm-runner',
+            `test-${provider}`,
+            {
+              success: result.success,
+              tokenCount: result.tokenCount,
+              responsePreview: result.responseText?.substring(0, 100),
+              variantId: variant.id,
+            },
+            llmTime,
+          )
 
           variantResults[provider] = result
 
@@ -289,7 +324,7 @@ export class StreamingTestRunner {
             },
           })
         }
-        
+
         optimizedResults.push({
           variant: variant.optimizedPrompt,
           results: variantResults as ProviderResults,
@@ -307,12 +342,17 @@ export class StreamingTestRunner {
         variantCount: optimizationResult.variants.length,
         providerCount: providers.length,
       })
-      
+
       const telemetryTime = Date.now() - telemetryStart
-      this.emitServiceResponse('telemetry', 'log', {
-        logged: true,
-        testId: this.testId,
-      }, telemetryTime)
+      this.emitServiceResponse(
+        'telemetry',
+        'log',
+        {
+          logged: true,
+          testId: this.testId,
+        },
+        telemetryTime,
+      )
 
       this.emit({
         type: 'test_completed',
@@ -338,9 +378,15 @@ export class StreamingTestRunner {
     // Simple classification logic - in real implementation would call classifier service
     if (prompt.toLowerCase().includes('code') || prompt.toLowerCase().includes('function')) {
       return 'coding'
-    } else if (prompt.toLowerCase().includes('explain') || prompt.toLowerCase().includes('describe')) {
+    } else if (
+      prompt.toLowerCase().includes('explain') ||
+      prompt.toLowerCase().includes('describe')
+    ) {
       return 'explanation'
-    } else if (prompt.toLowerCase().includes('analyze') || prompt.toLowerCase().includes('compare')) {
+    } else if (
+      prompt.toLowerCase().includes('analyze') ||
+      prompt.toLowerCase().includes('compare')
+    ) {
       return 'analysis'
     }
     return 'general'
@@ -348,7 +394,7 @@ export class StreamingTestRunner {
 
   private selectTechniques(taskType: string, level: string): string[] {
     const techniques = []
-    
+
     if (level === 'basic') {
       techniques.push('clarity_enhancement')
     } else if (level === 'advanced') {
@@ -362,7 +408,7 @@ export class StreamingTestRunner {
         techniques.push('step_by_step_analysis')
       }
     }
-    
+
     return techniques
   }
 
@@ -370,8 +416,8 @@ export class StreamingTestRunner {
     // Simple safety check - in real implementation would call safety-guard service
     const unsafePatterns = ['ignore previous', 'disregard', 'password', 'api key']
     const lowerPrompt = prompt.toLowerCase()
-    
-    return !unsafePatterns.some(pattern => lowerPrompt.includes(pattern))
+
+    return !unsafePatterns.some((pattern) => lowerPrompt.includes(pattern))
   }
 
   getServiceTraces(): ServiceTrace[] {

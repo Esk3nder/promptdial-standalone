@@ -10,15 +10,13 @@ describe('Claude Tools Utilities', () => {
           role: 'assistant',
           content: [
             { type: 'text', text: 'Let me check the weather.' },
-            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } }
-          ]
+            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } },
+          ],
         },
         {
           role: 'user',
-          content: [
-            { type: 'tool_result', tool_use_id: 'tool_123', content: '72F and sunny' }
-          ]
-        }
+          content: [{ type: 'tool_result', tool_use_id: 'tool_123', content: '72F and sunny' }],
+        },
       ]
 
       const errors = validateToolUseResults(messages)
@@ -31,10 +29,10 @@ describe('Claude Tools Utilities', () => {
         {
           role: 'assistant',
           content: [
-            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } }
-          ]
+            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } },
+          ],
         },
-        { role: 'user', content: 'Tell me more' } // Missing tool_result
+        { role: 'user', content: 'Tell me more' }, // Missing tool_result
       ]
 
       const errors = validateToolUseResults(messages)
@@ -50,15 +48,15 @@ describe('Claude Tools Utilities', () => {
         {
           role: 'assistant',
           content: [
-            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } }
-          ]
+            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } },
+          ],
         },
-        { role: 'user', content: 'Tell me more' }
+        { role: 'user', content: 'Tell me more' },
       ]
 
       const fixed = fixToolUseResults(messages)
       expect(fixed).toHaveLength(4) // Original 3 + 1 added tool_result message
-      
+
       const toolResultMessage = fixed[2]
       expect(toolResultMessage.role).toBe('user')
       expect(Array.isArray(toolResultMessage.content)).toBe(true)
@@ -74,15 +72,13 @@ describe('Claude Tools Utilities', () => {
         {
           role: 'assistant',
           content: [
-            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } }
-          ]
+            { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } },
+          ],
         },
         {
           role: 'user',
-          content: [
-            { type: 'tool_result', tool_use_id: 'tool_123', content: '72F and sunny' }
-          ]
-        }
+          content: [{ type: 'tool_result', tool_use_id: 'tool_123', content: '72F and sunny' }],
+        },
       ]
 
       const fixed = fixToolUseResults(messages)
@@ -97,14 +93,14 @@ describe('Claude Tools Utilities', () => {
           role: 'assistant',
           content: [
             { type: 'tool_use', id: 'tool_123', name: 'get_weather', input: { location: 'NYC' } },
-            { type: 'tool_use', id: 'tool_456', name: 'get_time', input: { timezone: 'EST' } }
-          ]
-        }
+            { type: 'tool_use', id: 'tool_456', name: 'get_time', input: { timezone: 'EST' } },
+          ],
+        },
       ]
 
       const fixed = fixToolUseResults(messages)
       expect(fixed).toHaveLength(3) // Original 2 + 1 tool_result message
-      
+
       const toolResultMessage = fixed[2]
       if (Array.isArray(toolResultMessage.content)) {
         expect(toolResultMessage.content).toHaveLength(2)

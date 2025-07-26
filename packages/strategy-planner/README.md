@@ -24,9 +24,11 @@ The Strategy Planner follows the first-principles axioms:
 ## API Endpoints
 
 ### `POST /plan`
+
 Main planning endpoint that analyzes a prompt and suggests optimization techniques.
 
 **Request:**
+
 ```json
 {
   "prompt": "Explain quantum computing",
@@ -40,6 +42,7 @@ Main planning endpoint that analyzes a prompt and suggests optimization techniqu
 ```
 
 **Response:**
+
 ```json
 {
   "suggested_techniques": ["chain_of_thought", "self_consistency"],
@@ -54,9 +57,11 @@ Main planning endpoint that analyzes a prompt and suggests optimization techniqu
 ```
 
 ### `POST /plan/quick`
+
 Quick planning for simple cases (bypasses LLM).
 
 **Request:**
+
 ```json
 {
   "task_type": "reasoning"
@@ -64,9 +69,11 @@ Quick planning for simple cases (bypasses LLM).
 ```
 
 ### `GET /health`
+
 Health check endpoint.
 
 ### `GET /metrics`
+
 Service metrics endpoint.
 
 ## Technique Allow-List
@@ -74,29 +81,35 @@ Service metrics endpoint.
 The service maintains a strict allow-list of optimization techniques:
 
 ### Reasoning Paths
+
 - `chain_of_thought` - Step-by-step reasoning decomposition
 - `tree_of_thought` - Branching exploration of solution paths
 - `least_to_most` - Build up from simple to complex
 
 ### Variance Dampers
+
 - `self_consistency` - Multiple sampling with majority vote
 - `universal_self_consistency` - Self-consistency across formats
 
 ### Meta Optimizers
+
 - `dspy_bootstrap_fewshot` - Automated few-shot example generation
 - `grips` - Gradient-free prompt search
 
 ### Critique Loops
+
 - `self_refine` - Iterative self-improvement
 - `self_calibration` - Confidence adjustment through reflection
 
 ### Guard Helpers
+
 - `sycophancy_filter` - Prevent agreement bias
 - `jailbreak_regex_bank` - Pattern matching for known exploits
 
 ## Configuration
 
 Environment variables:
+
 - `PORT` - Service port (default: 3008)
 - `OPENAI_API_KEY` - OpenAI API key for strategy generation
 - `ANTHROPIC_API_KEY` - Alternative LLM provider
@@ -123,6 +136,7 @@ npm start
 ## Testing
 
 The service includes comprehensive tests covering:
+
 - Validation logic
 - Fail-closed mechanism
 - Planning strategies
@@ -130,6 +144,7 @@ The service includes comprehensive tests covering:
 - Proof-of-work requirements (reproducibility, robustness, exploit resistance, cost ceiling)
 
 Run tests with coverage:
+
 ```bash
 npm run test:coverage
 ```
@@ -141,6 +156,7 @@ The Strategy Planner integrates with the API Gateway and is called after task cl
 ## Error Handling
 
 All errors are handled gracefully with fail-closed behavior:
+
 - Invalid LLM responses → baseline strategy
 - Validation failures → baseline strategy
 - Network errors → baseline strategy
@@ -151,6 +167,7 @@ The baseline strategy always returns Chain-of-Thought as a safe, proven techniqu
 ## Monitoring
 
 Key metrics to monitor:
+
 - Request rate and latency
 - Validation failure rate
 - Baseline response rate (indicates failures)

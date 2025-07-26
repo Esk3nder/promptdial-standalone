@@ -1,4 +1,4 @@
-export type ServiceName = 
+export type ServiceName =
   | 'api-gateway'
   | 'classifier'
   | 'telemetry'
@@ -9,7 +9,7 @@ export type ServiceName =
   | 'optimizer'
   | 'llm-runner'
 
-export type EventType = 
+export type EventType =
   | 'test_started'
   | 'service_request'
   | 'service_response'
@@ -143,7 +143,7 @@ export interface FinalResultsEvent extends BaseEvent {
   results: any
 }
 
-export type PerformanceTestEvent = 
+export type PerformanceTestEvent =
   | TestStartedEvent
   | ServiceRequestEvent
   | ServiceResponseEvent

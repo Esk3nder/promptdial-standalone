@@ -1,9 +1,4 @@
-import {
-  StrategyPlannerResponse,
-  Technique,
-  ValidationError,
-  PlannerError
-} from './types';
+import { StrategyPlannerResponse, Technique, ValidationError, PlannerError } from './types'
 
 /**
  * Fail-closed handler that returns a safe baseline response
@@ -12,36 +7,37 @@ import {
 export class FailClosedHandler {
   private readonly baselineResponse: StrategyPlannerResponse = {
     suggested_techniques: [Technique.CHAIN_OF_THOUGHT],
-    rationale: 'Using baseline Chain-of-Thought technique due to validation or processing error. This ensures safe and predictable prompt optimization.',
+    rationale:
+      'Using baseline Chain-of-Thought technique due to validation or processing error. This ensures safe and predictable prompt optimization.',
     confidence: 0.5,
     metadata: {
       processingTimeMs: 0,
-      failedValidations: []
-    }
-  };
+      failedValidations: [],
+    },
+  }
 
   /**
    * Returns a safe baseline response when any error occurs
    */
   handleError(error: Error, startTime: number): StrategyPlannerResponse {
-    const processingTimeMs = Date.now() - startTime;
-    
+    const processingTimeMs = Date.now() - startTime
+
     // Log the error for observability
     console.error('[FailClosed] Handling error:', {
       errorType: error.constructor.name,
       message: error.message,
-      processingTimeMs
-    });
+      processingTimeMs,
+    })
 
     // Prepare failure metadata
-    const failureReasons: string[] = [];
-    
+    const failureReasons: string[] = []
+
     if (error instanceof ValidationError) {
-      failureReasons.push(`Validation failed: ${error.message}`);
+      failureReasons.push(`Validation failed: ${error.message}`)
     } else if (error instanceof PlannerError) {
-      failureReasons.push(`Planner error: ${error.message}`);
+      failureReasons.push(`Planner error: ${error.message}`)
     } else {
-      failureReasons.push(`Unexpected error: ${error.message}`);
+      failureReasons.push(`Unexpected error: ${error.message}`)
     }
 
     // Return baseline with error metadata
@@ -50,9 +46,9 @@ export class FailClosedHandler {
       metadata: {
         processingTimeMs,
         failedValidations: failureReasons,
-        modelUsed: 'baseline'
-      }
-    };
+        modelUsed: 'baseline',
+      },
+    }
   }
 
   /**
@@ -60,13 +56,13 @@ export class FailClosedHandler {
    */
   async wrapOperation<T>(
     operation: () => Promise<T>,
-    fallbackHandler: (error: Error) => T
+    fallbackHandler: (error: Error) => T,
   ): Promise<T> {
     try {
-      return await operation();
+      return await operation()
     } catch (error) {
-      console.error('[FailClosed] Operation failed, using fallback:', error);
-      return fallbackHandler(error as Error);
+      console.error('[FailClosed] Operation failed, using fallback:', error)
+      return fallbackHandler(error as Error)
     }
   }
 
@@ -78,13 +74,13 @@ export class FailClosedHandler {
       response.suggested_techniques.length === 1 &&
       response.suggested_techniques[0] === Technique.CHAIN_OF_THOUGHT &&
       response.confidence === 0.5
-    );
+    )
   }
 
   /**
    * Get baseline response directly (for testing)
    */
   getBaselineResponse(): StrategyPlannerResponse {
-    return { ...this.baselineResponse };
+    return { ...this.baselineResponse }
   }
 }

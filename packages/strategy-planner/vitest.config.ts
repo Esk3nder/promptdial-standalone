@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
+import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
 
 export default defineConfig({
   test: {
@@ -8,17 +8,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/**',
-        'tests/**',
-        'src/demo.ts',
-        'dist/**'
-      ]
-    }
+      exclude: ['node_modules/**', 'tests/**', 'src/demo.ts', 'dist/**'],
+    },
   },
   resolve: {
     alias: {
-      '@promptdial/shared': resolve(__dirname, './tests/mocks/shared.ts')
-    }
-  }
-});
+      '@promptdial/shared': resolve(__dirname, './tests/mocks/shared.ts'),
+    },
+  },
+})
