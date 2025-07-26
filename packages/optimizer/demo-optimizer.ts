@@ -96,7 +96,7 @@ const variants: Array<{ variant: PromptVariant; evaluation: EvaluationResult }> 
 ]
 
 async function demonstrateOptimizer() {
-  console.log('PromptDial 2.0 - Pareto Optimizer Demo\n')
+  console.log('PromptDial 3.0 - Pareto Optimizer Demo\n')
   console.log('='.repeat(60))
 
   const optimizer = getOptimizerService()

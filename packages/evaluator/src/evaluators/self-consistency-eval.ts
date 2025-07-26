@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Self-Consistency Evaluator
+ * PromptDial 3.0 - Self-Consistency Evaluator
  *
  * Evaluates response consistency and reliability
  */

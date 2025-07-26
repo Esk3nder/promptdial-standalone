@@ -1,8 +1,8 @@
-# PromptDial 2.0 - Deployment Guide
+# PromptDial 3.0 - Deployment Guide
 
 ## Overview
 
-PromptDial 2.0 is a microservices-based prompt optimization engine consisting of 8 core services orchestrated by an API Gateway.
+PromptDial 3.0 is a microservices-based prompt optimization engine consisting of 8 core services orchestrated by an API Gateway.
 
 ## Architecture
 

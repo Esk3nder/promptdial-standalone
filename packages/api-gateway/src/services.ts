@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Service Registry
+ * PromptDial 3.0 - Service Registry
  */
 
 export interface ServiceConfig {

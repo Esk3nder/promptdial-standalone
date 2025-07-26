@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - LLM Runner Service
+ * PromptDial 3.0 - LLM Runner Service
  *
  * Manages multi-provider LLM execution with streaming support
  */

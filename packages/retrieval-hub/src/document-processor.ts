@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Document Processor
+ * PromptDial 3.0 - Document Processor
  *
  * Handles document chunking, preprocessing, and metadata extraction
  */

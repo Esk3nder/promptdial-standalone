@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Health Checker
+ * PromptDial 3.0 - Health Checker
  */
 
 import axios from 'axios'

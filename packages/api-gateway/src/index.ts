@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - API Gateway
+ * PromptDial 3.0 - API Gateway
  *
  * Central orchestration point for all microservices
  */

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - G-EVAL Evaluator
+ * PromptDial 3.0 - G-EVAL Evaluator
  *
  * LLM-based evaluation using chain-of-thought scoring
  */

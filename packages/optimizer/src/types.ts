@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Optimizer Types
+ * PromptDial 3.0 - Optimizer Types
  */
 
 import { PromptVariant, EvaluationResult } from '@promptdial/shared'

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Shared Types and Contracts
+ * PromptDial 3.0 - Shared Types and Contracts
  *
  * Core data models shared across all microservices
  */
@@ -10,7 +10,6 @@ export interface PromptVariant {
   id: string
   technique: string
   prompt: string // The optimized prompt text
-  optimized_prompt?: string // Legacy field for compatibility
   temperature: number
   est_tokens: number
   cost_usd: number

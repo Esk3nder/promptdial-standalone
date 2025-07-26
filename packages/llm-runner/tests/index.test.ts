@@ -140,7 +140,7 @@ describe('LLMRunnerService', () => {
     it('should execute prompt with specified provider', async () => {
       const variant = createTestPromptVariant({
         model: 'gpt-4',
-        optimized_prompt: 'Test prompt',
+        prompt: 'Test prompt',
       })
 
       const result = await service.execute(variant)

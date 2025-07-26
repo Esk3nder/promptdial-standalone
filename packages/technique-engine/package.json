@@ -1,7 +1,7 @@
 {
   "name": "@promptdial/technique-engine",
   "version": "2.0.0",
-  "description": "Advanced prompt optimization techniques for PromptDial 2.0",
+  "description": "Advanced prompt optimization techniques for PromptDial 3.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

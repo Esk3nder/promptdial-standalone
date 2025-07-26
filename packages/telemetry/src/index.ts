@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Telemetry Service
+ * PromptDial 3.0 - Telemetry Service
  *
  * Handles event logging, metrics collection, and monitoring
  */

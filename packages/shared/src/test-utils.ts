@@ -47,7 +47,6 @@ export function createTestPromptVariant(overrides?: Partial<PromptVariant>): Pro
     id: 'variant-' + Math.random().toString(36).substr(2, 9),
     technique: 'chain_of_thought',
     prompt: "Let's think step by step. Test prompt",
-    optimized_prompt: "Let's think step by step. Test prompt",
     temperature: 0.7,
     est_tokens: 100,
     cost_usd: 0.002,

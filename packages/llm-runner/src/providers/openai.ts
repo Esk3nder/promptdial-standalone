@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - OpenAI Provider
+ * PromptDial 3.0 - OpenAI Provider
  */
 
 import OpenAI from 'openai'

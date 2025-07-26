@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Self-Consistency Handler
+ * PromptDial 3.0 - Self-Consistency Handler
  *
  * Manages multiple LLM calls for self-consistency voting
  */

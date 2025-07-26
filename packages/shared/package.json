@@ -1,7 +1,7 @@
 {
   "name": "@promptdial/shared",
   "version": "2.0.0",
-  "description": "Shared types, constants, and utilities for PromptDial 2.0",
+  "description": "Shared types, constants, and utilities for PromptDial 3.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

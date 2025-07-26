@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Pareto Optimizer Service
+ * PromptDial 3.0 - Pareto Optimizer Service
  *
  * Multi-objective optimization for prompt variants
  */

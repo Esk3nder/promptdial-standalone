@@ -2,7 +2,7 @@
 
 ## No CLI Required! Test Everything from Your Browser
 
-PromptDial 2.0 now includes a complete web-based testing interface. You can run all tests, monitor services, and optimize prompts directly from your browser - no command line needed!
+PromptDial 3.0 now includes a complete web-based testing interface. You can run all tests, monitor services, and optimize prompts directly from your browser - no command line needed!
 
 ## 🚀 Quick Start (2 Steps)
 

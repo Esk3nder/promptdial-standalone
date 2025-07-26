@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - ReAct (Reasoning + Acting) Technique
+ * PromptDial 3.0 - ReAct (Reasoning + Acting) Technique
  *
  * Interleaves reasoning with actions for complex multi-step problems
  */

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Pareto Optimizer Tests
+ * PromptDial 3.0 - Pareto Optimizer Tests
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'

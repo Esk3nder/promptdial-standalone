@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Calibrated Evaluator Ensemble Service
+ * PromptDial 3.0 - Calibrated Evaluator Ensemble Service
  *
  * Manages multiple evaluation methods with calibration
  */

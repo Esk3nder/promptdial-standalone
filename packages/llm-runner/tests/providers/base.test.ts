@@ -13,7 +13,7 @@ class TestProvider extends BaseLLMProvider {
     await this.checkRateLimit()
 
     const response: LLMResponse = {
-      content: `Response to: ${variant.optimized_prompt}`,
+      content: `Response to: ${variant.prompt}`,
       tokens_used: 100,
       latency_ms: 500,
       provider: this.config.provider,

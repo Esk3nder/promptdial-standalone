@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Evaluator Calibration
+ * PromptDial 3.0 - Evaluator Calibration
  *
  * Monitors and corrects evaluator drift
  */

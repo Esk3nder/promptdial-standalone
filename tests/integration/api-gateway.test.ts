@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - API Gateway Integration Tests
+ * PromptDial 3.0 - API Gateway Integration Tests
  */
 
 import axios from 'axios'
