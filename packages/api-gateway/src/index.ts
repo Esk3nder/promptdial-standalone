@@ -22,6 +22,8 @@ import {
 import { SERVICES, ServiceConfig } from './services'
 import { HealthChecker } from './health'
 import { RequestOrchestrator } from './orchestrator'
+import { flowGuardMiddleware } from './flow-guard'
+import { canary } from './synthetic-canary'
 
 // Load environment variables
 dotenv.config()
@@ -81,6 +83,9 @@ app.use((req, res, next) => {
 
   next()
 })
+
+// FlowGuard middleware - enforces PromptDial 3.0 invariants
+app.use(flowGuardMiddleware)
 
 // ============= Service Instances =============
 
@@ -195,20 +200,45 @@ app.get('/health/:service', async (req, res) => {
 })
 
 /**
- * Metrics endpoint
+ * Metrics endpoint (JSON format)
  */
 app.get('/metrics', async (req, res) => {
   try {
     const telemetry = getTelemetryService()
     const metrics = await telemetry.getMetrics()
+    
+    // Get critical metrics status if available
+    const criticalMetrics = (telemetry as any).getCriticalMetricsStatus ? 
+      (telemetry as any).getCriticalMetricsStatus() : {}
 
     res.json({
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       metrics,
+      critical_metrics: criticalMetrics,
+      timestamp: new Date().toISOString()
     })
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve metrics' })
+  }
+})
+
+/**
+ * Prometheus metrics endpoint
+ */
+app.get('/metrics/prometheus', async (req, res) => {
+  try {
+    const telemetry = getTelemetryService()
+    
+    if ((telemetry as any).getPrometheusMetrics) {
+      const prometheusMetrics = await (telemetry as any).getPrometheusMetrics()
+      res.set('Content-Type', 'text/plain; version=0.0.4')
+      res.send(prometheusMetrics)
+    } else {
+      res.status(501).send('Prometheus metrics not available')
+    }
+  } catch (error) {
+    res.status(500).send('Failed to retrieve Prometheus metrics')
   }
 })
 
@@ -224,6 +254,60 @@ app.get('/services', (req, res) => {
   }))
 
   res.json({ services: serviceInfo })
+})
+
+/**
+ * Receipt verification endpoint
+ */
+app.post('/api/verify-receipt', (req, res) => {
+  const { receipt, trace_id } = req.body
+  
+  if (!receipt || !trace_id) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing receipt or trace_id'
+    })
+  }
+
+  try {
+    const { FlowGuard } = require('./flow-guard')
+    const isValid = FlowGuard.verifyReceipt(receipt, trace_id)
+    
+    res.json({
+      success: true,
+      valid: isValid,
+      flow_version: receipt.flow_version
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Verification failed',
+      message: (error as Error).message
+    })
+  }
+})
+
+/**
+ * Public key endpoint for receipt verification
+ */
+app.get('/api/public-key', (req, res) => {
+  const { FlowGuard } = require('./flow-guard')
+  res.json({
+    public_key: FlowGuard.getPublicKey(),
+    algorithm: 'Ed25519',
+    format: 'PEM'
+  })
+})
+
+/**
+ * Canary status endpoint
+ */
+app.get('/api/canary/status', (req, res) => {
+  const status = canary.getStatus()
+  res.json({
+    canary_enabled: status.running,
+    message: status.running ? 'Synthetic canary is active' : 'Synthetic canary is stopped'
+  })
 })
 
 // ============= Error Handling =============
@@ -255,8 +339,29 @@ async function startServer() {
   app.listen(PORT, () => {
     logger.info(`API Gateway running on port ${PORT}`)
     logger.info('Service URLs:', SERVICES)
+    
+    // Start synthetic canary tests
+    if (process.env.ENABLE_CANARY !== 'false') {
+      logger.info('Starting synthetic canary tests')
+      canary.start()
+    } else {
+      logger.info('Synthetic canary tests disabled')
+    }
   })
 }
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  logger.info('Shutting down API Gateway...')
+  canary.stop()
+  process.exit(0)
+})
+
+process.on('SIGTERM', () => {
+  logger.info('Shutting down API Gateway...')
+  canary.stop()
+  process.exit(0)
+})
 
 // Export app for testing
 export { app }

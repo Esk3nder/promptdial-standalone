@@ -4,6 +4,7 @@ import path from 'path'
 import 'dotenv/config' // Load environment variables
 import { PromptDial } from './index.js'
 import type { OptimizationRequest } from './meta-prompt-designer.js'
+import { TemplateFallbackGuard } from './template-fallback-guard.js'
 
 // Get directory path in CommonJS
 const __dirname = path.resolve()
@@ -90,6 +91,17 @@ app.get('/api/optimize/stream', async (req, res) => {
       useAI: true,
     })
 
+    // Check for real API keys before optimization
+    if (!TemplateFallbackGuard.hasRealAPIKeys()) {
+      res.write(`data: ${JSON.stringify({ 
+        status: 'error', 
+        error: 'API keys required for AI optimization',
+        message: TemplateFallbackGuard.getMissingAPIKeysError()
+      })}\n\n`)
+      res.end()
+      return
+    }
+
     // Optimize with progress callback and timeout
     const results = (await Promise.race([
       promptDial.optimize(optimizationRequest),
@@ -97,6 +109,18 @@ app.get('/api/optimize/stream', async (req, res) => {
         setTimeout(() => reject(new Error('Optimization timeout after 60 seconds')), 60000),
       ),
     ])) as any
+
+    // Validate result is not template fallback (PromptDial 3.0 protection)
+    const validation = TemplateFallbackGuard.validateResult(results)
+    if (!validation.isValid) {
+      res.write(`data: ${JSON.stringify({ 
+        status: 'error', 
+        error: 'Template fallback detected',
+        message: validation.error 
+      })}\n\n`)
+      res.end()
+      return
+    }
 
     res.write(
       `data: ${JSON.stringify({ status: 'evaluating', progress: 85, message: 'Evaluating quality scores...' })}\n\n`,
@@ -148,6 +172,15 @@ app.post('/api/optimize', async (req, res) => {
       })
     }
 
+    // Check if we have real API keys first
+    if (!TemplateFallbackGuard.hasRealAPIKeys()) {
+      return res.status(400).json({
+        error: 'API_KEYS_REQUIRED',
+        message: TemplateFallbackGuard.getMissingAPIKeysError(),
+        code: 'MISSING_API_KEYS'
+      })
+    }
+
     // Create PromptDial instance and optimize
     const promptDial = new PromptDial({
       autoValidate: true,
@@ -157,6 +190,16 @@ app.post('/api/optimize', async (req, res) => {
 
     // Starting optimization
     const result = await promptDial.optimize(request)
+
+    // Validate result is not template fallback (PromptDial 3.0 protection)
+    const validation = TemplateFallbackGuard.validateResult(result)
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: 'TEMPLATE_FALLBACK_DETECTED', 
+        message: validation.error,
+        code: 'TEMPLATE_FALLBACK'
+      })
+    }
 
     // Optimization complete
 

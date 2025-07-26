@@ -323,6 +323,35 @@ export async function handleGenerateVariantsRequest(
       trace_id,
     )
 
+    // Runtime invariant: Must have at least one variant
+    if (!variants || variants.length === 0) {
+      logger.error('INVARIANT VIOLATION: No variants generated', undefined, { trace_id })
+      throw new Error('Builder invariant failed: No variants generated')
+    }
+
+    // Runtime invariant: All variants must have techniques
+    const variantsWithoutTechniques = variants.filter(v => !v.technique || v.technique === '')
+    if (variantsWithoutTechniques.length > 0) {
+      logger.error('INVARIANT VIOLATION: Variants without techniques', undefined, { 
+        trace_id,
+        variant_ids: variantsWithoutTechniques.map(v => v.id)
+      })
+      throw new Error('Builder invariant failed: All variants must have techniques')
+    }
+
+    // Runtime invariant: Must have diverse techniques (not all the same)
+    const uniqueTechniques = new Set(variants.map(v => v.technique))
+    if (uniqueTechniques.size === 0) {
+      logger.error('INVARIANT VIOLATION: No unique techniques', undefined, { trace_id })
+      throw new Error('Builder invariant failed: No techniques applied')
+    }
+
+    logger.info('Variant generation passed invariants', {
+      trace_id,
+      variant_count: variants.length,
+      unique_techniques: Array.from(uniqueTechniques)
+    })
+
     return {
       trace_id: request.trace_id,
       timestamp: new Date(),
@@ -331,6 +360,12 @@ export async function handleGenerateVariantsRequest(
       data: variants,
     }
   } catch (error) {
+    logger.error('Variant generation failed', error as Error, { trace_id: request.trace_id })
+    
+    // Record telemetry for invariant violations
+    const telemetry = getTelemetryService()
+    telemetry.recordCounter('builder_invariant_violations', 1)
+    
     return {
       trace_id: request.trace_id,
       timestamp: new Date(),
@@ -338,8 +373,8 @@ export async function handleGenerateVariantsRequest(
       success: false,
       error: {
         code: ERROR_CODES.INTERNAL_ERROR,
-        message: 'Failed to generate variants',
-        retryable: true,
+        message: (error as Error).message || 'Failed to generate variants',
+        retryable: false, // Invariant violations should not be retried
       },
     }
   }
@@ -382,8 +417,44 @@ if (require.main === module) {
 
   // Generate variants endpoint
   app.post('/generate', async (req: any, res: any) => {
-    const response = await handleGenerateVariantsRequest(req.body)
-    res.status(response.success ? 200 : 500).json(response)
+    try {
+      const request = {
+        trace_id: req.headers['x-trace-id'] || req.body.trace_id,
+        timestamp: new Date(),
+        service: 'technique-engine',
+        method: 'generateVariants',
+        payload: {
+          base_prompt: req.body.prompt,
+          classification: req.body.task_meta,
+          budget: req.body.constraints || {
+            max_cost_usd: 1.0,
+            max_latency_ms: 30000,
+            max_tokens: 4096,
+            remaining_cost_usd: 1.0,
+            remaining_time_ms: 30000
+          },
+          trace_id: req.headers['x-trace-id'] || req.body.trace_id
+        }
+      }
+      
+      const response = await handleGenerateVariantsRequest(request)
+      
+      // Return the variants directly for backward compatibility
+      if (response.success) {
+        res.json({ variants: response.data })
+      } else {
+        res.status(500).json({ 
+          error: response.error?.message,
+          code: response.error?.code 
+        })
+      }
+    } catch (error) {
+      logger.error('Generate endpoint error', error as Error)
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: (error as Error).message 
+      })
+    }
   })
 
   // Register technique endpoint
