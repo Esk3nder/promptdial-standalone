@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Anthropic Provider
+ * PromptDial 3.0 - Anthropic Provider
  */
 
 import Anthropic from '@anthropic-ai/sdk'

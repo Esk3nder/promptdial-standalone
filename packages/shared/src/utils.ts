@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Shared Utilities
+ * PromptDial 3.0 - Shared Utilities
  */
 
 import { TelemetryEvent, ServiceResponse } from './types'

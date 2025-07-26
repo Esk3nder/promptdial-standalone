@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - IRCoT (Interleaved Retrieval Chain of Thought) Technique
+ * PromptDial 3.0 - IRCoT (Interleaved Retrieval Chain of Thought) Technique
  *
  * Combines retrieval-augmented generation with chain-of-thought reasoning
  */

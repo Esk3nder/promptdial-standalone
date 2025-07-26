@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Security Pattern Definitions
+ * PromptDial 3.0 - Security Pattern Definitions
  *
  * Patterns for detecting and blocking malicious prompts
  */

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Evaluator Registry
+ * PromptDial 3.0 - Evaluator Registry
  */
 
 export { BaseEvaluator } from './base'

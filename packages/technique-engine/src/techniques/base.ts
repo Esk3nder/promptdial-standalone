@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Base Technique Strategy
+ * PromptDial 3.0 - Base Technique Strategy
  *
  * Abstract base class for all prompt optimization techniques
  */

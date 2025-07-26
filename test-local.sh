@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Test script for PromptDial 2.0 local deployment
+# Test script for PromptDial 3.0 local deployment
 
 set -e
 
@@ -12,7 +12,7 @@ NC='\033[0m'
 
 API_URL="http://localhost:3000"
 
-echo -e "${GREEN}🧪 Testing PromptDial 2.0 API${NC}"
+echo -e "${GREEN}🧪 Testing PromptDial 3.0 API${NC}"
 echo "============================"
 
 # Function to test endpoint

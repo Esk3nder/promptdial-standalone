@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Pareto Optimization Engine
+ * PromptDial 3.0 - Pareto Optimization Engine
  *
  * Implements multi-objective optimization for prompt variants
  */

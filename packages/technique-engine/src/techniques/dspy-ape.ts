@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - DSPy APE (Automatic Prompt Engineering) Technique
+ * PromptDial 3.0 - DSPy APE (Automatic Prompt Engineering) Technique
  *
  * Automatically discovers effective prompts through optimization
  */

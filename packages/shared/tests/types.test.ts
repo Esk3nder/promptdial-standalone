@@ -36,7 +36,7 @@ describe('Types', () => {
       const variant: PromptVariant = {
         id: 'variant-id',
         original_prompt: 'Original',
-        optimized_prompt: 'Optimized',
+        prompt: 'Optimized',
         technique: 'few_shot_cot',
         model: 'gpt-4',
         estimated_cost: 0.05,
@@ -194,7 +194,7 @@ describe('Types', () => {
       const variant: PromptVariant = {
         id: 'id',
         original_prompt: 'original',
-        optimized_prompt: 'optimized',
+        prompt: 'optimized',
         technique: 'cot',
         model: 'gpt-4',
         estimated_cost: 0.01,

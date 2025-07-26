@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Vector Store Interface
+ * PromptDial 3.0 - Vector Store Interface
  *
  * Abstract interface for vector databases
  */

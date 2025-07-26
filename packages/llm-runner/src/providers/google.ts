@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Google AI Provider
+ * PromptDial 3.0 - Google AI Provider
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai'

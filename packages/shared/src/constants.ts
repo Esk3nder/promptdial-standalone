@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Shared Constants
+ * PromptDial 3.0 - Shared Constants
  */
 
 // ============= Service Names =============

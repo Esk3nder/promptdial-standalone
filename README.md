@@ -1,4 +1,4 @@
-# PromptDial 2.0 🚀 - Autonomous Prompt Optimization Engine
+# PromptDial 3.0 🚀 - Autonomous Prompt Optimization Engine
 
 > Enterprise-grade microservices platform for automatic prompt enhancement using advanced techniques and multi-objective optimization
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-PromptDial 2.0 is a complete rewrite featuring a microservices architecture that automatically optimizes prompts using state-of-the-art techniques like Few-Shot Chain-of-Thought, Self-Consistency, ReAct, and Tree of Thoughts. It provides Pareto-optimal selection balancing quality, cost, and latency with enterprise-grade security and monitoring.
+PromptDial 3.0 is a complete rewrite featuring a microservices architecture that automatically optimizes prompts using state-of-the-art techniques like Few-Shot Chain-of-Thought, Self-Consistency, ReAct, and Tree of Thoughts. It provides Pareto-optimal selection balancing quality, cost, and latency with enterprise-grade security and monitoring.
 
 ## ✨ Key Features
 
@@ -30,7 +30,7 @@ PromptDial 2.0 is a complete rewrite featuring a microservices architecture that
 
 ## 🏗️ Architecture
 
-PromptDial 2.0 consists of 8 microservices:
+PromptDial 3.0 consists of 8 microservices:
 
 ```
 ┌─────────────────┐
@@ -169,7 +169,7 @@ console.log(result.data.result.recommended_variant)
 
 ## 🎯 Optimization Techniques
 
-PromptDial 2.0 implements cutting-edge prompt optimization strategies:
+PromptDial 3.0 implements cutting-edge prompt optimization strategies:
 
 ### 1. **Few-Shot Chain-of-Thought (CoT)**
 
@@ -279,7 +279,7 @@ Main optimization endpoint that orchestrates all services.
 
 ## 🛡️ Security Features
 
-PromptDial 2.0 includes comprehensive security:
+PromptDial 3.0 includes comprehensive security:
 
 ### Threat Detection
 
@@ -389,4 +389,4 @@ Built on research from:
 
 ---
 
-**PromptDial 2.0** - Enterprise-grade prompt optimization at scale. 🎯
+**PromptDial 3.0** - Enterprise-grade prompt optimization at scale. 🎯

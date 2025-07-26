@@ -103,14 +103,14 @@ const createTestOptimizationResponse = () => ({
     {
       id: 'v1',
       technique: 'chain_of_thought',
-      optimized_prompt: "Let's think step by step",
+      prompt: "Let's think step by step",
       model: 'gpt-4',
     },
   ],
   recommended_variant: {
     id: 'v1',
     technique: 'chain_of_thought',
-    optimized_prompt: "Let's think step by step",
+    prompt: "Let's think step by step",
     model: 'gpt-4',
   },
   evaluation_results: [],

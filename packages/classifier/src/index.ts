@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Task+Risk Classifier Service
+ * PromptDial 3.0 - Task+Risk Classifier Service
  *
  * Classifies prompts by task type, domain, complexity, and safety risk
  */

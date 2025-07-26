@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Base Evaluator
+ * PromptDial 3.0 - Base Evaluator
  *
  * Abstract base class for all evaluation methods
  */

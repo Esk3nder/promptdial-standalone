@@ -1,4 +1,4 @@
-# PromptDial 2.0 - Local Deployment Quick Start
+# PromptDial 3.0 - Local Deployment Quick Start
 
 ## 🚀 Quick Deployment (3 Steps)
 

@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Technique Engine Service
+ * PromptDial 3.0 - Technique Engine Service
  *
  * Manages and executes prompt optimization techniques
  */

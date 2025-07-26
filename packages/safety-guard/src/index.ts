@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - SafetyGuard Service
+ * PromptDial 3.0 - SafetyGuard Service
  *
  * Protects against prompt injection, jailbreaks, and harmful content
  */

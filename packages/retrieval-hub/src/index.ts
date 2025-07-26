@@ -1,5 +1,5 @@
 /**
- * PromptDial 2.0 - Retrieval Hub Service
+ * PromptDial 3.0 - Retrieval Hub Service
  *
  * Manages document storage, retrieval, and RAG operations
  */

@@ -94,7 +94,7 @@ describe('OpenAIProvider', () => {
   describe('call', () => {
     it('should make successful API call', async () => {
       const variant = createTestPromptVariant({
-        optimized_prompt: 'Test prompt',
+        prompt: 'Test prompt',
       })
 
       const response = await provider.call(variant)
@@ -116,7 +116,7 @@ describe('OpenAIProvider', () => {
 
     it('should handle system prompts', async () => {
       const variant = createTestPromptVariant({
-        optimized_prompt: 'User prompt',
+        prompt: 'User prompt',
         metadata: {
           system_prompt: 'You are a helpful assistant',
         },
