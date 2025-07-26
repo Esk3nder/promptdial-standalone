@@ -18,7 +18,7 @@ interface LiveTestStatusProps {
 
 export function LiveTestStatus({ events, status, error }: LiveTestStatusProps) {
   const serviceTraces: Map<string, ServiceTrace[]> = new Map()
-  
+
   // Process events to build service traces
   events.forEach((event) => {
     if (event.type === 'service_request' || event.type === 'service_response') {
@@ -137,9 +137,9 @@ export function LiveTestStatus({ events, status, error }: LiveTestStatusProps) {
   const getServiceBreakdown = () => {
     const breakdown: any[] = []
     serviceTraces.forEach((traces, key) => {
-      const request = traces.find(t => t.type === 'service_request')
-      const response = traces.find(t => t.type === 'service_response')
-      
+      const request = traces.find((t) => t.type === 'service_request')
+      const response = traces.find((t) => t.type === 'service_response')
+
       if (request && response) {
         breakdown.push({
           key,
@@ -151,7 +151,7 @@ export function LiveTestStatus({ events, status, error }: LiveTestStatusProps) {
         })
       }
     })
-    
+
     return breakdown
   }
 
@@ -163,13 +163,13 @@ export function LiveTestStatus({ events, status, error }: LiveTestStatusProps) {
         {status === 'error' && '❌ Test Failed'}
         {error && <span className={styles.errorMessage}> - {error}</span>}
       </h2>
-      
+
       <div className={styles.testDetails}>
         <div className={styles.statusSection}>
           <h3>📋 Live Activity</h3>
           <div className={styles.statusLog}>{getLatestStatus()}</div>
         </div>
-        
+
         {serviceTraces.size > 0 && (
           <div className={styles.serviceBreakdown}>
             <h3>🔍 Service Breakdown</h3>

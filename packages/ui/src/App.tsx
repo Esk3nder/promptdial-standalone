@@ -15,14 +15,9 @@ export function App() {
   const { copy, copied } = useClipboard({
     timeout: 2000,
   })
-  const { 
-    history, 
-    addToHistory, 
-    removeFromHistory, 
-    toggleFavorite, 
-    clearHistory 
-  } = useOptimizationHistory()
-  
+  const { history, addToHistory, removeFromHistory, toggleFavorite, clearHistory } =
+    useOptimizationHistory()
+
   const [showHistory, setShowHistory] = useState(false)
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null)
 
@@ -37,7 +32,7 @@ export function App() {
     setSelectedHistoryItem(null)
     await optimize(request)
   }
-  
+
   const handleSelectHistoryItem = (item: HistoryItem) => {
     setSelectedHistoryItem(item)
     setShowHistory(false)
@@ -50,8 +45,11 @@ export function App() {
   // Derive UI state
   const isLoading = state.status === 'validating' || state.status === 'optimizing'
   const error = state.status === 'error' ? state.error?.message : undefined
-  const results = selectedHistoryItem ? selectedHistoryItem.result : 
-                 state.status === 'success' ? state.results : null
+  const results = selectedHistoryItem
+    ? selectedHistoryItem.result
+    : state.status === 'success'
+      ? state.results
+      : null
 
   return (
     <div className="app">
@@ -94,27 +92,27 @@ export function App() {
       <main className="app-main">
         {/* History Sidebar */}
         <aside className={`app-sidebar ${showHistory ? 'visible' : ''}`}>
-          <button 
+          <button
             className="sidebar-toggle"
             onClick={() => setShowHistory(!showHistory)}
             aria-label={showHistory ? 'Hide history' : 'Show history'}
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth="2" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
               stroke="currentColor"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
             History
           </button>
-          
+
           <div className="sidebar-content">
             <OptimizationHistory
               history={history}
@@ -125,7 +123,7 @@ export function App() {
             />
           </div>
         </aside>
-      
+
         <div className="app-content">
           {/* Input Panel */}
           <div className="app-input-panel">
@@ -144,21 +142,17 @@ export function App() {
             <h2 className="panel-title">
               {selectedHistoryItem ? 'History Result' : 'Refined Prompt'}
             </h2>
-            
+
             {/* Progress Indicator */}
             {isLoading && (
-              <OptimizationProgress 
-                stage={stage} 
-                progress={progress} 
-                isVisible={true} 
-              />
+              <OptimizationProgress stage={stage} progress={progress} isVisible={true} />
             )}
-            
-            <ResultsList 
-              isLoading={isLoading} 
-              results={results} 
-              error={error} 
-              onCopy={handleCopy} 
+
+            <ResultsList
+              isLoading={isLoading}
+              results={results}
+              error={error}
+              onCopy={handleCopy}
             />
           </div>
         </div>

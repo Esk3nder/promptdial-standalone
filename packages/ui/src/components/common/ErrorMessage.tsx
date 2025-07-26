@@ -11,7 +11,7 @@ interface ErrorMessageProps {
 
 export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: ErrorMessageProps) {
   const [showDetails, setShowDetails] = useState(false)
-  
+
   const getStyles = () => {
     const baseStyle: CSSProperties = {
       padding: '1rem',
@@ -20,7 +20,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
       lineHeight: '1.25rem',
       border: '1px solid',
     }
-    
+
     switch (type) {
       case 'warning':
         return {
@@ -45,7 +45,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
         }
     }
   }
-  
+
   const containerStyle: CSSProperties = getStyles()
 
   const iconStyle: CSSProperties = {
@@ -53,23 +53,23 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
     height: '1.25rem',
     flexShrink: 0,
   }
-  
+
   const headerStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
   }
-  
+
   const contentStyle: CSSProperties = {
     flex: 1,
   }
-  
+
   const actionsStyle: CSSProperties = {
     display: 'flex',
     gap: '0.75rem',
     marginTop: '0.75rem',
   }
-  
+
   const buttonStyle: CSSProperties = {
     padding: '0.375rem 0.75rem',
     fontSize: '0.875rem',
@@ -79,7 +79,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
     cursor: 'pointer',
     transition: 'all 0.15s',
   }
-  
+
   const detailsStyle: CSSProperties = {
     marginTop: '0.75rem',
     padding: '0.75rem',
@@ -125,7 +125,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
         )
     }
   }
-  
+
   // Get friendly error message
   const getFriendlyMessage = (msg: string) => {
     if (msg.includes('Network') || msg.includes('fetch')) {
@@ -149,7 +149,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
         {getIcon()}
         <div style={contentStyle}>
           <div>{getFriendlyMessage(message)}</div>
-          
+
           {(details || onRetry) && (
             <div style={actionsStyle}>
               {details && (
@@ -165,7 +165,7 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
                   {showDetails ? 'Hide' : 'Show'} Details
                 </button>
               )}
-              
+
               {onRetry && (
                 <button
                   style={{
@@ -180,12 +180,8 @@ export function ErrorMessage({ message, id, details, onRetry, type = 'error' }: 
               )}
             </div>
           )}
-          
-          {showDetails && details && (
-            <div style={detailsStyle}>
-              {details}
-            </div>
-          )}
+
+          {showDetails && details && <div style={detailsStyle}>{details}</div>}
         </div>
       </div>
     </div>

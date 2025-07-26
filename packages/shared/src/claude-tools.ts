@@ -44,9 +44,10 @@ export function fixToolUseResults(messages: ClaudeMessage[]): ClaudeMessage[] {
       // If there are pending tool uses, check if next message has tool results
       if (pendingToolUses.size > 0) {
         const nextMessage = messages[i + 1]
-        const hasToolResults = nextMessage?.role === 'user' && 
+        const hasToolResults =
+          nextMessage?.role === 'user' &&
           Array.isArray(nextMessage.content) &&
-          nextMessage.content.some(b => b.type === 'tool_result')
+          nextMessage.content.some((b) => b.type === 'tool_result')
 
         if (!hasToolResults) {
           // Add missing tool result message
@@ -55,15 +56,15 @@ export function fixToolUseResults(messages: ClaudeMessage[]): ClaudeMessage[] {
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
-              content: `Tool ${toolUse.name} executed successfully`
+              content: `Tool ${toolUse.name} executed successfully`,
             })
           }
-          
+
           fixed.push({
             role: 'user',
-            content: toolResults
+            content: toolResults,
           })
-          
+
           pendingToolUses.clear()
         }
       }
@@ -98,11 +99,13 @@ export function validateToolUseResults(messages: ClaudeMessage[]): string[] {
       for (const block of message.content) {
         if (block.type === 'tool_use') {
           toolUseIds.add(block.id)
-          
+
           // Check if next message has corresponding tool_result
           const nextMessage = messages[i + 1]
           if (!nextMessage || nextMessage.role !== 'user') {
-            errors.push(`Tool use ${block.id} at message ${i} must be followed by a user message with tool_result`)
+            errors.push(
+              `Tool use ${block.id} at message ${i} must be followed by a user message with tool_result`,
+            )
             continue
           }
 
@@ -112,11 +115,13 @@ export function validateToolUseResults(messages: ClaudeMessage[]): string[] {
           }
 
           const hasResult = nextMessage.content.some(
-            b => b.type === 'tool_result' && b.tool_use_id === block.id
+            (b) => b.type === 'tool_result' && b.tool_use_id === block.id,
           )
-          
+
           if (!hasResult) {
-            errors.push(`Tool use ${block.id} at message ${i} has no corresponding tool_result in message ${i + 1}`)
+            errors.push(
+              `Tool use ${block.id} at message ${i} has no corresponding tool_result in message ${i + 1}`,
+            )
           }
         }
       }

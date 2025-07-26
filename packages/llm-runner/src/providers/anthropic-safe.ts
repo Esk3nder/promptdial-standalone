@@ -29,7 +29,7 @@ export class SafeAnthropicProvider extends AnthropicProvider {
   private isStructuredPrompt(prompt: string): boolean {
     try {
       const parsed = JSON.parse(prompt)
-      return Array.isArray(parsed) && parsed.some(m => m.role && m.content)
+      return Array.isArray(parsed) && parsed.some((m) => m.role && m.content)
     } catch {
       return false
     }
@@ -38,17 +38,17 @@ export class SafeAnthropicProvider extends AnthropicProvider {
   private fixPromptMessages(prompt: string): string {
     try {
       const messages = JSON.parse(prompt) as ClaudeMessage[]
-      
+
       // Validate first
       const errors = validateToolUseResults(messages)
       if (errors.length > 0) {
         this.logger.warn('Tool use validation errors:', errors)
-        
+
         // Fix the messages
         const fixed = fixToolUseResults(messages)
         return JSON.stringify(fixed)
       }
-      
+
       return prompt
     } catch (error) {
       this.logger.error('Failed to fix prompt messages:', error)

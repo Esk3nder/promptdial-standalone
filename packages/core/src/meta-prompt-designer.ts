@@ -340,7 +340,6 @@ export class MetaPromptDesigner {
     )
   }
 
-
   private createVariant(
     originalPrompt: string,
     improvements: {

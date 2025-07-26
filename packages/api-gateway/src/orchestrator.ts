@@ -57,7 +57,7 @@ export class RequestOrchestrator {
       logger.info('Step 3: Strategy planning', { traceId })
       let suggestedTechniques: string[] = []
       let strategyConfidence = 0.5
-      
+
       try {
         const strategyResult = await this.callService('strategyPlanner', '/plan', {
           prompt: sanitizedPrompt,
@@ -67,19 +67,19 @@ export class RequestOrchestrator {
             optimizationLevel: this.getOptimizationLevel(request.constraints),
             metadata: {
               complexity: taskMeta.complexity,
-              domain: taskMeta.domain
-            }
+              domain: taskMeta.domain,
+            },
           },
           trace_id: traceId,
         })
-        
+
         suggestedTechniques = strategyResult.data.suggested_techniques || []
         strategyConfidence = strategyResult.data.confidence || 0.5
-        
-        logger.info('Strategy planning complete', { 
-          traceId, 
+
+        logger.info('Strategy planning complete', {
+          traceId,
           techniques: suggestedTechniques,
-          confidence: strategyConfidence 
+          confidence: strategyConfidence,
         })
       } catch (error) {
         logger.warn('Strategy planning failed, using default techniques', { error, traceId })
@@ -244,22 +244,24 @@ export class RequestOrchestrator {
     return !error.response || error.response.status >= 500
   }
 
-  private getOptimizationLevel(constraints?: OptimizationRequest['constraints']): 'cheap' | 'normal' | 'explore' {
+  private getOptimizationLevel(
+    constraints?: OptimizationRequest['constraints'],
+  ): 'cheap' | 'normal' | 'explore' {
     if (!constraints) return 'normal'
-    
+
     // Determine based on constraints
     if (constraints.cost_cap_usd && constraints.cost_cap_usd < 0.01) {
       return 'cheap'
     }
-    
+
     if (constraints.max_variants && constraints.max_variants > 5) {
       return 'explore'
     }
-    
+
     if (constraints.latency_cap_ms && constraints.latency_cap_ms < 1000) {
       return 'cheap'
     }
-    
+
     return 'normal'
   }
 

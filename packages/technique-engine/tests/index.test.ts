@@ -321,19 +321,17 @@ describe('TechniqueEngine', () => {
         description: 'Returns invalid variant',
         best_for: ['math_reasoning'],
         needs_retrieval: false,
-        generate: vi
-          .fn()
-          .mockResolvedValue([
-            {
-              id: '',
-              prompt: 'test',
-              technique: 'invalid',
-              est_tokens: 100,
-              temperature: 0.5,
-              cost_usd: 0.01,
-            },
-            createTestPromptVariant({ id: 'valid_variant' }),
-          ]),
+        generate: vi.fn().mockResolvedValue([
+          {
+            id: '',
+            prompt: 'test',
+            technique: 'invalid',
+            est_tokens: 100,
+            temperature: 0.5,
+            cost_usd: 0.01,
+          },
+          createTestPromptVariant({ id: 'valid_variant' }),
+        ]),
       }))
 
       engine['techniques'].set('invalid_technique', MockInvalidTechnique as any)

@@ -13,6 +13,7 @@ interface ResultsListProps {
 
 export function ResultsList({ isLoading, results, error, onCopy }: ResultsListProps) {
   const [showAllVariants, setShowAllVariants] = useState(false)
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false)
 
   // Reset view when new results come in
   useEffect(() => {
@@ -131,14 +132,44 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
             <div className={styles.cardHeader}>
               <div className={styles.scoreSection}>
                 <span className={styles.scoreLabel}>Quality Score</span>
-                <span className={`${styles.scoreValue} ${styles[bestVariant.quality?.score >= 80 ? 'high' : bestVariant.quality?.score >= 60 ? 'medium' : 'low']}`}>
+                <span
+                  className={`${styles.scoreValue} ${styles[bestVariant.quality?.score >= 80 ? 'high' : bestVariant.quality?.score >= 60 ? 'medium' : 'low']}`}
+                >
                   {bestVariant.quality?.score || 0}/100
                 </span>
               </div>
             </div>
 
-            <div className={styles.promptBox}>
-              <p className={styles.promptText}>{bestVariant.optimizedPrompt}</p>
+            <div className={styles.promptWrapper}>
+              <div className={`${styles.promptBox} ${isPromptExpanded ? styles.expanded : ''}`}>
+                <p className={styles.promptText}>{bestVariant.optimizedPrompt}</p>
+              </div>
+              {bestVariant.optimizedPrompt.length > 200 && (
+                <button
+                  className={styles.expandPromptButton}
+                  onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+                  aria-label={isPromptExpanded ? 'Show less' : 'Show more'}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d={
+                        isPromptExpanded
+                          ? 'M4.5 15.75l7.5-7.5 7.5 7.5'
+                          : 'M19.5 8.25l-7.5 7.5-7.5-7.5'
+                      }
+                    />
+                  </svg>
+                  {isPromptExpanded ? 'Show less' : 'Show more'}
+                </button>
+              )}
             </div>
 
             <div className={styles.actionButtons}>
@@ -173,7 +204,9 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Average Score</span>
-                  <span className={styles.statValue}>{Math.round(results.summary.averageScore)}</span>
+                  <span className={styles.statValue}>
+                    {Math.round(results.summary.averageScore)}
+                  </span>
                 </div>
                 {results.metadata?.activeProvider && (
                   <div className={styles.stat}>
