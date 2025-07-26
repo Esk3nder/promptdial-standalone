@@ -12,6 +12,9 @@ const OptimizedPromptViewer = lazy(() =>
 const ComparisonChart = lazy(() =>
   import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
 )
+const ServiceBreakdown = lazy(() =>
+  import('./ServiceBreakdown').then((m) => ({ default: m.ServiceBreakdown })),
+)
 
 interface TestResult {
   responseTime: number
@@ -180,6 +183,13 @@ export function TestDashboard() {
         {/* Results Section */}
         {testState.results && (
           <div className="space-y-8">
+            {/* Service Breakdown */}
+            {testState.events.length > 0 && (
+              <Suspense fallback={<ComponentLoader />}>
+                <ServiceBreakdown events={testState.events} />
+              </Suspense>
+            )}
+
             {/* Provider Results */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {Object.entries(testState.results.original).map(([provider, result]) => (
