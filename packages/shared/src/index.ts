@@ -15,3 +15,6 @@ export * from './utils'
 
 // Export test utilities (only in test environments)
 export * from './test-utils'
+
+// Export Claude tools utilities
+export * from './claude-tools'
