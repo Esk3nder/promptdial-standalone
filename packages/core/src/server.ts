@@ -575,7 +575,8 @@ if (process.env.NODE_ENV !== 'test') {
 ================================ 
 ✅ Server: http://localhost:${PORT}
 ✅ API: http://localhost:${PORT}/api/optimize
-✅ UI: http://localhost:${PORT}
+✅ Basic UI: http://localhost:${PORT}
+💡 For advanced UI, run: npm run start:ui (port 5173)
 
 ${getOptimizationMode()}
 
