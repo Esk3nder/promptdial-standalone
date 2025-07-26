@@ -60,6 +60,13 @@ export const SERVICES: Record<string, ServiceConfig> = {
     timeout: 10000,
     retries: 2,
   },
+  strategyPlanner: {
+    name: 'Strategy Planner',
+    url: process.env.STRATEGY_PLANNER_URL || 'http://localhost:3008',
+    healthEndpoint: '/health',
+    timeout: 5000,
+    retries: 2,
+  },
 }
 
 // LLM Runner is configured separately as it may have multiple instances
