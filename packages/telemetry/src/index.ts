@@ -85,6 +85,7 @@ interface MetricPoint {
 class MetricsCollector {
   private metrics: Map<string, MetricPoint[]> = new Map()
   private flushInterval: NodeJS.Timeout | null = null
+  private readonly maxPointsPerMetric = 1000 // Prevent unbounded growth
 
   constructor(private flushIntervalMs: number = 60000) {
     this.startAutoFlush()
@@ -102,7 +103,14 @@ class MetricsCollector {
       this.metrics.set(name, [])
     }
 
-    this.metrics.get(name)!.push(point)
+    const points = this.metrics.get(name)!
+    points.push(point)
+    
+    // Enforce maximum points per metric to prevent memory leak
+    if (points.length > this.maxPointsPerMetric) {
+      // Remove oldest points, keep most recent
+      points.splice(0, points.length - this.maxPointsPerMetric)
+    }
   }
 
   increment(name: string, value: number = 1, labels: Record<string, string> = {}): void {
@@ -206,6 +214,7 @@ export class TelemetryService extends EventEmitter {
   private eventStore: EventStore
   private metricsCollector: MetricsCollector
   private batchSize = 100
+  private maxBatchSize = 1000 // Prevent unbounded batch growth on failures
   private eventBatch: TelemetryEvent[] = []
 
   constructor(eventStore?: EventStore) {
@@ -325,8 +334,21 @@ export class TelemetryService extends EventEmitter {
       logger.info(`Flushed ${batch.length} events to store`)
     } catch (error) {
       logger.error('Failed to flush events', error as Error)
-      // Re-add failed events to batch
-      this.eventBatch.unshift(...batch)
+      
+      // Re-add failed events to batch, but enforce maximum batch size to prevent memory leak
+      const combinedSize = this.eventBatch.length + batch.length
+      if (combinedSize <= this.maxBatchSize) {
+        this.eventBatch.unshift(...batch)
+      } else {
+        // If adding all events would exceed max batch size, only keep the most recent events
+        const availableSpace = this.maxBatchSize - this.eventBatch.length
+        if (availableSpace > 0) {
+          this.eventBatch.unshift(...batch.slice(-availableSpace))
+          logger.warn(`Dropped ${batch.length - availableSpace} events due to batch size limit`)
+        } else {
+          logger.warn(`Dropped ${batch.length} events due to batch size limit`)
+        }
+      }
     }
   }
 
@@ -411,38 +433,96 @@ if (require.main === module) {
   const app = express()
   const PORT = process.env.PORT || 3009
 
+  // Error handling middleware
+  const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
+
+  const errorHandler = (err: any, req: any, res: any, next: any) => {
+    logger.error('Request failed', err, {
+      path: req.path,
+      method: req.method,
+      body: req.body,
+    })
+    
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error',
+        retryable: true,
+      },
+    })
+  }
+
   app.use(express.json({ limit: '10mb' }))
 
   // Log event endpoint
-  app.post('/events', async (req: any, res: any) => {
+  app.post('/events', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleLogEventRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Query events endpoint
-  app.post('/events/query', async (req: any, res: any) => {
+  app.post('/events/query', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleQueryEventsRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Get metrics endpoint
-  app.post('/metrics', async (req: any, res: any) => {
+  app.post('/metrics', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleMetricsRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Prometheus metrics endpoint
-  app.get('/metrics', (_req: any, res: any) => {
+  app.get('/metrics', asyncHandler(async (_req: any, res: any) => {
     // In production, this would export Prometheus format
     res.type('text/plain')
     res.send(
       '# HELP promptdial_request_total Total requests\n# TYPE promptdial_request_total counter\n',
     )
-  })
+  }))
 
-  app.get('/health', (_req: any, res: any) => {
-    res.json({ status: 'healthy', service: 'telemetry' })
-  })
+  app.get('/health', asyncHandler(async (_req: any, res: any) => {
+    res.json({ status: 'healthy', service: 'telemetry', timestamp: new Date().toISOString() })
+  }))
+
+  // Apply error handling middleware
+  app.use(errorHandler)
 
   // Graceful shutdown
   process.on('SIGTERM', async () => {

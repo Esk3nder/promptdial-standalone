@@ -226,6 +226,18 @@ export class SafetyGuard {
     if (this.auditLog.length > this.maxAuditEntries) {
       this.auditLog = this.auditLog.slice(-this.maxAuditEntries)
     }
+
+    // Periodic cleanup of old entries (older than 24 hours) to prevent memory buildup
+    const now = Date.now()
+    if (this.auditLog.length > 100 && now % 1000 === 0) { // Check every ~1000 entries
+      const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000)
+      const beforeLength = this.auditLog.length
+      this.auditLog = this.auditLog.filter(entry => entry.timestamp > oneDayAgo)
+      
+      if (beforeLength !== this.auditLog.length) {
+        logger.debug(`Cleaned up ${beforeLength - this.auditLog.length} old audit entries`)
+      }
+    }
   }
 
   private async logTelemetry(entry: AuditEntry): Promise<void> {
@@ -350,12 +362,23 @@ export async function handleStatsRequest(
   }>,
 ): Promise<ServiceResponse<SecurityStats>> {
   try {
-    const timeRange = request.payload.time_range
-      ? {
-          start: new Date(request.payload.time_range.start),
-          end: new Date(request.payload.time_range.end),
-        }
-      : undefined
+    let timeRange: { start: Date; end: Date } | undefined = undefined
+    
+    if (request.payload.time_range) {
+      const startDate = new Date(request.payload.time_range.start)
+      const endDate = new Date(request.payload.time_range.end)
+      
+      // Validate dates to prevent issues with invalid date strings
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date format in time_range')
+      }
+      
+      if (startDate >= endDate) {
+        throw new Error('Start date must be before end date')
+      }
+      
+      timeRange = { start: startDate, end: endDate }
+    }
 
     const stats = getSafetyGuard().getSecurityStats(timeRange)
 
@@ -377,33 +400,88 @@ if (require.main === module) {
   const app = express()
   const PORT = process.env.PORT || 3006
 
+  // Error handling middleware
+  const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
+
+  const errorHandler = (err: any, req: any, res: any, next: any) => {
+    logger.error('Request failed', err, {
+      path: req.path,
+      method: req.method,
+      body: req.body,
+    })
+    
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error',
+        retryable: true,
+      },
+    })
+  }
+
   app.use(express.json({ limit: '10mb' }))
 
   // Check prompt safety
-  app.post('/check', async (req: any, res: any) => {
+  app.post('/check', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleCheckRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Check variant safety
-  app.post('/check-variant', async (req: any, res: any) => {
+  app.post('/check-variant', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleCheckVariantRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Get security stats
-  app.post('/stats', async (req: any, res: any) => {
+  app.post('/stats', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleStatsRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Get recent incidents
-  app.get('/incidents', (_req: any, res: any) => {
+  app.get('/incidents', asyncHandler(async (_req: any, res: any) => {
     const incidents = getSafetyGuard().getRecentIncidents(20)
     res.json({ incidents })
-  })
+  }))
 
-  app.get('/health', (_req: any, res: any) => {
+  app.get('/health', asyncHandler(async (_req: any, res: any) => {
     const stats = getSafetyGuard().getSecurityStats()
     res.json({
       status: 'healthy',
@@ -413,8 +491,12 @@ if (require.main === module) {
         block_rate: stats.block_rate,
         avg_risk_score: stats.avg_risk_score,
       },
+      timestamp: new Date().toISOString(),
     })
-  })
+  }))
+
+  // Apply error handling middleware
+  app.use(errorHandler)
 
   app.listen(PORT, () => {
     logger.info(`SafetyGuard service running on port ${PORT}`)

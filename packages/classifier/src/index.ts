@@ -452,16 +452,52 @@ if (require.main === module) {
   const app = express()
   const PORT = process.env.PORT || 3001
 
-  app.use(express.json())
+  // Error handling middleware
+  const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
 
-  app.post('/classify', async (req: any, res: any) => {
+  const errorHandler = (err: any, req: any, res: any, next: any) => {
+    logger.error('Request failed', err, {
+      path: req.path,
+      method: req.method,
+      body: req.body,
+    })
+    
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error',
+        retryable: true,
+      },
+    })
+  }
+
+  app.use(express.json({ limit: '10mb' }))
+
+  app.post('/classify', asyncHandler(async (req: any, res: any) => {
+    if (!req.body || !req.body.payload || !req.body.payload.prompt) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Missing required field: payload.prompt',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleClassifyRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
-  app.get('/health', (_req: any, res: any) => {
-    res.json({ status: 'healthy', service: 'classifier' })
-  })
+  app.get('/health', asyncHandler(async (_req: any, res: any) => {
+    res.json({ status: 'healthy', service: 'classifier', timestamp: new Date().toISOString() })
+  }))
+
+  // Apply error handling middleware
+  app.use(errorHandler)
 
   app.listen(PORT, () => {
     logger.info(`Classifier service running on port ${PORT}`)
