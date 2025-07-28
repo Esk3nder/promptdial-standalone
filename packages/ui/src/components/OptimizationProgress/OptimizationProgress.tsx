@@ -9,7 +9,6 @@ interface ProgressStep {
 
 interface OptimizationProgressProps {
   stage?: string
-  progress: number
   isVisible: boolean
 }
 
@@ -35,9 +34,12 @@ const progressSteps: Record<string, ProgressStep> = {
   finalizing: { name: 'Finalizing', status: 'active', message: 'Preparing results...' },
 }
 
-export function OptimizationProgress({ stage, progress, isVisible }: OptimizationProgressProps) {
+const stageOrder = ['initializing', 'validating', 'analyzing', 'optimizing', 'generating', 'evaluating', 'finalizing']
+
+export function OptimizationProgress({ stage, isVisible }: OptimizationProgressProps) {
   const [currentStep, setCurrentStep] = useState<ProgressStep | null>(null)
   const [completedSteps, setCompletedSteps] = useState<string[]>([])
+  const [currentStageIndex, setCurrentStageIndex] = useState<number>(0)
 
   useEffect(() => {
     if (!stage) return
@@ -47,13 +49,16 @@ export function OptimizationProgress({ stage, progress, isVisible }: Optimizatio
     if (current) {
       setCurrentStep(current)
 
-      // Update completed steps
-      const stepKeys = Object.keys(progressSteps)
-      const currentIndex = stepKeys.indexOf(stage)
-      const completed = stepKeys.slice(0, currentIndex)
+      // Update completed steps and current stage index
+      const currentIndex = stageOrder.indexOf(stage)
+      setCurrentStageIndex(currentIndex)
+      const completed = stageOrder.slice(0, currentIndex)
       setCompletedSteps(completed)
     }
   }, [stage])
+
+  // Calculate stage-based progress (how many stages completed out of total)
+  // const stageProgress = ((currentStageIndex + 1) / stageOrder.length) * 100
 
   if (!isVisible) return null
 
@@ -61,8 +66,23 @@ export function OptimizationProgress({ stage, progress, isVisible }: Optimizatio
     <div className={styles.container}>
       {/* Progress bar */}
       <div className={styles.progressBar}>
-        <div className={styles.progressFill} style={{ width: `${progress}%` }} />
-        <div className={styles.progressText}>{progress}%</div>
+        <div className={styles.stageSegments}>
+          {stageOrder.map((stageName, index) => (
+            <div
+              key={stageName}
+              className={`${styles.stageSegment} ${
+                index < currentStageIndex 
+                  ? styles.completed 
+                  : index === currentStageIndex 
+                    ? styles.current 
+                    : ''
+              }`}
+            />
+          ))}
+        </div>
+        <div className={styles.progressText}>
+          Stage {currentStageIndex + 1} of {stageOrder.length}
+        </div>
       </div>
 
       {/* Current stage indicator */}

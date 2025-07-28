@@ -12,7 +12,6 @@ export interface SSEProgress {
     | 'finalizing'
     | 'complete'
     | 'error'
-  progress: number
   message?: string
   results?: OptimizedResult
   error?: string

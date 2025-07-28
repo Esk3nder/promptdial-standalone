@@ -6,7 +6,7 @@ import type { OptimizationRequest, OptimizedResult } from '@/types'
 type UIState =
   | { status: 'idle' }
   | { status: 'validating'; prompt: string }
-  | { status: 'optimizing'; request: OptimizationRequest; progress: number; stage?: string }
+  | { status: 'optimizing'; request: OptimizationRequest; stage?: string }
   | { status: 'success'; results: OptimizedResult; request: OptimizationRequest }
   | { status: 'error'; error: Error; request?: OptimizationRequest }
 
@@ -16,7 +16,7 @@ type UIEvent =
   | { type: 'VALIDATION_PASSED'; request: OptimizationRequest }
   | { type: 'VALIDATION_FAILED'; error: Error }
   | { type: 'START_OPTIMIZATION' }
-  | { type: 'UPDATE_PROGRESS'; progress: number; stage?: string }
+  | { type: 'UPDATE_PROGRESS'; stage?: string }
   | { type: 'OPTIMIZATION_SUCCESS'; results: OptimizedResult }
   | { type: 'OPTIMIZATION_ERROR'; error: Error }
   | { type: 'RESET' }
@@ -32,7 +32,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
 
     case 'validating':
       if (event.type === 'VALIDATION_PASSED') {
-        return { status: 'optimizing', request: event.request, progress: 0 }
+        return { status: 'optimizing', request: event.request }
       }
       if (event.type === 'VALIDATION_FAILED') {
         return { status: 'error', error: event.error }
@@ -41,7 +41,7 @@ function promptOptimizationReducer(state: UIState, event: UIEvent): UIState {
 
     case 'optimizing':
       if (event.type === 'UPDATE_PROGRESS') {
-        return { ...state, progress: event.progress, stage: event.stage }
+        return { ...state, stage: event.stage }
       }
       if (event.type === 'OPTIMIZATION_SUCCESS') {
         return {
@@ -98,7 +98,6 @@ interface UsePromptOptimizationReturn {
   isLoading: boolean
   isError: boolean
   isSuccess: boolean
-  progress: number
   stage?: string
 }
 
@@ -123,7 +122,6 @@ export function usePromptOptimization(
       } else {
         dispatch({
           type: 'UPDATE_PROGRESS',
-          progress: progress.progress,
           stage: progress.status,
         })
       }
@@ -179,7 +177,6 @@ export function usePromptOptimization(
     isLoading: state.status === 'validating' || state.status === 'optimizing',
     isError: state.status === 'error',
     isSuccess: state.status === 'success',
-    progress: state.status === 'optimizing' ? state.progress : 0,
     stage: state.status === 'optimizing' ? state.stage : undefined,
   }
 }

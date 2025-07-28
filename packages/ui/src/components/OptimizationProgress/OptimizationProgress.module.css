@@ -15,6 +15,47 @@
   overflow: hidden;
   margin-bottom: 1.5rem;
   position: relative;
+  display: flex;
+}
+
+.stageSegments {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+}
+
+.stageSegment {
+  flex: 1;
+  background: var(--color-bg-secondary);
+  transition: background-color 0.3s ease;
+  border-radius: 2px;
+}
+
+.stageSegment.completed {
+  background: var(--color-success);
+}
+
+.stageSegment.current {
+  background: var(--color-primary);
+  position: relative;
+}
+
+.stageSegment.current::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+  border-radius: 2px;
 }
 
 .progressFill {
