@@ -4,6 +4,7 @@ import path from 'path'
 import 'dotenv/config' // Load environment variables
 import { PromptDial } from './index.js'
 import type { OptimizationRequest } from './meta-prompt-designer.js'
+import { ConfigManager } from './config.js'
 // Removed TemplateFallbackGuard - allowing graceful degradation
 
 // Get directory path in CommonJS
@@ -105,11 +106,13 @@ app.get('/api/optimize/stream', async (req, res) => {
       `data: ${JSON.stringify({ status: 'generating', message: `Generating cognitive variants with ${activeProvider}...` })}\n\n`,
     )
 
-    // Create PromptDial instance
+    // Create PromptDial instance with hybrid mode support
+    const config = ConfigManager.getInstance().getConfig()
     const promptDial = new PromptDial({
       autoValidate: true,
       sortByQuality: true,
       useAI: hasAPIKeys,
+      config
     })
 
     // Check for API keys and warn if missing
@@ -186,11 +189,13 @@ app.post('/api/optimize', async (req, res) => {
 
     // Use global hasAPIKeys
 
-    // Create PromptDial instance and optimize
+    // Create PromptDial instance with hybrid mode support
+    const config = ConfigManager.getInstance().getConfig()
     const promptDial = new PromptDial({
       autoValidate: false, // Temporarily disable to fix hanging issue
       sortByQuality: false,
       useAI: hasAPIKeys, // Use AI if keys available, templates otherwise
+      config
     })
 
     // Starting optimization
@@ -280,10 +285,12 @@ app.get('/debug', async (req, res) => {
           message: 'Creating PromptDial instance',
         })
 
+        const config = ConfigManager.getInstance().getConfig()
         const promptDial = new PromptDial({
           autoValidate: true,
           sortByQuality: true,
           useAI: true,
+          config
         })
 
         debugInfo.steps.push({
@@ -543,6 +550,7 @@ app.get('*', (_req, res) => {
 
 // Start server only when not running tests
 if (process.env.NODE_ENV !== 'test') {
+  const config = ConfigManager.getInstance().getConfig()
   app.listen(PORT, () => {
 
     const getOptimizationMode = () => {
@@ -563,6 +571,7 @@ if (process.env.NODE_ENV !== 'test') {
 ✅ Server: http://localhost:${PORT}
 ✅ API: http://localhost:${PORT}/api/optimize
 ✅ Basic UI: http://localhost:${PORT}
+✅ Mode: ${config.mode}
 💡 For advanced UI, run: npm run start:ui (port 5173)
 
 ${getOptimizationMode()}
@@ -571,6 +580,12 @@ ${
   hasAPIKeys
     ? '🎯 Dynamic prompt optimization using AI models'
     : '📝 Static template optimization (add API keys to .env for AI features)'
+}
+
+${
+  config.mode === 'microservices'
+    ? `🔗 Microservices enabled:\n   - Technique Engine: ${config.services?.techniqueEngine || 'disabled'}\n   - Evaluator: ${config.services?.evaluator || 'disabled'}\n   - Retrieval Hub: ${config.services?.retrievalHub || 'disabled'}`
+    : '💻 Running in monolithic mode'
 }
 
 Ready to optimize prompts!
