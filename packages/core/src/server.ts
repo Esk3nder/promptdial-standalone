@@ -4,7 +4,7 @@ import path from 'path'
 import 'dotenv/config' // Load environment variables
 import { PromptDial } from './index.js'
 import type { OptimizationRequest } from './meta-prompt-designer.js'
-import { TemplateFallbackGuard } from './template-fallback-guard.js'
+// Removed TemplateFallbackGuard - allowing graceful degradation
 
 // Get directory path in CommonJS
 const __dirname = path.resolve()
@@ -19,6 +19,30 @@ app.use(express.json())
 // Serve static files from public directory
 const publicPath = path.join(__dirname, '../../../public')
 app.use(express.static(publicPath))
+
+// Check for API keys once at startup
+const hasAPIKeys = Boolean(
+  process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY
+)
+
+// Auto-detect best model based on available API keys
+function getDefaultModel(): string {
+  if (process.env.ANTHROPIC_API_KEY) return 'claude-3-opus'
+  if (process.env.OPENAI_API_KEY) return 'gpt-4'
+  if (process.env.GOOGLE_AI_API_KEY) return 'gemini-1.5-pro'
+  return 'gpt-4' // fallback
+}
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'promptdial-core',
+    version: '1.0.0',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  })
+})
 
 // Server-Sent Events endpoint for real-time progress
 app.get('/api/optimize/stream', async (req, res) => {
@@ -40,10 +64,7 @@ app.get('/api/optimize/stream', async (req, res) => {
   // Send initial progress
   res.write(`data: ${JSON.stringify({ status: 'initializing' })}\n\n`)
 
-  // Check for API keys
-  const hasAPIKeys = Boolean(
-    process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_AI_API_KEY,
-  )
+  // Use global hasAPIKeys
 
   const getActiveProvider = () => {
     if (process.env.ANTHROPIC_API_KEY) return 'Anthropic Claude'
@@ -76,7 +97,7 @@ app.get('/api/optimize/stream', async (req, res) => {
     // Create request object
     const optimizationRequest: OptimizationRequest = {
       prompt: prompt as string,
-      targetModel: (targetModel as string) || 'gpt-4o-mini',
+      targetModel: (targetModel as string) || getDefaultModel(),
     }
 
     // Generate variants
@@ -91,15 +112,12 @@ app.get('/api/optimize/stream', async (req, res) => {
       useAI: hasAPIKeys,
     })
 
-    // Check for real API keys before optimization
-    if (!TemplateFallbackGuard.hasRealAPIKeys()) {
+    // Check for API keys and warn if missing
+    if (!hasAPIKeys) {
       res.write(`data: ${JSON.stringify({ 
-        status: 'error', 
-        error: 'API keys required for AI optimization',
-        message: TemplateFallbackGuard.getMissingAPIKeysError()
+        status: 'warning', 
+        message: 'No API keys found - using template-based optimization'
       })}\n\n`)
-      res.end()
-      return
     }
 
     // Optimize with progress callback and timeout
@@ -110,17 +128,7 @@ app.get('/api/optimize/stream', async (req, res) => {
       ),
     ])) as any
 
-    // Validate result is not template fallback (PromptDial 3.0 protection)
-    const validation = TemplateFallbackGuard.validateResult(results)
-    if (!validation.isValid) {
-      res.write(`data: ${JSON.stringify({ 
-        status: 'error', 
-        error: 'Template fallback detected',
-        message: validation.error 
-      })}\n\n`)
-      res.end()
-      return
-    }
+    // Continue with results regardless of template fallback
 
     res.write(
       `data: ${JSON.stringify({ status: 'evaluating', message: 'Evaluating quality scores...' })}\n\n`,
@@ -165,49 +173,34 @@ app.post('/api/optimize', async (req, res) => {
     // New optimization request received
 
     // Validate request
-    if (!request.prompt || !request.targetModel) {
+    if (!request.prompt) {
       return res.status(400).json({
-        error: 'Missing required fields: prompt, targetModel',
+        error: 'Missing required field: prompt',
       })
+    }
+    
+    // Auto-detect model if not specified
+    if (!request.targetModel) {
+      request.targetModel = getDefaultModel()
     }
 
-    // Check if we have real API keys first
-    if (!TemplateFallbackGuard.hasRealAPIKeys()) {
-      return res.status(400).json({
-        error: 'API_KEYS_REQUIRED',
-        message: TemplateFallbackGuard.getMissingAPIKeysError(),
-        code: 'MISSING_API_KEYS'
-      })
-    }
+    // Use global hasAPIKeys
 
     // Create PromptDial instance and optimize
     const promptDial = new PromptDial({
       autoValidate: true,
       sortByQuality: true,
-      useAI: true, // Enable AI-powered optimization
+      useAI: hasAPIKeys, // Use AI if keys available, templates otherwise
     })
 
     // Starting optimization
     const result = await promptDial.optimize(request)
 
-    // Validate result is not template fallback (PromptDial 3.0 protection)
-    const validation = TemplateFallbackGuard.validateResult(result)
-    if (!validation.isValid) {
-      return res.status(400).json({
-        error: 'TEMPLATE_FALLBACK_DETECTED', 
-        message: validation.error,
-        code: 'TEMPLATE_FALLBACK'
-      })
-    }
+    // Continue with results (allow template fallback if no API keys)
 
     // Optimization complete
 
     // Add metadata to response
-    const hasAPIKeys = !!(
-      process.env.OPENAI_API_KEY ||
-      process.env.ANTHROPIC_API_KEY ||
-      process.env.GOOGLE_AI_API_KEY
-    )
 
     const getActiveProvider = () => {
       if (process.env.ANTHROPIC_API_KEY) return 'Anthropic Claude'
@@ -448,7 +441,7 @@ app.get('/debug', async (req, res) => {
             <h2>📊 Test Results</h2>
             ${debugInfo.steps
               .map(
-                (step) => `
+                (step: any) => `
                 <div class="step ${step.status}">
                     <strong>${step.step.toUpperCase()}:</strong> ${step.message}
                     ${step.stack ? `<pre class="code">${step.stack}</pre>` : ''}
@@ -476,7 +469,7 @@ app.get('/debug', async (req, res) => {
                     <p><strong>Variant Sources:</strong></p>
                     ${debugInfo.result.variantSources
                       .map(
-                        (source) =>
+                        (source: string) =>
                           `<span class="${source.startsWith('REAL_') ? 'status-good' : 'status-bad'}">${source}</span>`,
                       )
                       .join(', ')}
@@ -486,7 +479,7 @@ app.get('/debug', async (req, res) => {
             <h3>Generated Variants:</h3>
             ${debugInfo.result.variants
               .map(
-                (variant, i) => `
+                (variant: any, i: number) => `
                 <div class="code">
                     <strong>Variant ${i + 1}: ${variant.source}</strong><br>
                     <strong>ID:</strong> ${variant.id}<br>
@@ -551,11 +544,6 @@ app.get('*', (_req, res) => {
 // Start server only when not running tests
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    const hasAPIKeys = !!(
-      process.env.OPENAI_API_KEY ||
-      process.env.ANTHROPIC_API_KEY ||
-      process.env.GOOGLE_AI_API_KEY
-    )
 
     const getOptimizationMode = () => {
       if (!hasAPIKeys) return '⚠️  STATIC MODE - Using template-based optimization only'

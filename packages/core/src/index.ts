@@ -39,13 +39,13 @@ export class PromptDial {
 
     // Use AI designer if enabled and API keys are available
     if (this.options.useAI && this.hasAPIKeys()) {
-      // AI-powered optimization enabled
+      console.log('Using AIMetaPromptDesigner (AI-powered optimization)')
       this.designer = new AIMetaPromptDesigner()
     } else {
-      // Basic optimization mode
+      console.log('Using MetaPromptDesigner (template-based optimization)')
       this.designer = new MetaPromptDesigner()
       if (this.options.useAI) {
-        // AI optimization requested but no API keys found. Falling back to basic optimization.
+        console.log('AI optimization requested but no API keys found. Falling back to basic optimization.')
       }
     }
 
@@ -56,31 +56,38 @@ export class PromptDial {
    * Optimize a prompt for a specific AI model
    */
   async optimize(request: OptimizationRequest): Promise<OptimizedResult> {
-    // Generate optimized variants
-    const variants = await this.designer.generateVariants(request)
+    console.log('PromptDial.optimize called with:', request)
+    try {
+      // Generate optimized variants
+      const variants = await this.designer.generateVariants(request)
+      console.log('Generated variants:', variants.length)
 
-    // Optionally validate quality
-    let enhancedVariants = variants
-    if (this.options.autoValidate) {
-      enhancedVariants = await this.addQualityScores(variants)
-    }
+      // Optionally validate quality
+      let enhancedVariants = variants
+      if (this.options.autoValidate) {
+        enhancedVariants = await this.addQualityScores(variants)
+      }
 
-    // Sort by quality if enabled
-    if (this.options.sortByQuality && this.options.autoValidate) {
-      enhancedVariants.sort((a, b) => {
-        const aScore = (a as any).quality?.score || 0
-        const bScore = (b as any).quality?.score || 0
-        return bScore - aScore
-      })
-    }
+      // Sort by quality if enabled
+      if (this.options.sortByQuality && this.options.autoValidate) {
+        enhancedVariants.sort((a, b) => {
+          const aScore = (a as any).quality?.score || 0
+          const bScore = (b as any).quality?.score || 0
+          return bScore - aScore
+        })
+      }
 
-    // Calculate summary statistics
-    const summary = this.calculateSummary(enhancedVariants)
+      // Calculate summary statistics
+      const summary = this.calculateSummary(enhancedVariants)
 
-    return {
-      variants: enhancedVariants,
-      request,
-      summary,
+      return {
+        variants: enhancedVariants,
+        request,
+        summary,
+      }
+    } catch (error) {
+      console.error('Error in optimize:', error)
+      throw error
     }
   }
 
@@ -128,14 +135,6 @@ export class PromptDial {
       process.env.ANTHROPIC_API_KEY ||
       process.env.GOOGLE_AI_API_KEY
     )
-  }
-
-  private getAvailableProviders(): string[] {
-    const providers = []
-    if (process.env.OPENAI_API_KEY) providers.push('OpenAI')
-    if (process.env.ANTHROPIC_API_KEY) providers.push('Anthropic')
-    if (process.env.GOOGLE_AI_API_KEY) providers.push('Google AI')
-    return providers
   }
 }
 

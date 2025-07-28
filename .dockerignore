@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment files (should be provided at runtime)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Development files
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test files
+coverage/
+.nyc_output/
+**/*.test.ts
+**/*.test.js
+**/tests/
+
+# Documentation
+docs/
+*.md
+
+# Microservices (we're only using core)
+packages/api-gateway/
+packages/classifier/
+packages/evaluator/
+packages/llm-runner/
+packages/optimizer/
+packages/retrieval-hub/
+packages/safety-guard/
+packages/strategy-planner/
+packages/technique-engine/
+packages/telemetry/
+packages/ui/
+
+# Scripts and configs we don't need in production
+scripts/
+docker-compose*.yml
+.husky/
+.eslintrc*
+.prettierrc*
+
+# MacOS
+.DS_Store

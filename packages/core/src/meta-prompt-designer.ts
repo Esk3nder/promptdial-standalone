@@ -1,7 +1,7 @@
 // Types
 export interface OptimizationRequest {
   prompt: string
-  targetModel: string
+  targetModel?: string
   language?: string
   taskType?: 'creative' | 'analytical' | 'coding' | 'general'
   constraints?: {
@@ -65,6 +65,11 @@ export class MetaPromptDesigner {
   async generateVariants(request: OptimizationRequest): Promise<OptimizedVariant[]> {
     // Validate input
     this.validateInput(request)
+    
+    // Default to gpt-4 if no model specified
+    if (!request.targetModel) {
+      request.targetModel = 'gpt-4'
+    }
 
     // Detect task type if not specified
     const taskType = request.taskType || this.detectTaskType(request.prompt)
@@ -81,7 +86,7 @@ export class MetaPromptDesigner {
 
     // Generate 5 progressively optimized variants
     for (let i = 0; i < 5; i++) {
-      const variant = this.createVariant(request.prompt, improvements, strategy, i, request)
+      const variant = this.createVariant(request.prompt, improvements, strategy, i)
       variant.score = this.calculateInitialScore(variant)
       variants.push(variant)
     }
@@ -350,7 +355,6 @@ export class MetaPromptDesigner {
     },
     strategy: ModelStrategy,
     index: number,
-    request?: OptimizationRequest,
   ): OptimizedVariant {
     const changes = []
     let optimizedPrompt = originalPrompt

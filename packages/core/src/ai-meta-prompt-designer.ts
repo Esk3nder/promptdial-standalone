@@ -29,7 +29,7 @@ console.log('Environment check:', {
 // Types
 export interface OptimizationRequest {
   prompt: string
-  targetModel: string
+  targetModel?: string
   language?: string
   taskType?: 'creative' | 'analytical' | 'coding' | 'general'
   optimizationLevel?: 'cheap' | 'normal' | 'explore'
@@ -405,6 +405,14 @@ Transform prompts to activate these cognitive systems naturally, without explici
     // Generating variants for optimization request
 
     this.validateInput(request)
+    
+    // Auto-detect model if not specified
+    if (!request.targetModel) {
+      if (getAnthropic()) request.targetModel = 'claude-3-opus'
+      else if (getOpenAI()) request.targetModel = 'gpt-4'
+      else if (getGoogleAI()) request.targetModel = 'gemini-1.5-pro'
+      else throw new Error('No API keys configured')
+    }
 
     // Generate 5 progressively optimized variants
     const variantCount = 5
@@ -461,18 +469,18 @@ Transform prompts to activate these cognitive systems naturally, without explici
 
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
-      const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+      const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
       const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
 
       const variantPrompt = `${systemPrompt}
 
 Original prompt: "${request.prompt}"
-Target model: ${request.targetModel}
+Target model: ${request.targetModel!}
 Task type: ${taskType}
 Suggested techniques: ${suggestedTechniques.join(', ')}
 ${request.constraints ? `Constraints: ${JSON.stringify(request.constraints)}` : ''}
 
-MODEL-SPECIFIC CONTEXT for ${request.targetModel}:
+MODEL-SPECIFIC CONTEXT for ${request.targetModel!}:
 - Leverage these strengths: ${modelStrategies.strengths.slice(0, 3).join(', ')}
 - Apply these optimization strategies: ${modelStrategies.optimizationFocus.slice(0, 2).join('; ')}
 
@@ -541,7 +549,7 @@ Generate an optimized version that maximizes this model's capabilities. Return y
     // Task type and techniques detected
 
     for (let i = 0; i < count; i++) {
-      const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+      const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
 
       const userPrompt = `Apply AIMetaPromptDesigner cognitive enhancement with model-specific optimization:
 
@@ -658,7 +666,7 @@ Required JSON format:
     const variants: OptimizedVariant[] = []
     const model = getGoogleAI()!.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const systemPrompt = this.systemPrompt
-    const modelStrategies = this.getModelSpecificStrategies(request.targetModel)
+    const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(
       request.prompt,
     )
