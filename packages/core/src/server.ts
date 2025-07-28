@@ -88,7 +88,7 @@ app.get('/api/optimize/stream', async (req, res) => {
     const promptDial = new PromptDial({
       autoValidate: true,
       sortByQuality: true,
-      useAI: true,
+      useAI: hasAPIKeys,
     })
 
     // Check for real API keys before optimization
