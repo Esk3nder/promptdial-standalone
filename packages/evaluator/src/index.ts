@@ -389,39 +389,98 @@ if (require.main === module) {
   const app = express()
   const PORT = process.env.PORT || 3005
 
+  // Error handling middleware
+  const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
+
+  const errorHandler = (err: any, req: any, res: any, next: any) => {
+    logger.error('Request failed', err, {
+      path: req.path,
+      method: req.method,
+      body: req.body,
+    })
+    
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error',
+        retryable: true,
+      },
+    })
+  }
+
   app.use(express.json({ limit: '10mb' }))
 
   // Evaluate single variant
-  app.post('/evaluate', async (req: any, res: any) => {
+  app.post('/evaluate', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleEvaluateRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Compare variants
-  app.post('/compare', async (req: any, res: any) => {
+  app.post('/compare', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleCompareRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Human feedback
-  app.post('/feedback', async (req: any, res: any) => {
+  app.post('/feedback', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleFeedbackRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
   // Get calibration stats
-  app.get('/calibration', (_req: any, res: any) => {
+  app.get('/calibration', asyncHandler(async (_req: any, res: any) => {
     const stats = getEvaluatorEnsemble().getCalibrationStats()
     res.json({ stats })
-  })
+  }))
 
-  app.get('/health', (_req: any, res: any) => {
+  app.get('/health', asyncHandler(async (_req: any, res: any) => {
     res.json({
       status: 'healthy',
       service: 'evaluator',
       evaluators: Array.from(createEvaluatorRegistry().keys()),
+      timestamp: new Date().toISOString(),
     })
-  })
+  }))
+
+  // Apply error handling middleware
+  app.use(errorHandler)
 
   app.listen(PORT, () => {
     logger.info(`Evaluator service running on port ${PORT}`)

@@ -196,11 +196,14 @@ export class RequestOrchestrator {
     }
   }
 
-  private async callService(serviceName: string, endpoint: string, data: any): Promise<any> {
+  private async callService(serviceName: string, endpoint: string, data: any, retriesLeft?: number): Promise<any> {
     const config = this.services[serviceName]
     if (!config) {
       throw new Error(`Unknown service: ${serviceName}`)
     }
+
+    // Use the provided retries count or default to config value
+    const currentRetries = retriesLeft !== undefined ? retriesLeft : config.retries
 
     const url = `${config.url}${endpoint}`
     const startTime = Date.now()
@@ -228,11 +231,10 @@ export class RequestOrchestrator {
         latency,
       })
 
-      // Retry logic
-      if (config.retries > 0 && this.shouldRetry(axiosError)) {
-        logger.info(`Retrying ${serviceName}${endpoint}`)
-        config.retries--
-        return this.callService(serviceName, endpoint, data)
+      // Retry logic - pass decremented retry count without mutating config
+      if (currentRetries > 0 && this.shouldRetry(axiosError)) {
+        logger.info(`Retrying ${serviceName}${endpoint} (${currentRetries - 1} retries left)`)
+        return this.callService(serviceName, endpoint, data, currentRetries - 1)
       }
 
       throw new Error(`Service ${serviceName} failed: ${axiosError.message}`)

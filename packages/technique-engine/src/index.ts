@@ -413,63 +413,103 @@ if (require.main === module) {
   const app = express()
   const PORT = process.env.PORT || 3002
 
+  // Error handling middleware
+  const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
+
+  const errorHandler = (err: any, req: any, res: any, next: any) => {
+    logger.error('Request failed', err, {
+      path: req.path,
+      method: req.method,
+      body: req.body,
+    })
+    
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error',
+        retryable: true,
+      },
+    })
+  }
+
   app.use(express.json({ limit: '10mb' }))
 
   // Generate variants endpoint
-  app.post('/generate', async (req: any, res: any) => {
-    try {
-      const request = {
-        trace_id: req.headers['x-trace-id'] || req.body.trace_id,
-        timestamp: new Date(),
-        service: 'technique-engine',
-        method: 'generateVariants',
-        payload: {
-          base_prompt: req.body.prompt,
-          classification: req.body.task_meta,
-          budget: req.body.constraints || {
-            max_cost_usd: 1.0,
-            max_latency_ms: 30000,
-            max_tokens: 4096,
-            remaining_cost_usd: 1.0,
-            remaining_time_ms: 30000
-          },
-          trace_id: req.headers['x-trace-id'] || req.body.trace_id
-        }
-      }
-      
-      const response = await handleGenerateVariantsRequest(request)
-      
-      // Return the variants directly for backward compatibility
-      if (response.success) {
-        res.json({ variants: response.data })
-      } else {
-        res.status(500).json({ 
-          error: response.error?.message,
-          code: response.error?.code 
-        })
-      }
-    } catch (error) {
-      logger.error('Generate endpoint error', error as Error)
-      res.status(500).json({ 
-        error: 'Internal server error',
-        message: (error as Error).message 
+  app.post('/generate', asyncHandler(async (req: any, res: any) => {
+    if (!req.body || !req.body.prompt) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Missing required field: prompt',
+          retryable: false,
+        },
       })
     }
-  })
+
+    const request = {
+      trace_id: req.headers['x-trace-id'] || req.body.trace_id,
+      timestamp: new Date(),
+      service: 'technique-engine',
+      method: 'generateVariants',
+      payload: {
+        base_prompt: req.body.prompt,
+        classification: req.body.task_meta,
+        budget: req.body.constraints || {
+          max_cost_usd: 1.0,
+          max_latency_ms: 30000,
+          max_tokens: 4096,
+          remaining_cost_usd: 1.0,
+          remaining_time_ms: 30000
+        },
+        trace_id: req.headers['x-trace-id'] || req.body.trace_id
+      }
+    }
+    
+    const response = await handleGenerateVariantsRequest(request)
+    
+    // Return the variants directly for backward compatibility
+    if (response.success) {
+      res.json({ variants: response.data })
+    } else {
+      res.status(500).json({ 
+        error: response.error?.message,
+        code: response.error?.code 
+      })
+    }
+  }))
 
   // Register technique endpoint
-  app.post('/register', async (req: any, res: any) => {
+  app.post('/register', asyncHandler(async (req: any, res: any) => {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Request body is required',
+          retryable: false,
+        },
+      })
+    }
+
     const response = await handleRegisterTechniqueRequest(req.body)
     res.status(response.success ? 200 : 500).json(response)
-  })
+  }))
 
-  app.get('/health', (_req: any, res: any) => {
+  app.get('/health', asyncHandler(async (_req: any, res: any) => {
     res.json({
       status: 'healthy',
       service: 'technique-engine',
       techniques: Array.from(TECHNIQUE_REGISTRY.keys()),
+      timestamp: new Date().toISOString(),
     })
-  })
+  }))
+
+  // Apply error handling middleware
+  app.use(errorHandler)
 
   app.listen(PORT, () => {
     logger.info(`Technique Engine service running on port ${PORT}`)
