@@ -1,0 +1,51 @@
+{
+  "name": "Constraint-Tuned Tokyo Trip Planner",
+  "description": "Consumer-grade prompt for planning a budget-conscious accessible trip",
+  "category": "travel_planning",
+  "request": {
+    "base_prompt": "Constraint‑Tuned Tokyo Trip Planner\n====================================\nGoal\nPlan a 7‑day trip to Tokyo for two adults,\n• Budget cap: USD 2 500 all‑in (flights, hotel, food, transit, attractions)\n• Interests: tech history, local food stalls, low‑key nightlife\n• Mobility: one traveller has bad knees—max 8 k steps/day\n\n<NO FLIGHT OR HOTEL INFO—LET THE PROMPT RUN ITS OWN LOOKUP>\n\nSteps\n1. Retrieve median flight + hotel prices for March 2026\n   (use [LOOKUP(\"NYC‑NRT round‑trip price Mar 2026\")] and similar for hotels).\n2. Generate **two** complete itineraries (Plan A, Plan B) that respect the step limit and budget.\n   • Break each day into AM / PM blocks.\n   • Flag any segment > 2 km walking.\n3. Self‑Consistency Vote\n   • Pick the plan with higher \"Cultural Depth\" × \"Mobility Fit\" product score (scale each 0‑5). ✍︎ Explain in one sentence.\n4. Outputs\n   **Layer 1:** 100‑char headline summary.\n   **Layer 2:** Final chosen itinerary table.\n   **Layer 3:** Cost breakdown list (flight, hotel, food, transit, misc).\n   **Layer 4:** 3 bullet \"plan‑swap\" tips if prices change > 15 %.\n5. Self‑Check\n   • Compute total estimated spend; assert `total <= 2500`.\n   • If over budget, iterate all food line‑items down by 10 % and re‑check once.",
+    "task_hint": "travel_planning",
+    "max_variants": 8,
+    "cost_cap_usd": 0.30,
+    "latency_cap_ms": 8000,
+    "security_level": "moderate"
+  },
+  "constraints": {
+    "budget_hard_limit": 2500,
+    "mobility_limit_steps": 8000,
+    "travelers": 2,
+    "duration_days": 7,
+    "interests": ["tech_history", "local_food", "nightlife"],
+    "accessibility_requirements": ["limited_walking", "rest_areas_needed"]
+  },
+  "expected_features": [
+    "multi_plan_generation",
+    "constraint_satisfaction",
+    "retrieval_for_pricing",
+    "self_consistency_voting",
+    "budget_verification",
+    "iterative_refinement"
+  ],
+  "validation_criteria": {
+    "must_include": [
+      "two_complete_itineraries",
+      "am_pm_breakdown",
+      "walking_distance_flags",
+      "cost_breakdown",
+      "budget_compliance"
+    ],
+    "quality_checks": [
+      "mobility_constraints_met",
+      "budget_under_2500",
+      "cultural_depth_scoring",
+      "plan_swap_tips"
+    ]
+  },
+  "techniques_expected": [
+    "Constraint_Programming",
+    "Multi_Plan_Generation",
+    "Self_Consistency",
+    "Retrieval_Augmented",
+    "Iterative_Refinement"
+  ]
+}

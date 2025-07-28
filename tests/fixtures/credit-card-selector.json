@@ -1,0 +1,39 @@
+{
+  "name": "Smart Credit Card Selector",
+  "description": "Consumer-grade prompt for selecting best cashback credit card",
+  "category": "financial_decision",
+  "request": {
+    "base_prompt": "Smart Credit‑Card Selector\n================================\nContext\nI need a new cashback credit card for everyday spending in the U S.\nPaste any card marketing copy or comparison tables you already have below;\nif empty, run [LOOKUP(\"best US cashback cards 2025\")].\n\n<PASTE CARD INFO HERE IF YOU HAVE IT, OTHERWISE LEAVE BLANK>\n\nTask\n1. Build a table of the five cards with highest overall reward value. Include:\n   • Issuer + card name\n   • Annual fee\n   • Effective cashback % on groceries, gas, dining, \"other\"\n   • APR range\n   • Top perk (≤ 6 words)\n2. Score each card using this weight vector:\n   groceries 40 %, gas 20 %, dining 20 %, other 10 %, perks 10 %.\n3. Self‑Consistency\n   • Draft two independent rankings (Rank A, Rank B) at temp = 0.7.\n   • Vote: if top cards disagree, justify the tie‑breaker in ≤ 40 words.\n4. Output\n   a) **Exec‑Digest** line (≤ 120 chars)\n   b) Final ranking table (markdown) with weighted score column\n   c) Tie‑breaker note (if any)\n5. Self‑Evaluation\n   Complete the rubric below (fill the *'s):\n\n| Criterion | Score (0‑1) | Evidence |\n|-----------|-------------|----------|\n| Data currency (≥ 2024) | * | * |\n| Calculation accuracy | * | * |\n| Bias disclosure | * | * |",
+    "task_hint": "financial_analysis",
+    "max_variants": 6,
+    "cost_cap_usd": 0.20,
+    "latency_cap_ms": 6000,
+    "security_level": "strict"
+  },
+  "expected_features": [
+    "retrieval_enabled",
+    "self_consistency",
+    "structured_output",
+    "self_evaluation",
+    "calculation_verification"
+  ],
+  "validation_criteria": {
+    "must_include": [
+      "table_with_5_cards",
+      "weighted_scoring",
+      "executive_digest",
+      "self_evaluation_rubric"
+    ],
+    "quality_checks": [
+      "data_currency_check",
+      "calculation_accuracy",
+      "ranking_consistency"
+    ]
+  },
+  "techniques_expected": [
+    "FewShot_CoT",
+    "Self_Consistency",
+    "Retrieval_Augmented",
+    "Structured_Generation"
+  ]
+}
