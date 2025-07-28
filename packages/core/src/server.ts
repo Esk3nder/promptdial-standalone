@@ -188,8 +188,8 @@ app.post('/api/optimize', async (req, res) => {
 
     // Create PromptDial instance and optimize
     const promptDial = new PromptDial({
-      autoValidate: true,
-      sortByQuality: true,
+      autoValidate: false, // Temporarily disable to fix hanging issue
+      sortByQuality: false,
       useAI: hasAPIKeys, // Use AI if keys available, templates otherwise
     })
 
