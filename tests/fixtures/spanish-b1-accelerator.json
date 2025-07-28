@@ -1,0 +1,60 @@
+{
+  "name": "Six-Month Spanish B1 Accelerator",
+  "description": "Consumer-grade prompt for language learning curriculum design",
+  "category": "education_planning",
+  "request": {
+    "base_prompt": "Six‑Month Spanish‑B1 Accelerator\n=================================\nObjective\nDesign a learning roadmap that takes an English speaker from A2 to solid B1 Spanish in 180 days.\n\nInputs\n• The learner has 45 min/day on weekdays, 2 h Saturday, rest Sunday.\n• Prefers podcasts + interactive apps over textbooks.\n\n<OPTIONAL: paste any favourite resources you already use>\n\nProcess\n1. Retrieve CEFR‑B1 can‑do statements using [LOOKUP(\"Official CEFR B1 descriptors\")].\n2. Build a 26‑week table: Week #, Primary Skill Target, Key Resources, Daily Micro‑Task.\n3. Inject spaced‑repetition:\n   • For each new vocabulary set, schedule 3 reviews: +2 days, +7 days, +30 days.\n4. Self‑Consistency\n   • Draft schedules with **two** pacing strategies (Linear vs. Sprint‑Rest).\n   • Use a quick rubric to pick the better schedule (criteria: retention likelihood, burnout risk).\n5. Monitoring Algorithm\n   Provide pseudocode that, each Sunday, asks the learner to self‑rate skill areas 1‑5 and auto‑shifts the next week's focus if any score < 3.\n6. Output Sections\n   A. 140‑char motivational headline\n   B. Final Week‑by‑Week table (markdown)\n   C. Pseudocode block for the monitor\n   D. Self‑evaluation table: realism, flexibility, evidence quality (score 0‑1 each)",
+    "task_hint": "curriculum_design",
+    "max_variants": 6,
+    "cost_cap_usd": 0.25,
+    "latency_cap_ms": 7000,
+    "security_level": "moderate"
+  },
+  "learning_parameters": {
+    "start_level": "A2",
+    "target_level": "B1",
+    "duration_days": 180,
+    "weekday_time_minutes": 45,
+    "saturday_time_minutes": 120,
+    "sunday_rest": true,
+    "preferences": ["podcasts", "interactive_apps"],
+    "avoid": ["textbooks"]
+  },
+  "expected_features": [
+    "cefr_alignment",
+    "spaced_repetition",
+    "dual_pacing_strategies",
+    "self_consistency",
+    "adaptive_monitoring",
+    "structured_curriculum"
+  ],
+  "validation_criteria": {
+    "must_include": [
+      "26_week_table",
+      "cefr_b1_alignment",
+      "spaced_repetition_schedule",
+      "monitoring_pseudocode",
+      "self_evaluation"
+    ],
+    "quality_checks": [
+      "time_allocation_realistic",
+      "progression_logical",
+      "resources_appropriate",
+      "burnout_prevention"
+    ]
+  },
+  "techniques_expected": [
+    "Curriculum_Design",
+    "Spaced_Repetition",
+    "Self_Consistency",
+    "Retrieval_Augmented",
+    "Adaptive_Planning"
+  ],
+  "monitoring_algorithm_requirements": {
+    "frequency": "weekly",
+    "input": "skill_ratings_1_to_5",
+    "output": "adjusted_focus_areas",
+    "threshold": 3,
+    "adjustment_logic": "shift_focus_to_weak_areas"
+  }
+}
