@@ -5,16 +5,21 @@ import { MODEL_OPTIONS_BY_PROVIDER, PROVIDER_NAMES, LEVEL_OPTIONS } from '@/type
 import { useKeyboardShortcuts, useLocalStorage } from '@/hooks'
 import styles from './PromptForm.module.css'
 
+const stageOrder = ['initializing', 'validating', 'analyzing', 'optimizing', 'generating', 'evaluating', 'finalizing']
+
 interface PromptFormProps {
   onSubmit: (request: OptimizationRequest) => void
   isLoading: boolean
   error?: string
-  progress?: number
   stage?: string
 }
 
-export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: PromptFormProps) {
+export function PromptForm({ onSubmit, isLoading, error, stage }: PromptFormProps) {
   const [prompt, setPrompt] = useState('')
+  
+  // Calculate stage-based progress
+  const currentStageIndex = stage ? stageOrder.indexOf(stage) : -1
+  const stageProgress = currentStageIndex >= 0 ? ((currentStageIndex + 1) / stageOrder.length) * 100 : 0
   const [model, setModel] = useLocalStorage('promptdial-model', 'gpt-4o-mini')
   const [level, setLevel] = useLocalStorage<'basic' | 'advanced' | 'expert'>(
     'promptdial-level',
@@ -216,10 +221,10 @@ export function PromptForm({ onSubmit, isLoading, error, progress = 0, stage }: 
         {isLoading ? (
           <>
             <span className={styles.progressContainer}>
-              <span className={styles.progressBar} style={{ width: `${progress}%` }} />
+              <span className={styles.progressBar} style={{ width: `${stageProgress}%` }} />
             </span>
             <span className={styles.progressText}>
-              {stage || 'Refining...'} ({progress}%)
+              {stage ? `Stage ${currentStageIndex + 1} of ${stageOrder.length}` : 'Refining...'}
             </span>
           </>
         ) : (

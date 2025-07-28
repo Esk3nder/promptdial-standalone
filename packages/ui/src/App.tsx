@@ -10,8 +10,7 @@ import type { HistoryItem } from '@/hooks/useOptimizationHistory'
 import './App.css'
 
 export function App() {
-  const { state, optimize, progress } = usePromptOptimization()
-  const stage = state.status === 'optimizing' ? state.stage : undefined
+  const { state, optimize, stage } = usePromptOptimization()
   const { copy, copied } = useClipboard({
     timeout: 2000,
   })
@@ -132,7 +131,6 @@ export function App() {
               onSubmit={handleOptimize}
               isLoading={isLoading}
               error={error}
-              progress={progress}
               stage={stage}
             />
           </div>
@@ -145,7 +143,7 @@ export function App() {
 
             {/* Progress Indicator */}
             {isLoading && (
-              <OptimizationProgress stage={stage} progress={progress} isVisible={true} />
+              <OptimizationProgress stage={stage} isVisible={true} />
             )}
 
             <ResultsList

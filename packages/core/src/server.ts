@@ -38,7 +38,7 @@ app.get('/api/optimize/stream', async (req, res) => {
   }
 
   // Send initial progress
-  res.write(`data: ${JSON.stringify({ status: 'initializing', progress: 0 })}\n\n`)
+  res.write(`data: ${JSON.stringify({ status: 'initializing' })}\n\n`)
 
   // Check for API keys
   const hasAPIKeys = Boolean(
@@ -55,19 +55,19 @@ app.get('/api/optimize/stream', async (req, res) => {
   try {
     // Validation phase
     res.write(
-      `data: ${JSON.stringify({ status: 'validating', progress: 10, message: 'Validating prompt...' })}\n\n`,
+      `data: ${JSON.stringify({ status: 'validating', message: 'Validating prompt...' })}\n\n`,
     )
     await new Promise((resolve) => setTimeout(resolve, 300)) // Small delay for UI
 
     // Task detection phase
     res.write(
-      `data: ${JSON.stringify({ status: 'analyzing', progress: 25, message: 'Analyzing task type and cognitive requirements...' })}\n\n`,
+      `data: ${JSON.stringify({ status: 'analyzing', message: 'Analyzing task type and cognitive requirements...' })}\n\n`,
     )
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Optimization phase
     res.write(
-      `data: ${JSON.stringify({ status: 'optimizing', progress: 40, message: 'Applying meta-prompt cognitive enhancements...' })}\n\n`,
+      `data: ${JSON.stringify({ status: 'optimizing', message: 'Applying meta-prompt cognitive enhancements...' })}\n\n`,
     )
 
     const optimizationMode = hasAPIKeys ? 'dynamic-ai' : 'static-template'
@@ -81,7 +81,7 @@ app.get('/api/optimize/stream', async (req, res) => {
 
     // Generate variants
     res.write(
-      `data: ${JSON.stringify({ status: 'generating', progress: 60, message: `Generating cognitive variants with ${activeProvider}...` })}\n\n`,
+      `data: ${JSON.stringify({ status: 'generating', message: `Generating cognitive variants with ${activeProvider}...` })}\n\n`,
     )
 
     // Create PromptDial instance
@@ -123,19 +123,18 @@ app.get('/api/optimize/stream', async (req, res) => {
     }
 
     res.write(
-      `data: ${JSON.stringify({ status: 'evaluating', progress: 85, message: 'Evaluating quality scores...' })}\n\n`,
+      `data: ${JSON.stringify({ status: 'evaluating', message: 'Evaluating quality scores...' })}\n\n`,
     )
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     res.write(
-      `data: ${JSON.stringify({ status: 'finalizing', progress: 95, message: 'Finalizing results...' })}\n\n`,
+      `data: ${JSON.stringify({ status: 'finalizing', message: 'Finalizing results...' })}\n\n`,
     )
     await new Promise((resolve) => setTimeout(resolve, 200))
 
     // Send final results
     const finalResult = {
       status: 'complete',
-      progress: 100,
       results: {
         ...results,
         metadata: {
