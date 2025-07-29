@@ -99,37 +99,83 @@ export class AIMetaPromptDesigner {
     }
 
     // Strategy 2: Extract from markdown code blocks
-    const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
       try {
-        return JSON.parse(codeBlockMatch[1])
+        return JSON.parse(codeBlockMatch[1].trim())
       } catch (e) {
         // Continue to other strategies
       }
     }
 
-    // Strategy 3: Find JSON object in text (first occurrence)
-    const jsonMatch = text.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/)
+    // Strategy 3: Find JSON by looking for opening and closing braces
+    // This improved regex handles nested objects and arrays better
+    let braceCount = 0
+    let inString = false
+    let escapeNext = false
+    let jsonStart = -1
+    let jsonEnd = -1
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i]
+      
+      if (escapeNext) {
+        escapeNext = false
+        continue
+      }
+      
+      if (char === '\\') {
+        escapeNext = true
+        continue
+      }
+      
+      if (char === '"' && !escapeNext) {
+        inString = !inString
+        continue
+      }
+      
+      if (!inString) {
+        if (char === '{') {
+          if (jsonStart === -1) jsonStart = i
+          braceCount++
+        } else if (char === '}') {
+          braceCount--
+          if (braceCount === 0 && jsonStart !== -1) {
+            jsonEnd = i + 1
+            break
+          }
+        }
+      }
+    }
+
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      const jsonStr = text.substring(jsonStart, jsonEnd)
+      try {
+        return JSON.parse(jsonStr)
+      } catch (e) {
+        console.error('Failed to parse extracted JSON:', jsonStr.substring(0, 100))
+      }
+    }
+
+    // Strategy 4: Try a more lenient regex that handles multiline
+    const jsonMatch = text.match(/\{[\s\S]*?\}/)
     if (jsonMatch) {
       try {
         return JSON.parse(jsonMatch[0])
       } catch (e) {
-        // Continue to other strategies
+        // Continue to last strategy
       }
     }
 
-    // Strategy 4: Try to find and extract a more complex nested JSON
-    const complexJsonMatch = text.match(/\{[\s\S]*\}/)
-    if (complexJsonMatch) {
+    // Strategy 5: Last resort - find anything between first { and last }
+    const firstBrace = text.indexOf('{')
+    const lastBrace = text.lastIndexOf('}')
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const possibleJson = text.substring(firstBrace, lastBrace + 1)
       try {
-        return JSON.parse(complexJsonMatch[0])
+        return JSON.parse(possibleJson)
       } catch (e) {
-        // Log the actual failure for debugging
-        console.error(
-          'JSON parsing failed on extracted JSON:',
-          complexJsonMatch[0].substring(0, 300),
-        )
-        console.error('Parse error:', e instanceof Error ? e.message : String(e))
+        console.error('Final parse attempt failed:', e instanceof Error ? e.message : String(e))
       }
     }
 
@@ -477,7 +523,7 @@ IMPORTANT: Never transform simple questions into philosophical explorations unle
 
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
-      const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
+      // const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
       const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
 
       const variantPrompt = `Optimize this prompt for ${request.targetModel!}:
@@ -648,7 +694,7 @@ IMPORTANT:
 - Don't add philosophical elements unless the task requires them
 - Make the prompt clearer and more effective, not longer
 
-Return ONLY valid JSON:
+Return your response as valid JSON only, with no additional text before or after:
 {
   "optimizedPrompt": "the optimized prompt text",
   "changes": [
@@ -660,7 +706,7 @@ Return ONLY valid JSON:
       try {
         // Calling Claude API for variant generation
         const response = await getAnthropic()!.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
+          model: 'claude-3-5-sonnet-20240620',
           max_tokens: 1000,
           temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0
           system: systemPrompt,
@@ -709,8 +755,8 @@ Return ONLY valid JSON:
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const model = getGoogleAI()!.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const systemPrompt = this.systemPrompt
-    const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
+    // const systemPrompt = this.systemPrompt
+    // const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(
       request.prompt,
     )

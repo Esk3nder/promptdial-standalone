@@ -14,7 +14,7 @@ import {
   RetrievalHubClient,
   OptimizerClient
 } from './clients'
-import { PromptVariant, TechniqueStrategy } from '@promptdial/shared'
+import { PromptVariant, TechniqueStrategy, formatPromptVariant } from '@promptdial/shared'
 
 export interface PromptDialOptions {
   autoValidate?: boolean
@@ -149,11 +149,40 @@ export class PromptDial {
         })
       }
 
+      // Format variants with proper markdown
+      const formattedVariants = enhancedVariants.map(variant => {
+        // Convert OptimizedVariant to PromptVariant for formatting
+        const promptVariant: PromptVariant = {
+          id: variant.id,
+          technique: this.extractTechniqueName(variant),
+          prompt: variant.optimizedPrompt,
+          temperature: 0.7, // Default temperature
+          est_tokens: variant.estimatedTokens,
+          cost_usd: variant.estimatedTokens * 0.00002, // Rough estimate
+          metadata: {
+            changes: variant.changes,
+            modelSpecificFeatures: variant.modelSpecificFeatures
+          }
+        }
+        
+        const formatted = formatPromptVariant(promptVariant)
+        
+        return {
+          ...variant,
+          formatted: {
+            markdown: formatted.markdown,
+            technique_name: formatted.sections.technique,
+            technique_category: formatted.sections.metadata?.category || 'Other',
+            transformations: formatted.sections.transformations
+          }
+        }
+      })
+
       // Calculate summary statistics
-      const summary = this.calculateSummary(enhancedVariants)
+      const summary = this.calculateSummary(formattedVariants)
 
       return {
-        variants: enhancedVariants,
+        variants: formattedVariants,
         request,
         summary,
       }
@@ -222,6 +251,38 @@ export class PromptDial {
       this.techniqueClient !== undefined &&
       this.config.features?.useTechniqueEngine === true
     )
+  }
+
+  private extractTechniqueName(variant: OptimizedVariant): string {
+    // Extract technique from changes or use a default
+    const techniqueChange = variant.changes.find(c => 
+      c.type.toLowerCase().includes('technique') || 
+      c.type.toLowerCase().includes('optimization')
+    )
+    
+    if (techniqueChange) {
+      // Try to extract technique name from description
+      if (techniqueChange.description.toLowerCase().includes('chain') && 
+          techniqueChange.description.toLowerCase().includes('thought')) {
+        return 'chain_of_thought'
+      }
+      if (techniqueChange.description.toLowerCase().includes('few-shot')) {
+        return 'few_shot'
+      }
+      if (techniqueChange.description.toLowerCase().includes('step')) {
+        return 'zero_shot_cot'
+      }
+    }
+    
+    // Default based on variant characteristics
+    if (variant.optimizedPrompt.toLowerCase().includes('step by step')) {
+      return 'chain_of_thought'
+    }
+    if (variant.optimizedPrompt.includes('Example') || variant.optimizedPrompt.includes('Q:')) {
+      return 'few_shot'
+    }
+    
+    return 'instruction'
   }
 
   private async optimizeWithServices(request: OptimizationRequest): Promise<OptimizedVariant[]> {

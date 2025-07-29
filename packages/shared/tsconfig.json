@@ -7,11 +7,13 @@
     "declaration": true,
     "declarationMap": true,
     "noEmit": false,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
-    "target": "ESNext",
-    "skipLibCheck": true
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

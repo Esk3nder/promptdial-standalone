@@ -21,3 +21,6 @@ export * from './claude-tools'
 
 // Export enhanced telemetry
 export * from './enhanced-telemetry'
+
+// Export prompt formatter
+export * from './prompt-formatter'

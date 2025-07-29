@@ -22,6 +22,12 @@ export interface OptimizedVariant {
   modelSpecificFeatures: string[]
   estimatedTokens: number
   quality?: ValidationResult
+  formatted?: {
+    markdown: string
+    technique_name: string
+    technique_category: string
+    transformations: string[]
+  }
 }
 
 export interface ValidationResult {

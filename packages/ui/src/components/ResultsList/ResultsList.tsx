@@ -175,7 +175,7 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
             <div className={styles.actionButtons}>
               <button
                 className={styles.copyButton}
-                onClick={() => onCopy(bestVariant.optimizedPrompt)}
+                onClick={() => onCopy(bestVariant.formatted?.markdown || bestVariant.optimizedPrompt)}
                 aria-label="Copy optimized prompt"
               >
                 <svg
