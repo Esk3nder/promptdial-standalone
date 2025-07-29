@@ -87,25 +87,31 @@ function getGoogleAI(): GoogleGenerativeAI | null {
 }
 
 export class AIMetaPromptDesigner {
+
   // Helper to extract and parse JSON from LLM responses
   private parseJsonResponse(text: string): any {
     console.log('Raw Claude response:', text.substring(0, 200) + '...')
 
     // Strategy 1: Try direct parsing (if Claude returns pure JSON)
     try {
-      return JSON.parse(text.trim())
+      const result = JSON.parse(text.trim())
+      console.log('Strategy 1 SUCCESS: Direct parse')
+      return result
     } catch (e) {
-      // Continue to other strategies
+      console.log('Strategy 1 FAILED: Direct parse')
     }
 
     // Strategy 2: Extract from markdown code blocks
     const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
+      console.log('Strategy 2: Found code block match')
       try {
         return JSON.parse(codeBlockMatch[1].trim())
       } catch (e) {
-        // Continue to other strategies
+        console.log('Strategy 2 FAILED: Code block parse error')
       }
+    } else {
+      console.log('Strategy 2: No code block found')
     }
 
     // Strategy 3: Find JSON by looking for opening and closing braces
@@ -177,6 +183,8 @@ export class AIMetaPromptDesigner {
       } catch (e) {
         console.error('Final parse attempt failed:', e instanceof Error ? e.message : String(e))
       }
+    } else {
+      console.log('Strategy 3: No opening brace found')
     }
 
     // All strategies failed
@@ -558,7 +566,7 @@ Return JSON with your optimization:
             { role: 'user', content: variantPrompt },
           ],
           temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0 // Vary temperature for diversity
-          max_tokens: 1000,
+          max_tokens: 2000, // Increased to prevent JSON truncation
           response_format: { type: 'json_object' },
         })
 
@@ -701,7 +709,9 @@ Return your response as valid JSON only, with no additional text before or after
     {"type": "technique_name", "description": "specific improvement"}
   ],
   "modelSpecificFeatures": ["feature utilized"]
-}`
+}
+
+IMPORTANT: Ensure your response is complete JSON that ends with a closing brace.`
 
       try {
         // Calling Claude API for variant generation
