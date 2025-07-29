@@ -5,6 +5,7 @@ import {
   Document,
   RetrievalTechnique
 } from '@promptdial/shared'
+import { toRetrievalTechnique, extractDocuments } from '../adapters/type-adapters'
 
 export class RetrievalHubClient extends ServiceClient {
   constructor(baseUrl: string, options?: ServiceClientOptions) {
@@ -17,17 +18,18 @@ export class RetrievalHubClient extends ServiceClient {
 
   async retrieveForPrompt(
     prompt: string, 
-    technique: RetrievalTechnique = 'ircot',
+    technique: string = 'ircot',
     maxChunks: number = 5
   ): Promise<string> {
     const response = await this.retrieve({
       query: prompt,
-      technique,
-      maxChunks
+      technique: toRetrievalTechnique(technique),
+      top_k: maxChunks
     })
     
-    return response.documents
-      .map(doc => `[${doc.source}] ${doc.content}`)
+    const documents = extractDocuments(response)
+    return documents
+      .map((doc: any) => `[${doc.id}] ${doc.content}`)
       .join('\n\n')
   }
 

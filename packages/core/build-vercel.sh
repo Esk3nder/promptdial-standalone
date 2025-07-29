@@ -15,34 +15,6 @@ cp -r src vercel-build/
 cp -r public vercel-build/
 cp .env.example vercel-build/.env.example 2>/dev/null || true
 
-# Copy and build shared package
-mkdir -p vercel-build/node_modules/@promptdial/shared/src
-cp -r ../shared/src/* vercel-build/node_modules/@promptdial/shared/src/
-cp ../shared/package.json vercel-build/node_modules/@promptdial/shared/
-
-# Create a simple tsconfig for shared package
-cat > vercel-build/node_modules/@promptdial/shared/tsconfig.json << 'EOF'
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
-}
-EOF
-
 # Create package.json without workspace dependencies
 cat > vercel-build/package.json << 'EOF'
 {
@@ -81,10 +53,38 @@ cd vercel-build
 # Install dependencies (no workspace references here)
 npm install --no-save --ignore-scripts
 
+# Now copy and build shared package AFTER npm install
+mkdir -p node_modules/@promptdial/shared/src
+cp -r ../../shared/src/* node_modules/@promptdial/shared/src/
+cp ../../shared/package.json node_modules/@promptdial/shared/
+
+# Create a simple tsconfig for shared package
+cat > node_modules/@promptdial/shared/tsconfig.json << 'EOF'
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+EOF
+
 # Build shared package first
 cd node_modules/@promptdial/shared
 npx tsc
-cd ../../../
+cd ../../
 
 # Build TypeScript
 npm run build

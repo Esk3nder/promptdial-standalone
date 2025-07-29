@@ -14,7 +14,14 @@ import {
   RetrievalHubClient,
   OptimizerClient
 } from './clients'
-import { PromptVariant, TechniqueStrategy, formatPromptVariant } from '@promptdial/shared'
+import { PromptVariant, TechniqueStrategy, formatPromptVariant, EvaluationMethod } from '@promptdial/shared'
+import { 
+  toPromptVariant, 
+  extractVariants, 
+  extractEvaluationResult,
+  extractParetoOptimal,
+  toEvaluationMethod
+} from './adapters/type-adapters'
 
 export interface PromptDialOptions {
   autoValidate?: boolean
@@ -127,16 +134,19 @@ export class PromptDial {
 
       // Apply Pareto optimization if enabled
       if (this.optimizerClient && this.config.features?.useParetoFilter) {
-        const promptVariants = enhancedVariants.map(v => ({
-          ...v,
-          id: v.id,
-          prompt: v.optimizedPrompt
-        } as PromptVariant))
+        const promptVariants = enhancedVariants.map((v, i) => toPromptVariant(v, i))
         
         const optimized = await this.optimizerClient.paretoFilter(promptVariants)
         enhancedVariants = optimized.map(pv => {
           const original = enhancedVariants.find(v => v.id === pv.id)
-          return original || { ...pv, optimizedPrompt: pv.prompt, id: pv.id || '' }
+          return original || {
+            id: pv.id,
+            originalPrompt: pv.prompt,
+            optimizedPrompt: pv.prompt,
+            changes: [],
+            modelSpecificFeatures: [],
+            estimatedTokens: pv.est_tokens
+          }
         })
       }
 
@@ -295,25 +305,30 @@ export class PromptDial {
     
     // Check if retrieval is needed
     let enrichedPrompt = request.prompt
-    if (this.retrievalClient && this.needsRetrieval(taskClassification.taskType)) {
+    if (this.retrievalClient && this.needsRetrieval(taskClassification.task_type)) {
       const context = await this.retrievalClient.retrieveForPrompt(request.prompt)
       enrichedPrompt = `${request.prompt}\n\nContext:\n${context}`
     }
 
     // Generate variants using technique engine
     const techniqueResponse = await this.techniqueClient.generateVariants({
-      basePrompt: enrichedPrompt,
-      taskClassification,
-      targetModel: request.targetModel,
-      techniques: taskClassification.suggestedTechniques,
-      enableSelfConsistency: true
+      prompt: enrichedPrompt,
+      techniques: taskClassification.suggested_techniques,
+      task_type: taskClassification.task_type
     })
 
     // Convert to OptimizedVariant format
-    return techniqueResponse.variants.map(v => ({
+    const variants = extractVariants(techniqueResponse)
+    return variants.map(v => ({
+      id: v.id,
+      originalPrompt: request.prompt,
       optimizedPrompt: v.prompt,
-      description: v.technique || v.id,
-      score: v.score
+      changes: [{
+        type: 'technique',
+        description: `Applied ${v.technique} technique`
+      }],
+      modelSpecificFeatures: [],
+      estimatedTokens: v.est_tokens
     }))
   }
 
@@ -350,34 +365,35 @@ export class PromptDial {
       return this.addQualityScores(variants)
     }
 
-    const promptVariants = variants.map(v => ({
-      id: v.id,
-      prompt: v.optimizedPrompt,
-      score: v.score || 0
-    } as PromptVariant))
+    const promptVariants = variants.map((v, i) => toPromptVariant(v, i))
 
     const evaluation = await this.evaluatorClient.evaluate({
+      prompt_id: 'batch-eval',
       variants: promptVariants,
-      method: 'g-eval',
-      includeConfidenceIntervals: true
+      evaluation_methods: [EvaluationMethod.G_EVAL]
     })
 
+    const evalResult = extractEvaluationResult(evaluation)
+    
     return variants.map((v, i) => ({
       ...v,
       quality: {
-        score: evaluation.results[i].score,
+        score: evalResult.score,
         factors: {
-          clarity: evaluation.results[i].score,
-          specificity: evaluation.results[i].score,
-          actionability: evaluation.results[i].score,
-          structuredOutput: evaluation.results[i].score,
-          comprehensiveness: evaluation.results[i].score,
-          efficiency: evaluation.results[i].score,
-          adaptability: evaluation.results[i].score
+          clarity: evalResult.score,
+          specificity: evalResult.score,
+          actionability: evalResult.score,
+          structuredOutput: evalResult.score,
+          comprehensiveness: evalResult.score,
+          efficiency: evalResult.score,
+          adaptability: evalResult.score,
+          structure: evalResult.score,
+          completeness: evalResult.score,
+          modelAlignment: evalResult.score,
+          safety: evalResult.score
         },
-        suggestions: evaluation.results[i].explanation ? [evaluation.results[i].explanation!] : [],
-        improvementPercentage: 0,
-        confidence: evaluation.results[i].confidence
+        suggestions: evalResult.explanation ? [evalResult.explanation] : [],
+        improvementPercentage: 0
       }
     }))
   }
