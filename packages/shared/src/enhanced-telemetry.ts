@@ -205,7 +205,6 @@ export class EnhancedTelemetryService {
     // Export histograms
     for (const [name, values] of this.histograms) {
       if (values.length > 0) {
-        const sorted = values.slice().sort((a, b) => a - b)
         const sum = values.reduce((a, b) => a + b, 0)
         
         lines.push(`# TYPE ${name} histogram`)

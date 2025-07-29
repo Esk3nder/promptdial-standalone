@@ -22,6 +22,12 @@ export interface OptimizedVariant {
   score?: number
   modelSpecificFeatures: string[]
   estimatedTokens: number
+  formatted?: {
+    markdown: string
+    technique_name: string
+    technique_category: string
+    transformations: string[]
+  }
 }
 
 export interface ModelStrategy {

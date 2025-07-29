@@ -184,7 +184,7 @@ export function VariantComparison({ variants, onCopy }: VariantComparisonProps) 
               <p className={styles.promptText}>{selectedVariant.optimizedPrompt}</p>
               <button
                 className={styles.copyButton}
-                onClick={() => onCopy(selectedVariant.optimizedPrompt)}
+                onClick={() => onCopy(selectedVariant.formatted?.markdown || selectedVariant.optimizedPrompt)}
                 aria-label="Copy this variant"
               >
                 <svg

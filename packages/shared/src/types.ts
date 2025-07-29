@@ -22,6 +22,12 @@ export interface PromptVariant {
   estimated_cost?: number
   estimated_latency_ms?: number
   metadata?: Record<string, any>
+  formatted?: {
+    markdown: string
+    technique_name: string
+    technique_category: string
+    transformations: string[]
+  }
 }
 
 export interface OptimizationRequest {
@@ -33,6 +39,7 @@ export interface OptimizationRequest {
     cost_cap_usd?: number
     latency_cap_ms?: number
     security_level?: SecurityLevel
+    model?: string
   }
   context?: {
     examples?: string[]
@@ -53,6 +60,8 @@ export interface OptimizationResponse {
     total_variants_generated: number
     pareto_frontier_size: number
     techniques_used: string[]
+    suggested_techniques?: string[]
+    strategy_confidence?: number
     safety_modifications: boolean
   }
 }
@@ -217,3 +226,86 @@ export interface RetrievalResult {
   total_results: number
   query_time_ms: number
 }
+
+// ============= Service Request/Response Types =============
+
+// Evaluator Service Types
+export interface EvaluationRequest {
+  prompt_id: string
+  variants: PromptVariant[]
+  evaluation_methods: EvaluationMethod[]
+  task_context?: Record<string, any>
+}
+
+export interface EvaluationResponse extends ServiceResponse<EvaluationResult> {}
+
+export enum EvaluationMethod {
+  G_EVAL = 'g_eval',
+  CHAT_EVAL = 'chat_eval',
+  ROLE_DEBATE = 'role_debate',
+  AUTOMATED_METRICS = 'automated_metrics'
+}
+
+export interface CalibrationMetrics {
+  accuracy: number
+  confidence: number
+  bias: number
+  consistency: number
+}
+
+// Optimizer Service Types  
+export interface OptimizerRequest {
+  variants: PromptVariant[]
+  objectives: OptimizationObjective[]
+  constraints?: {
+    max_cost?: number
+    max_latency_ms?: number
+    min_quality_score?: number
+  }
+}
+
+export interface OptimizerResponse extends ServiceResponse<{
+  pareto_optimal: PromptVariant[]
+  rankings: Array<{
+    variant_id: string
+    rank: number
+    score: number
+  }>
+}> {}
+
+export enum OptimizationObjective {
+  QUALITY = 'quality',
+  COST = 'cost',
+  LATENCY = 'latency',
+  DIVERSITY = 'diversity'
+}
+
+// Retrieval Service Types
+export interface RetrievalRequest {
+  query: string
+  technique: RetrievalTechnique
+  top_k?: number
+  filters?: Record<string, any>
+}
+
+export interface RetrievalResponse extends ServiceResponse<RetrievalResult> {}
+
+export enum RetrievalTechnique {
+  SEMANTIC = 'semantic',
+  KEYWORD = 'keyword',
+  HYBRID = 'hybrid',
+  MULTI_MODAL = 'multi_modal'
+}
+
+// Technique Engine Types
+export interface TechniqueRequest {
+  prompt: string
+  techniques: string[]
+  task_type: string
+  constraints?: Record<string, any>
+}
+
+export interface TechniqueResponse extends ServiceResponse<{
+  variants: PromptVariant[]
+  applied_techniques: string[]
+}> {}

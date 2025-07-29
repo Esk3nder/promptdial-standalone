@@ -102,13 +102,11 @@ export class AIMetaPromptDesigner {
     }
 
     // Strategy 2: Extract from markdown code blocks
-    const codeBlockMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
       console.log('Strategy 2: Found code block match')
       try {
-        const result = JSON.parse(codeBlockMatch[1])
-        console.log('Strategy 2 SUCCESS: Code block')
-        return result
+        return JSON.parse(codeBlockMatch[1].trim())
       } catch (e) {
         console.log('Strategy 2 FAILED: Code block parse error')
       }
@@ -116,46 +114,74 @@ export class AIMetaPromptDesigner {
       console.log('Strategy 2: No code block found')
     }
 
-    // Strategy 3: Try to extract from first { to first complete }
-    const firstBraceIndex = text.indexOf('{')
-    if (firstBraceIndex !== -1) {
-      // Find matching closing brace or go to end
-      let braceCount = 0
-      let endIndex = firstBraceIndex
+    // Strategy 3: Find JSON by looking for opening and closing braces
+    // This improved regex handles nested objects and arrays better
+    let braceCount = 0
+    let inString = false
+    let escapeNext = false
+    let jsonStart = -1
+    let jsonEnd = -1
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i]
       
-      for (let i = firstBraceIndex; i < text.length; i++) {
-        if (text[i] === '{') braceCount++
-        else if (text[i] === '}') braceCount--
-        
-        if (braceCount === 0) {
-          endIndex = i + 1
-          break
-        }
-        endIndex = i + 1
+      if (escapeNext) {
+        escapeNext = false
+        continue
       }
       
-      const extractedJson = text.substring(firstBraceIndex, endIndex)
-      console.log('Strategy 3: Extracted JSON from braces, length:', extractedJson.length)
-      console.log('Strategy 3: JSON preview:', extractedJson.substring(0, 100))
+      if (char === '\\') {
+        escapeNext = true
+        continue
+      }
       
-      try {
-        const result = JSON.parse(extractedJson)
-        console.log('Strategy 3 SUCCESS: Brace-matched JSON')
-        return result
-      } catch (e) {
-        console.log('Strategy 3 FAILED: Brace-matched JSON, attempting completion')
-        
-        // Try to complete the JSON
-        const completedJson = this.attemptJsonCompletion(extractedJson)
-        if (completedJson) {
-          try {
-            const result = JSON.parse(completedJson)
-            console.log('Strategy 3 COMPLETION SUCCESS: JSON completion worked')
-            return result
-          } catch (e2) {
-            console.log('Strategy 3 COMPLETION FAILED:', e2.message)
+      if (char === '"' && !escapeNext) {
+        inString = !inString
+        continue
+      }
+      
+      if (!inString) {
+        if (char === '{') {
+          if (jsonStart === -1) jsonStart = i
+          braceCount++
+        } else if (char === '}') {
+          braceCount--
+          if (braceCount === 0 && jsonStart !== -1) {
+            jsonEnd = i + 1
+            break
           }
         }
+      }
+    }
+
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      const jsonStr = text.substring(jsonStart, jsonEnd)
+      try {
+        return JSON.parse(jsonStr)
+      } catch (e) {
+        console.error('Failed to parse extracted JSON:', jsonStr.substring(0, 100))
+      }
+    }
+
+    // Strategy 4: Try a more lenient regex that handles multiline
+    const jsonMatch = text.match(/\{[\s\S]*?\}/)
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0])
+      } catch (e) {
+        // Continue to last strategy
+      }
+    }
+
+    // Strategy 5: Last resort - find anything between first { and last }
+    const firstBrace = text.indexOf('{')
+    const lastBrace = text.lastIndexOf('}')
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const possibleJson = text.substring(firstBrace, lastBrace + 1)
+      try {
+        return JSON.parse(possibleJson)
+      } catch (e) {
+        console.error('Final parse attempt failed:', e instanceof Error ? e.message : String(e))
       }
     } else {
       console.log('Strategy 3: No opening brace found')
@@ -165,113 +191,6 @@ export class AIMetaPromptDesigner {
     throw new Error(
       `Unable to extract valid JSON from Claude response. Response preview: ${text.substring(0, 200)}...`,
     )
-  }
-
-  // Attempt to complete truncated JSON responses
-  private attemptJsonCompletion(truncatedJson: string): string | null {
-    try {
-      let trimmed = truncatedJson.trim()
-      
-      // Clean up control characters inside JSON strings only
-      let inString = false
-      let result = ''
-      
-      for (let i = 0; i < trimmed.length; i++) {
-        const char = trimmed[i]
-        
-        if (char === '"' && (i === 0 || trimmed[i-1] !== '\\')) {
-          inString = !inString
-          result += char
-        } else if (inString) {
-          // Inside a string - escape control characters
-          switch (char) {
-            case '\n': result += '\\n'; break
-            case '\r': result += '\\r'; break  
-            case '\t': result += '\\t'; break
-            case '\b': result += '\\b'; break
-            case '\f': result += '\\f'; break
-            default: 
-              if (char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) {
-                // Skip other control characters
-              } else {
-                result += char
-              }
-          }
-        } else {
-          // Outside string - keep as is (including structural newlines)
-          result += char
-        }
-      }
-      
-      trimmed = result
-      
-      // First check if JSON is already valid after cleaning
-      try {
-        JSON.parse(trimmed)
-        return null // Already valid, no completion needed
-      } catch {
-        // Continue with completion logic
-      }
-      
-      let completed = trimmed
-      
-      // Smart quote handling - find unclosed strings
-      let insideString = false
-      let lastQuoteIndex = -1
-      let needsClosingQuote = false
-      
-      for (let i = 0; i < completed.length; i++) {
-        if (completed[i] === '"' && (i === 0 || completed[i-1] !== '\\')) {
-          insideString = !insideString
-          lastQuoteIndex = i
-        }
-      }
-      
-      // If we ended in a string, we need to close it
-      if (insideString) {
-        // Check if the string ends abruptly (no closing quote before next structural character)
-        const afterLastQuote = completed.substring(lastQuoteIndex + 1)
-        if (!afterLastQuote.includes('"')) {
-          completed += '"'
-          needsClosingQuote = true
-        }
-      }
-      
-      // Handle missing commas after property values
-      if (!completed.endsWith(',') && !completed.endsWith('}') && !completed.endsWith(']')) {
-        // Check if we just closed a string and need a comma
-        if (needsClosingQuote || completed.endsWith('"')) {
-          // Look ahead to see if there might be more properties
-          const remainingBraces = (completed.match(/\{/g) || []).length - (completed.match(/\}/g) || []).length
-          if (remainingBraces > 0) {
-            // There are unclosed braces, probably more properties coming
-            // Don't add comma here, let the missing braces logic handle it
-          }
-        }
-      }
-      
-      // Count opening and closing braces to balance them
-      const openBraces = (completed.match(/\{/g) || []).length
-      const closeBraces = (completed.match(/\}/g) || []).length
-      const missingBraces = openBraces - closeBraces
-      
-      if (missingBraces > 0) {
-        completed += '}'.repeat(missingBraces)
-      }
-      
-      // Count opening and closing brackets to balance them
-      const openBrackets = (completed.match(/\[/g) || []).length
-      const closeBrackets = (completed.match(/\]/g) || []).length
-      const missingBrackets = openBrackets - closeBrackets
-      
-      if (missingBrackets > 0) {
-        completed += ']'.repeat(missingBrackets)
-      }
-      
-      return completed
-    } catch {
-      return null
-    }
   }
 
   private systemPrompt = `You are an expert prompt optimizer. Your role is to enhance prompts for specific AI models by applying proven techniques that improve clarity, effectiveness, and task completion.
@@ -612,7 +531,7 @@ IMPORTANT: Never transform simple questions into philosophical explorations unle
 
     // Generate multiple variants
     for (let i = 0; i < count; i++) {
-      const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
+      // const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
       const { taskType, suggestedTechniques } = this.detectTaskTypeAndTechniques(request.prompt)
 
       const variantPrompt = `Optimize this prompt for ${request.targetModel!}:
@@ -783,7 +702,7 @@ IMPORTANT:
 - Don't add philosophical elements unless the task requires them
 - Make the prompt clearer and more effective, not longer
 
-Return ONLY valid JSON (keep response under 1500 characters to avoid truncation):
+Return your response as valid JSON only, with no additional text before or after:
 {
   "optimizedPrompt": "the optimized prompt text",
   "changes": [
@@ -797,8 +716,8 @@ IMPORTANT: Ensure your response is complete JSON that ends with a closing brace.
       try {
         // Calling Claude API for variant generation
         const response = await getAnthropic()!.messages.create({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 2000, // Increased to prevent JSON truncation
+          model: 'claude-3-5-sonnet-20240620',
+          max_tokens: 1000,
           temperature: Math.min(0.7 + i * 0.1, 1.0), // Cap at 1.0
           system: systemPrompt,
           messages: [
@@ -846,8 +765,8 @@ IMPORTANT: Ensure your response is complete JSON that ends with a closing brace.
   ): Promise<OptimizedVariant[]> {
     const variants: OptimizedVariant[] = []
     const model = getGoogleAI()!.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const systemPrompt = this.systemPrompt
-    const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
+    // const systemPrompt = this.systemPrompt
+    // const modelStrategies = this.getModelSpecificStrategies(request.targetModel!)
     const { taskType, suggestedTechniques, cognitiveProfile } = this.detectTaskTypeAndTechniques(
       request.prompt,
     )

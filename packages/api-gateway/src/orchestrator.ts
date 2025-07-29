@@ -14,6 +14,7 @@ import {
   createLogger,
   getTelemetryService,
   ERROR_CODES,
+  formatPromptVariant,
 } from '@promptdial/shared'
 import { ServiceConfig } from './services'
 
@@ -165,13 +166,40 @@ export class RequestOrchestrator {
         }
       }
 
+      // Format variants with proper markdown and structure
+      const formattedVariants = optimization.pareto_frontier.map((sol: any) => {
+        const variant = sol.variant!
+        const formatted = formatPromptVariant(variant)
+        return {
+          ...variant,
+          formatted: {
+            markdown: formatted.markdown,
+            technique_name: formatted.sections.technique,
+            technique_category: formatted.sections.metadata?.category || 'Other',
+            transformations: formatted.sections.transformations,
+          },
+        }
+      })
+
+      // Format recommended variant
+      const formattedRecommended = formatPromptVariant(optimization.recommended.variant!)
+      const recommendedVariant = {
+        ...optimization.recommended.variant!,
+        formatted: {
+          markdown: formattedRecommended.markdown,
+          technique_name: formattedRecommended.sections.technique,
+          technique_category: formattedRecommended.sections.metadata?.category || 'Other',
+          transformations: formattedRecommended.sections.transformations,
+        },
+      }
+
       // Build response
       const response: OptimizationResponse = {
         trace_id: traceId,
         original_prompt: request.prompt,
         task_classification: taskMeta,
-        variants: optimization.pareto_frontier.map((sol) => sol.variant!),
-        recommended_variant: optimization.recommended.variant!,
+        variants: formattedVariants,
+        recommended_variant: recommendedVariant,
         evaluation_results: evaluations,
         optimization_metadata: {
           total_variants_generated: variants.length,
