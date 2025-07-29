@@ -1,5 +1,17 @@
 {
+  "version": 2,
   "buildCommand": "./build-vercel.sh",
-  "outputDirectory": "vercel-build/dist",
-  "installCommand": "echo 'Skipping install - handled by build script'"
+  "installCommand": "echo 'Skipping install - handled by build script'",
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.js"
+    }
+  ]
 }

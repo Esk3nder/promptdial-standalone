@@ -94,7 +94,8 @@ cp -r public/* dist/ 2>/dev/null || true
 
 # Create index.js for Vercel entry point
 cat > ../index.js << 'EOF'
-module.exports = require('./vercel-build/dist/server.js');
+const app = require('./vercel-build/dist/server.js').default || require('./vercel-build/dist/server.js');
+module.exports = app;
 EOF
 
 echo "Build complete!"
