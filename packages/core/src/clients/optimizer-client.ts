@@ -5,6 +5,7 @@ import {
   OptimizationObjective,
   PromptVariant
 } from '@promptdial/shared'
+import { toOptimizationObjective, extractParetoOptimal } from '../adapters/type-adapters'
 
 export class OptimizerClient extends ServiceClient {
   constructor(baseUrl: string, options?: ServiceClientOptions) {
@@ -17,15 +18,14 @@ export class OptimizerClient extends ServiceClient {
 
   async paretoFilter(
     variants: PromptVariant[],
-    objectives: OptimizationObjective[] = ['quality', 'cost', 'latency']
+    objectives: string[] = ['quality', 'cost', 'latency']
   ): Promise<PromptVariant[]> {
     const response = await this.optimize({
       variants,
-      objectives,
-      strategy: 'pareto'
+      objectives: objectives.map(toOptimizationObjective)
     })
     
-    return response.optimizedVariants
+    return extractParetoOptimal(response)
   }
 
   async rankVariants(
@@ -34,12 +34,10 @@ export class OptimizerClient extends ServiceClient {
   ): Promise<PromptVariant[]> {
     const response = await this.optimize({
       variants,
-      objectives: Object.keys(weights) as OptimizationObjective[],
-      strategy: 'weighted',
-      weights
+      objectives: Object.keys(weights) as OptimizationObjective[]
     })
     
-    return response.optimizedVariants
+    return extractParetoOptimal(response)
   }
 
   async getOptimalVariant(
@@ -50,11 +48,12 @@ export class OptimizerClient extends ServiceClient {
     
     if (budget) {
       const withinBudget = filtered.filter(v => 
-        (!budget.maxCost || (v.cost || 0) <= budget.maxCost) &&
-        (!budget.maxLatency || (v.latency || 0) <= budget.maxLatency)
+        (!budget.maxCost || v.cost_usd <= budget.maxCost) &&
+        (!budget.maxLatency || (v.estimated_latency_ms || 0) <= budget.maxLatency)
       )
       
-      return withinBudget.sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null
+      // Sort by cost efficiency (lower cost is better)
+      return withinBudget.sort((a, b) => a.cost_usd - b.cost_usd)[0] || null
     }
     
     return filtered[0] || null
