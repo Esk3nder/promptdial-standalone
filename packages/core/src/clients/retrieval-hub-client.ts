@@ -27,7 +27,7 @@ export class RetrievalHubClient extends ServiceClient {
     })
     
     return response.documents
-      .map(doc => `[${doc.source}] ${doc.content}`)
+      .map((doc: Document) => `[${doc.source}] ${doc.content}`)
       .join('\n\n')
   }
 
