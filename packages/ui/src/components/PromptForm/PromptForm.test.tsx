@@ -18,11 +18,18 @@ describe('PromptForm', () => {
   it('should render all form elements', () => {
     render(<PromptForm {...defaultProps} />)
 
+    // Basic elements should be visible
     expect(screen.getByLabelText('Enter your prompt')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Refine prompt' })).toBeInTheDocument()
+    expect(screen.getByText('Advanced Settings')).toBeInTheDocument()
+
+    // Click to expand advanced settings
+    userEvent.click(screen.getByText('Advanced Settings'))
+
+    // Now advanced fields should be visible
     expect(screen.getByLabelText('Select target AI model')).toBeInTheDocument()
     expect(screen.getByLabelText('Select optimization level')).toBeInTheDocument()
-    expect(screen.getByLabelText('Select task type (optional)')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Optimize prompt' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Select output format')).toBeInTheDocument()
   })
 
   it('should show character count', async () => {
@@ -39,7 +46,7 @@ describe('PromptForm', () => {
     const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
-    const button = screen.getByRole('button', { name: 'Optimize prompt' })
+    const button = screen.getByRole('button', { name: 'Refine prompt' })
     await user.click(button)
 
     expect(screen.getByText('Please enter a prompt')).toBeInTheDocument()
@@ -62,21 +69,24 @@ describe('PromptForm', () => {
     const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
-    // Fill form
+    // Fill prompt
     await user.type(screen.getByLabelText('Enter your prompt'), 'Test prompt')
+    
+    // Open advanced settings
+    await user.click(screen.getByText('Advanced Settings'))
+    
+    // Fill advanced fields
     await user.selectOptions(screen.getByLabelText('Select target AI model'), 'claude-3-opus')
     await user.selectOptions(screen.getByLabelText('Select optimization level'), 'advanced')
-    await user.selectOptions(screen.getByLabelText('Select task type (optional)'), 'coding')
 
     // Submit
-    await user.click(screen.getByRole('button', { name: 'Optimize prompt' }))
+    await user.click(screen.getByRole('button', { name: 'Refine prompt' }))
 
     expect(mockOnSubmit).toHaveBeenCalledWith({
       prompt: 'Test prompt',
       targetModel: 'claude-3-opus',
       optimizationLevel: 'advanced',
-      taskType: 'coding',
-    })
+          })
   })
 
   it('should submit with Cmd+Enter', async () => {
@@ -91,18 +101,23 @@ describe('PromptForm', () => {
       prompt: 'Test prompt',
       targetModel: 'gpt-4',
       optimizationLevel: 'basic',
-      taskType: undefined,
-    })
+          })
   })
 
   it('should disable form when loading', () => {
     render(<PromptForm {...defaultProps} isLoading={true} />)
 
     expect(screen.getByLabelText('Enter your prompt')).toBeDisabled()
+    
+    // Open advanced settings to check those fields
+    userEvent.click(screen.getByText('Advanced Settings'))
+    
     expect(screen.getByLabelText('Select target AI model')).toBeDisabled()
     expect(screen.getByLabelText('Select optimization level')).toBeDisabled()
-    expect(screen.getByLabelText('Select task type (optional)')).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Optimizing...' })).toBeDisabled()
+    expect(screen.getByLabelText('Select output format')).toBeDisabled()
+    
+    // Check button shows loading state
+    expect(screen.getByRole('button', { name: 'Refine prompt' })).toBeDisabled()
   })
 
   it('should reset form after successful submission', async () => {
@@ -111,7 +126,7 @@ describe('PromptForm', () => {
 
     const textarea = screen.getByLabelText('Enter your prompt')
     await user.type(textarea, 'Test prompt')
-    await user.click(screen.getByRole('button', { name: 'Optimize prompt' }))
+    await user.click(screen.getByRole('button', { name: 'Refine prompt' }))
 
     // Should not clear prompt after submission (user might want to refine)
     expect(textarea).toHaveValue('Test prompt')
@@ -133,6 +148,9 @@ describe('PromptForm', () => {
 
   it('should render all model options', () => {
     render(<PromptForm {...defaultProps} />)
+    
+    // Open advanced settings first
+    userEvent.click(screen.getByText('Advanced Settings'))
 
     const select = screen.getByLabelText('Select target AI model')
     MODEL_OPTIONS.forEach((option) => {
@@ -142,6 +160,9 @@ describe('PromptForm', () => {
 
   it('should render all level options', () => {
     render(<PromptForm {...defaultProps} />)
+    
+    // Open advanced settings first
+    userEvent.click(screen.getByText('Advanced Settings'))
 
     const select = screen.getByLabelText('Select optimization level')
     LEVEL_OPTIONS.forEach((option) => {
@@ -149,14 +170,7 @@ describe('PromptForm', () => {
     })
   })
 
-  it('should render all task type options', () => {
-    render(<PromptForm {...defaultProps} />)
-
-    const select = screen.getByLabelText('Select task type (optional)')
-    TASK_TYPE_OPTIONS.forEach((option) => {
-      expect(screen.getByRole('option', { name: option.label })).toBeInTheDocument()
-    })
-  })
+  // Removed test for task type options as the field doesn't exist in the component
 
   it('should focus prompt textarea on mount', () => {
     render(<PromptForm {...defaultProps} />)
