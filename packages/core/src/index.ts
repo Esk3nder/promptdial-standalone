@@ -129,14 +129,14 @@ export class PromptDial {
       if (this.optimizerClient && this.config.features?.useParetoFilter) {
         const promptVariants = enhancedVariants.map(v => ({
           ...v,
-          id: v.description,
+          id: v.id,
           prompt: v.optimizedPrompt
         } as PromptVariant))
         
         const optimized = await this.optimizerClient.paretoFilter(promptVariants)
         enhancedVariants = optimized.map(pv => {
-          const original = enhancedVariants.find(v => v.description === pv.id)
-          return original || { ...pv, optimizedPrompt: pv.prompt, description: pv.id || '' }
+          const original = enhancedVariants.find(v => v.id === pv.id)
+          return original || { ...pv, optimizedPrompt: pv.prompt, id: pv.id || '' }
         })
       }
 
@@ -351,7 +351,7 @@ export class PromptDial {
     }
 
     const promptVariants = variants.map(v => ({
-      id: v.description,
+      id: v.id,
       prompt: v.optimizedPrompt,
       score: v.score || 0
     } as PromptVariant))
@@ -376,6 +376,7 @@ export class PromptDial {
           adaptability: evaluation.results[i].score
         },
         suggestions: evaluation.results[i].explanation ? [evaluation.results[i].explanation!] : [],
+        improvementPercentage: 0,
         confidence: evaluation.results[i].confidence
       }
     }))
