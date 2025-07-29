@@ -342,6 +342,10 @@ describe('Retry Logic', () => {
     beforeEach(() => {
       vi.useFakeTimers()
     })
+    
+    afterEach(() => {
+      vi.useRealTimers()
+    })
 
     it('should succeed on first try', async () => {
       const fn = vi.fn().mockResolvedValue('success')

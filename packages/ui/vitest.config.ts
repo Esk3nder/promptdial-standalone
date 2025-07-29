@@ -17,6 +17,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@tests': path.resolve(__dirname, './tests'),
+      '@promptdial/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
 })
