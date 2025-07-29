@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/tests/utils/test-utils'
+import { render, screen } from '@tests/utils/test-utils'
 import { ResultsList } from './ResultsList'
-import { createMockOptimizationResult } from '@/tests/utils/mock-data'
+import { createMockOptimizationResult } from '@tests/utils/mock-data'
 import userEvent from '@testing-library/user-event'
 
 describe('ResultsList', () => {

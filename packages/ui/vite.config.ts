@@ -12,6 +12,7 @@ export default defineConfig({
       '@hooks': resolve(__dirname, './src/hooks'),
       '@utils': resolve(__dirname, './src/utils'),
       '@types': resolve(__dirname, './src/types'),
+      '@tests': resolve(__dirname, './tests'),
       promptdial: resolve(__dirname, '../core/src/index.ts'),
     },
   },

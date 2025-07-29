@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, waitFor } from '@/tests/utils/test-utils'
+import { render, screen, waitFor } from '@tests/utils/test-utils'
 import { App } from './App'
 import userEvent from '@testing-library/user-event'
 import { PromptDial } from 'promptdial'

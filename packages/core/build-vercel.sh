@@ -92,9 +92,13 @@ npm run build
 # Copy public files to dist
 cp -r public/* dist/ 2>/dev/null || true
 
-# Create index.js for Vercel entry point
-cat > ../index.js << 'EOF'
-const app = require('./vercel-build/dist/server.js').default || require('./vercel-build/dist/server.js');
+# Create index.js for Vercel entry point in the correct location
+cat > index.js << 'EOF'
+// Vercel serverless function entry point
+const serverModule = require('./vercel-build/dist/server.js');
+const app = serverModule.default || serverModule;
+
+// Ensure we export the Express app for Vercel
 module.exports = app;
 EOF
 

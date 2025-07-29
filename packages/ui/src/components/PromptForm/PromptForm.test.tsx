@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@/tests/utils/test-utils'
+import { render, screen } from '@tests/utils/test-utils'
 import { PromptForm } from './PromptForm'
 import userEvent from '@testing-library/user-event'
 import { MODEL_OPTIONS, LEVEL_OPTIONS, TASK_TYPE_OPTIONS } from '@/types'
