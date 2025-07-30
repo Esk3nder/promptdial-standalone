@@ -2,8 +2,7 @@ import { ServiceClient, ServiceClientOptions } from './base-client'
 import { 
   RetrievalRequest,
   RetrievalResponse,
-  Document,
-  RetrievalTechnique
+  Document
 } from '@promptdial/shared'
 import { toRetrievalTechnique, extractDocuments } from '../adapters/type-adapters'
 

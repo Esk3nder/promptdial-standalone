@@ -13,6 +13,7 @@
     "dev": "npx concurrently \"npm run start:core\" \"npm run start:ui\" --names \"API,UI\" --prefix-colors \"blue,green\"",
     "build": "npm run build:all",
     "build:all": "npm run build --workspaces --if-present",
+    "vercel-build": "cd packages/shared && npm run build && cd ../core && npm run build",
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "npm run test:coverage --workspaces --if-present",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",

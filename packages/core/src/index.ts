@@ -14,13 +14,11 @@ import {
   RetrievalHubClient,
   OptimizerClient
 } from './clients'
-import { PromptVariant, TechniqueStrategy, formatPromptVariant, EvaluationMethod } from '@promptdial/shared'
+import { PromptVariant, formatPromptVariant, EvaluationMethod } from '@promptdial/shared'
 import { 
   toPromptVariant, 
   extractVariants, 
-  extractEvaluationResult,
-  extractParetoOptimal,
-  toEvaluationMethod
+  extractEvaluationResult
 } from './adapters/type-adapters'
 
 export interface PromptDialOptions {
@@ -375,7 +373,7 @@ export class PromptDial {
 
     const evalResult = extractEvaluationResult(evaluation)
     
-    return variants.map((v, i) => ({
+    return variants.map((v) => ({
       ...v,
       quality: {
         score: evalResult.score,
