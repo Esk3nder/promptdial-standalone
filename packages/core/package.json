@@ -1,7 +1,7 @@
 {
   "name": "promptdial",
   "version": "1.0.0",
-  "description": "AI Prompt Optimization Engine",
+  "description": "Enterprise-grade microservices platform for automatic prompt enhancement using advanced techniques and multi-objective optimization",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

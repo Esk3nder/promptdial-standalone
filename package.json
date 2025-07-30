@@ -2,7 +2,7 @@
   "name": "promptdial-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "AI Prompt Optimization Engine - Monorepo",
+  "description": "Enterprise-grade microservices platform for automatic prompt enhancement using advanced techniques and multi-objective optimization",
   "workspaces": [
     "packages/*"
   ],
