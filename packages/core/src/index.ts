@@ -82,25 +82,28 @@ export class PromptDial {
   }
 
   private initializeServiceClients(): void {
-    const clientOptions = {
-      timeout: this.config.serviceTimeout,
-      maxRetries: this.config.maxRetries
-    }
-    
-    if (this.config.features?.useTechniqueEngine && this.config.services?.techniqueEngine) {
-      this.techniqueClient = new TechniqueEngineClient(this.config.services.techniqueEngine, clientOptions)
-    }
-    
-    if (this.config.features?.useEvaluator && this.config.services?.evaluator) {
-      this.evaluatorClient = new EvaluatorClient(this.config.services.evaluator, clientOptions)
-    }
-    
-    if (this.config.features?.useRetrieval && this.config.services?.retrievalHub) {
-      this.retrievalClient = new RetrievalHubClient(this.config.services.retrievalHub, clientOptions)
-    }
-    
-    if (this.config.features?.useParetoFilter && this.config.services?.optimizer) {
-      this.optimizerClient = new OptimizerClient(this.config.services.optimizer, clientOptions)
+    // Only initialize service clients if we're in microservices mode
+    if (this.config.mode === 'microservices') {
+      const clientOptions = {
+        timeout: this.config.serviceTimeout,
+        maxRetries: this.config.maxRetries
+      }
+      
+      if (this.config.features?.useTechniqueEngine && this.config.services?.techniqueEngine) {
+        this.techniqueClient = new TechniqueEngineClient(this.config.services.techniqueEngine, clientOptions)
+      }
+      
+      if (this.config.features?.useEvaluator && this.config.services?.evaluator) {
+        this.evaluatorClient = new EvaluatorClient(this.config.services.evaluator, clientOptions)
+      }
+      
+      if (this.config.features?.useRetrieval && this.config.services?.retrievalHub) {
+        this.retrievalClient = new RetrievalHubClient(this.config.services.retrievalHub, clientOptions)
+      }
+      
+      if (this.config.features?.useParetoFilter && this.config.services?.optimizer) {
+        this.optimizerClient = new OptimizerClient(this.config.services.optimizer, clientOptions)
+      }
     }
   }
 
