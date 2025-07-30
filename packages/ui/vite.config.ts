@@ -12,7 +12,8 @@ export default defineConfig({
       '@hooks': resolve(__dirname, './src/hooks'),
       '@utils': resolve(__dirname, './src/utils'),
       '@types': resolve(__dirname, './src/types'),
-      promptdial: resolve(__dirname, '../core/src/index.ts'),
+      promptdial: resolve(__dirname, './src/types/promptdial.ts'),
+      '@promptdial/shared': resolve(__dirname, '../shared/src/index.ts'),
     },
   },
   server: {
@@ -32,8 +33,6 @@ export default defineConfig({
         manualChunks: {
           // Vendor chunks for better caching
           vendor: ['react', 'react-dom'],
-          // PromptDial core functionality
-          promptdial: ['promptdial'],
           // Chart libraries (if used)
           charts: ['chart.js', 'recharts'].filter((pkg) => {
             try {

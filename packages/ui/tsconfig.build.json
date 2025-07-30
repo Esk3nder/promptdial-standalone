@@ -3,6 +3,7 @@
   "exclude": ["src/**/*.test.*", "src/**/*.spec.*", "tests/**/*"],
   "compilerOptions": {
     "noEmit": false,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "allowImportingTsExtensions": false
   }
 }

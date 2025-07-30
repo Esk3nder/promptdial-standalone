@@ -27,6 +27,16 @@ type ModelProvider = 'openai' | 'anthropic' | 'google'
 
 interface TestEvent {
   type: string
+  service: string
+  method?: string
+  requestData?: any
+  responseData?: any
+  responseTime?: number
+  timestamp: Date
+  techniques?: string[]
+  quality?: number
+  variantId?: string
+  taskType?: string
   [key: string]: any
 }
 
@@ -162,7 +172,7 @@ export function TestDashboard() {
         {/* Input Section */}
         <div className="mb-8">
           <Suspense fallback={<ComponentLoader />}>
-            <PromptInput onSubmit={startTest} isDisabled={testState.status === 'testing'} />
+            <PromptInput onSubmit={(prompt) => startTest(prompt)} disabled={testState.status === 'testing'} />
           </Suspense>
         </div>
 
@@ -195,9 +205,8 @@ export function TestDashboard() {
               {Object.entries(testState.results.original).map(([provider, result]) => (
                 <Suspense key={provider} fallback={<ComponentLoader />}>
                   <ProviderCard
-                    provider={provider as ModelProvider}
-                    result={result}
-                    isOriginal={true}
+                    provider={provider}
+                    original={result}
                   />
                 </Suspense>
               ))}
@@ -208,9 +217,8 @@ export function TestDashboard() {
               <div key={index} className="border rounded-lg p-6 bg-white shadow-sm">
                 <Suspense fallback={<ComponentLoader />}>
                   <OptimizedPromptViewer
-                    variant={variant.variant}
-                    quality={variant.quality}
-                    results={variant.results}
+                    variants={[{variant: variant.variant, quality: variant.quality}]}
+                    bestIndex={0}
                   />
                 </Suspense>
               </div>
@@ -220,8 +228,10 @@ export function TestDashboard() {
             <div className="mt-8">
               <Suspense fallback={<ComponentLoader />}>
                 <ComparisonChart
-                  originalResults={testState.results.original}
-                  optimizedResults={testState.results.optimized}
+                  results={{
+                    original: testState.results.original,
+                    optimized: testState.results.optimized
+                  }}
                 />
               </Suspense>
             </div>

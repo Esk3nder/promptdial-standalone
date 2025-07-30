@@ -55,6 +55,10 @@ export interface OptimizedResult {
     bestScore?: number
     averageScore?: number
   }
+  metadata?: {
+    optimizationMode?: string
+    activeProvider?: string
+  }
 }
 
 export interface PromptDialOptions {
