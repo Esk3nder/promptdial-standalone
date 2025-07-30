@@ -26,7 +26,7 @@ export function PromptForm({ onSubmit, isLoading, error, stage }: PromptFormProp
     'advanced',
   )
   const [outputFormat, setOutputFormat] = useLocalStorage('promptdial-format', 'markdown')
-  const [taskType] = useState<string | undefined>(undefined)
+  const [taskType] = useState<'creative' | 'analytical' | 'coding' | 'general' | undefined>(undefined)
   const [validationError, setValidationError] = useState<string>('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
@@ -73,7 +73,7 @@ export function PromptForm({ onSubmit, isLoading, error, stage }: PromptFormProp
       prompt: prompt.trim(),
       targetModel: model,
       optimizationLevel: level,
-      ...(taskType && taskType !== 'undefined' && { taskType }),
+      ...(taskType && { taskType }),
     }
 
     onSubmit(request)

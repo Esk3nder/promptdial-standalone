@@ -2,6 +2,7 @@ import React from 'react'
 import styles from './LiveTestStatus.module.css'
 
 interface ServiceTrace {
+  type: string
   service: string
   method: string
   requestData?: any

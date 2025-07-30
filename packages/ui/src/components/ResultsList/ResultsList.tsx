@@ -133,7 +133,7 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
               <div className={styles.scoreSection}>
                 <span className={styles.scoreLabel}>Quality Score</span>
                 <span
-                  className={`${styles.scoreValue} ${styles[bestVariant.quality?.score >= 80 ? 'high' : bestVariant.quality?.score >= 60 ? 'medium' : 'low']}`}
+                  className={`${styles.scoreValue} ${styles[(bestVariant.quality?.score ?? 0) >= 80 ? 'high' : (bestVariant.quality?.score ?? 0) >= 60 ? 'medium' : 'low']}`}
                 >
                   {bestVariant.quality?.score || 0}/100
                 </span>
@@ -205,7 +205,7 @@ export function ResultsList({ isLoading, results, error, onCopy }: ResultsListPr
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Average Score</span>
                   <span className={styles.statValue}>
-                    {Math.round(results.summary.averageScore)}
+                    {Math.round(results.summary.averageScore ?? 0)}
                   </span>
                 </div>
                 {results.metadata?.activeProvider && (
