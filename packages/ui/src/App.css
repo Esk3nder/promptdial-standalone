@@ -47,10 +47,19 @@
   font-size: 0.875rem;
   font-weight: 500;
   transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .nav-link:hover {
   color: #1a1a1a;
+}
+
+.nav-link-active {
+  color: #4f46e5;
+  font-weight: 600;
 }
 
 .nav-sign-in {
