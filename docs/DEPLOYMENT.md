@@ -1,262 +1,221 @@
-# PromptDial 3.0 - Deployment Guide
+# PromptDial Deployment Guide
 
-## Overview
-
-PromptDial 3.0 is a microservices-based prompt optimization engine consisting of 8 core services orchestrated by an API Gateway.
-
-## Architecture
-
-```
-┌─────────────────┐
-│   API Gateway   │ Port 3000
-│   (Orchestrator)│
-└────────┬────────┘
-         │
-    ┌────┴────────────────────────────────────┐
-    │                                          │
-┌───▼────┐ ┌──────────┐ ┌──────────┐ ┌───────▼──┐
-│Classifier│ │Technique │ │Retrieval │ │Safety    │
-│Port 3001 │ │Port 3003 │ │Port 3004 │ │Port 3006 │
-└─────────┘ └──────────┘ └──────────┘ └──────────┘
-
-┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-│Telemetry │ │Evaluator │ │Optimizer │ │LLM Runner│
-│Port 3002 │ │Port 3005 │ │Port 3007 │ │Port 400x │
-└──────────┘ └──────────┘ └──────────┘ └──────────┘
-```
-
-## Quick Start
-
-### Local Development
+## Quick Start (Local)
 
 ```bash
-# Install dependencies
+# 1. Clone the repository
+git clone <repo-url>
+cd promptdial-standalone
+
+# 2. Add your API key to .env
+echo "ANTHROPIC_API_KEY=your-key-here" > packages/core/.env
+
+# 3. Install and run
+cd packages/core
 npm install
-
-# Start all services
-./scripts/start-services.sh
-
-# Or start individual services
-npm run dev:classifier
-npm run dev:technique
-# etc...
+npm start
 ```
 
-### Docker Deployment
+## Docker Deployment
+
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-# Start with Docker Compose
-docker-compose up
+# 1. Create .env file with your API keys
+cat > .env << EOF
+ANTHROPIC_API_KEY=your-anthropic-key
+OPENAI_API_KEY=your-openai-key
+GOOGLE_AI_API_KEY=your-google-key
+EOF
 
-# Or build and run individually
-docker build -f Dockerfile.service --build-arg SERVICE=classifier -t promptdial-classifier .
-docker run -p 3001:3001 promptdial-classifier
+# 2. Build and run
+docker-compose -f docker-compose.simple.yml up -d
+
+# 3. Check health
+curl http://localhost:3000/health
 ```
 
-## Service Configuration
+### Option 2: Docker Run
 
-### Environment Variables
+```bash
+# 1. Build the image
+docker build -t promptdial .
 
-Each service can be configured via environment variables:
+# 2. Run the container
+docker run -d \
+  -p 3000:3000 \
+  -e ANTHROPIC_API_KEY=your-key \
+  --name promptdial \
+  promptdial
 
-#### API Gateway
+# 3. Check logs
+docker logs promptdial
+```
 
-- `PORT`: Gateway port (default: 3000)
-- `RATE_LIMIT`: Requests per minute (default: 60)
-- `ALLOWED_ORIGINS`: CORS origins (comma-separated)
-- `[SERVICE]_URL`: Override service URLs
+## Cloud Deployment
 
-#### Classifier Service
+### Railway (One-Click Deploy)
 
-- `PORT`: Service port (default: 3001)
-- `COMPLEXITY_THRESHOLD`: Task complexity threshold
+1. Fork this repository
+2. Connect Railway to your GitHub
+3. Create new project from repo
+4. Add environment variables:
+   - `ANTHROPIC_API_KEY`
+   - `OPENAI_API_KEY` (optional)
+   - `GOOGLE_AI_API_KEY` (optional)
+5. Deploy!
 
-#### Technique Engine
-
-- `PORT`: Service port (default: 3003)
-- `MAX_VARIANTS`: Maximum variants to generate
-
-#### Retrieval Hub
-
-- `PORT`: Service port (default: 3004)
-- `VECTOR_STORE_TYPE`: Vector store backend (memory/chroma/pinecone)
-- `EMBEDDING_MODEL`: Embedding model to use
-
-#### LLM Runner
-
-- `PORT`: Service port (default: 4001+)
-- `PROVIDER`: LLM provider (openai/anthropic/google)
-- `API_KEY`: Provider API key
-- `DEFAULT_MODEL`: Default model to use
-
-#### Evaluator
-
-- `PORT`: Service port (default: 3005)
-- `CALIBRATION_THRESHOLD`: Drift detection threshold
-
-#### Safety Guard
-
-- `PORT`: Service port (default: 3006)
-- `BLOCK_THRESHOLD`: Risk score threshold for blocking
-
-#### Optimizer
-
-- `PORT`: Service port (default: 3007)
-- `OPTIMIZATION_MODE`: Default optimization mode
-
-## Production Deployment
-
-### Prerequisites
-
-1. **API Keys**: Set up API keys for LLM providers
-2. **Monitoring**: Configure telemetry endpoints
-3. **Storage**: Set up persistent storage for telemetry and retrieval
-4. **Load Balancer**: Configure load balancing for high availability
-
-### Kubernetes Deployment
+### Render
 
 ```yaml
-# Example Kubernetes deployment for a service
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: promptdial-classifier
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: promptdial-classifier
-  template:
-    metadata:
-      labels:
-        app: promptdial-classifier
-    spec:
-      containers:
-        - name: classifier
-          image: promptdial/classifier:2.0.0
-          ports:
-            - containerPort: 3001
-          env:
-            - name: NODE_ENV
-              value: 'production'
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 3001
-            initialDelaySeconds: 30
-            periodSeconds: 10
+# render.yaml
+services:
+  - type: web
+    name: promptdial
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: ANTHROPIC_API_KEY
+        sync: false
 ```
 
-### Health Checks
+### Fly.io
 
-All services expose health endpoints:
+```toml
+# fly.toml
+app = "promptdial"
 
-- `GET /health` - Service health status
-- Returns 200 if healthy, 503 if degraded
+[build]
+  dockerfile = "Dockerfile"
 
-The API Gateway aggregates health from all services:
+[env]
+  PORT = "3000"
 
-- `GET /health` - Overall system health
-- `GET /health/:service` - Individual service health
+[[services]]
+  internal_port = 3000
+  protocol = "tcp"
 
-### Monitoring
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
 
-1. **Metrics**: Available at `GET /metrics` on each service
-2. **Telemetry**: Centralized telemetry service collects all events
-3. **Logging**: Structured JSON logging with trace IDs
+  [[services.http_checks]]
+    interval = 30000
+    timeout = 3000
+    path = "/health"
+```
 
-### Security
+### Google Cloud Run
 
-1. **Rate Limiting**: Configured at API Gateway level
-2. **Safety Checks**: All prompts pass through SafetyGuard
-3. **API Keys**: Store securely, never commit to repository
-4. **CORS**: Configure allowed origins explicitly
+```bash
+# Build and push to GCR
+gcloud builds submit --tag gcr.io/PROJECT-ID/promptdial
 
-## Scaling Considerations
+# Deploy to Cloud Run
+gcloud run deploy promptdial \
+  --image gcr.io/PROJECT-ID/promptdial \
+  --platform managed \
+  --port 3000 \
+  --set-env-vars ANTHROPIC_API_KEY=your-key
+```
 
-### Horizontal Scaling
+## Environment Variables
 
-Most services are stateless and can be scaled horizontally:
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ANTHROPIC_API_KEY` | One of these | Anthropic Claude API key |
+| `OPENAI_API_KEY` | One of these | OpenAI GPT API key |
+| `GOOGLE_AI_API_KEY` | One of these | Google Gemini API key |
+| `PORT` | No | Server port (default: 3000) |
+| `NODE_ENV` | No | Environment (default: production) |
 
-- Classifier: Scale based on request volume
-- Technique Engine: Scale based on generation load
-- Evaluator: Scale based on evaluation queue
-- Safety Guard: Scale based on check volume
-- Optimizer: Scale based on optimization requests
+## API Usage
 
-### Stateful Services
+### Basic Optimization
 
-- Telemetry: Use external storage for persistence
-- Retrieval Hub: Use distributed vector store
+```bash
+curl -X POST http://localhost:3000/api/optimize \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain quantum computing"}'
+```
 
-### Performance Tuning
+### With Options
 
-1. **Connection Pooling**: Configure for LLM providers
-2. **Caching**: Enable for classification and safety checks
-3. **Timeouts**: Adjust based on LLM response times
-4. **Batch Processing**: Enable for evaluations
+```bash
+curl -X POST http://localhost:3000/api/optimize \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Write a blog post about AI",
+    "options": {
+      "maxVariants": 3,
+      "taskType": "creative"
+    }
+  }'
+```
+
+### Health Check
+
+```bash
+curl http://localhost:3000/health
+```
+
+## Monitoring
+
+### Basic Health Check
+
+The `/health` endpoint returns:
+```json
+{
+  "status": "healthy",
+  "service": "promptdial-core",
+  "version": "1.0.0",
+  "uptime": 123.456,
+  "timestamp": "2025-07-28T12:34:56.789Z"
+}
+```
+
+### Logs
+
+- **Docker**: `docker logs promptdial`
+- **PM2**: `pm2 logs promptdial`
+- **Systemd**: `journalctl -u promptdial`
+
+## Production Checklist
+
+- [ ] Set strong API keys
+- [ ] Configure rate limiting
+- [ ] Set up monitoring/alerts
+- [ ] Enable HTTPS (use reverse proxy)
+- [ ] Configure backup strategy
+- [ ] Set resource limits
+- [ ] Enable access logging
 
 ## Troubleshooting
 
-### Common Issues
+### No Variants Returned
 
-1. **Service Discovery Failed**
-   - Check service URLs in environment
-   - Verify network connectivity
-   - Check service health endpoints
+- Check API keys are valid
+- Ensure model names match (e.g., `claude-3-opus`, `gpt-4`)
+- Check server logs for errors
 
-2. **High Latency**
-   - Check LLM provider quotas
-   - Monitor service CPU/memory
-   - Review telemetry for bottlenecks
+### High Latency
 
-3. **Safety Blocks**
-   - Review safety guard logs
-   - Check security patterns
-   - Adjust thresholds if needed
+- API calls to LLMs can take 5-30 seconds
+- Consider implementing caching
+- Use streaming endpoint for progress updates
 
-### Debug Mode
+### Memory Issues
 
-Enable debug logging:
+- Default Node.js heap: 512MB
+- Increase if needed: `node --max-old-space-size=2048 dist/server.js`
 
-```bash
-export LOG_LEVEL=debug
-export NODE_ENV=development
-```
+## Support
 
-### Service Logs
-
-Access logs for each service:
-
-```bash
-# Docker
-docker logs promptdial-classifier
-
-# Kubernetes
-kubectl logs -l app=promptdial-classifier
-```
-
-## Maintenance
-
-### Updates
-
-1. Build new images with version tags
-2. Update one service at a time
-3. Verify health before proceeding
-4. Roll back if issues detected
-
-### Backup
-
-- Telemetry data: Regular snapshots
-- Vector store: Backup embeddings
-- Configuration: Version control
-
-### Monitoring Checklist
-
-- [ ] All services healthy
-- [ ] API Gateway accessible
-- [ ] Telemetry collecting data
-- [ ] Safety checks passing
-- [ ] LLM providers connected
-- [ ] Error rates within threshold
-- [ ] Response times acceptable
+- GitHub Issues: [repo-url]/issues
+- Documentation: See `/docs` folder

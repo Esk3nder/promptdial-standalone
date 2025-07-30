@@ -56,6 +56,7 @@ PromptDial 3.0 consists of 8 microservices:
 
 - Node.js 18 or higher
 - npm 7 or higher
+- API keys for at least one LLM provider (OpenAI, Anthropic, or Google AI)
 
 ### Installation
 
@@ -71,63 +72,35 @@ cd promptdial-standalone
 npm run setup
 ```
 
+### Configuration
+
+```bash
+# Configure environment variables
+cp .env.example .env
+# Edit .env and add your API keys:
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...  
+# GOOGLE_AI_API_KEY=AIza...
+```
+
 ### Starting the Server
 
 ```bash
-# Start the standalone mock server (quick testing)
+# Start all microservices locally
+./scripts/start-services.sh
+
+# OR start with Docker
+docker-compose up
+
+# OR start standalone server (quick testing)
 npm start
-
-# Start the full development server
-npm run dev
-
-# Start with UI development server
-npm run start:ui
 ```
 
-The server will be available at `http://localhost:3000`
+The API Gateway will be available at `http://localhost:3000`
 
 ### Troubleshooting
 
-If you encounter any issues, please refer to [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions to common problems.
-
-## 🚀 Original Quick Start
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- API keys for at least one LLM provider
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/promptdial-standalone.git
-cd promptdial-standalone
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env and add your API keys
-```
-
-### Start Services
-
-```bash
-# Option 1: Start all services locally
-./scripts/start-services.sh
-
-# Option 2: Start with Docker
-docker-compose up
-
-# Option 3: Start services individually
-npm run dev:classifier  # Task classifier
-npm run dev:technique   # Technique engine
-npm run dev:safety      # Safety guard
-# ... etc
-```
+If you encounter any issues, please refer to [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for solutions to common problems.
 
 ### Basic API Usage
 
@@ -339,7 +312,7 @@ docker-compose up --scale evaluator=3 --scale classifier=2
 
 ### Kubernetes
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Kubernetes manifests and production configuration.
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Kubernetes manifests and production configuration.
 
 ### Configuration
 
@@ -363,15 +336,17 @@ CHROMA_URL=http://localhost:8000
 
 ## 📚 Documentation
 
+For complete documentation, see the **[docs/](docs/)** folder:
+
+- [Quick Start Guide](docs/QUICK_START.md) - Simple setup instructions  
 - [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
-- [Architecture](docs/ARCHITECTURE.md) - System design
-- [API Reference](docs/API.md) - Complete API docs
-- [Security](docs/SECURITY.md) - Security implementation
-- [Contributing](CONTRIBUTING.md) - Contribution guidelines
+- [Testing Guide](docs/TESTING_GUIDE.md) - How to test the system
+- [Test Prompts](docs/TEST_PROMPTS.md) - Example prompts for testing
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Pull requests are welcome! Please ensure tests pass and follow the existing code style.
 
 ## 📄 License
 
