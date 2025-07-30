@@ -556,8 +556,8 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'))
 })
 
-// Start server only when not running tests
-if (process.env.NODE_ENV !== 'test') {
+// Start server only when not running tests and not in Vercel serverless environment
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   const config = ConfigManager.getInstance().getConfig()
   app.listen(PORT, () => {
 
