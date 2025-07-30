@@ -1,13 +1,22 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "packages/core/dist",
+  "version": 2,
+  "builds": [
+    {
+      "src": "packages/core/src/server.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "packages/core/src/server.ts"
+    }
+  ],
   "env": {
     "PROMPTDIAL_MODE": "monolithic",
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "packages/core/dist/server.js": {
-      "maxDuration": 60
-    }
   }
 }
