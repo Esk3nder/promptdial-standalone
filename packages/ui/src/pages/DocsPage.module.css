@@ -1,0 +1,70 @@
+/* Documentation Page Styles */
+.docsContainer {
+  display: flex;
+  min-height: calc(100vh - 64px); /* Account for navbar height */
+  background: #f8f9fb;
+  position: relative;
+}
+
+.mobileMenuToggle {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mobileMenuToggle:hover {
+  background: #4338ca;
+  transform: scale(1.05);
+}
+
+.mobileMenuToggle:active {
+  transform: scale(0.95);
+}
+
+.mobileMenuToggle svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.docsMain {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .docsContainer {
+    min-height: calc(100vh - 64px);
+  }
+  
+  .mobileMenuToggle {
+    display: flex;
+  }
+  
+  .docsMain {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .docsMain {
+    padding: 1rem;
+  }
+}
