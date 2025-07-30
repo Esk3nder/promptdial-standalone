@@ -2,7 +2,6 @@ import { ServiceClient, ServiceClientOptions } from './base-client'
 import { 
   EvaluationRequest,
   EvaluationResponse,
-  EvaluationMethod,
   CalibrationMetrics,
   PromptVariant
 } from '@promptdial/shared'

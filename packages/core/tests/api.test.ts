@@ -1,34 +1,25 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { spawn } from 'child_process';
-import type { ChildProcess } from 'child_process';
+import { app, server } from '../src/server';
 
 describe('API Endpoint Tests', () => {
-  let serverProcess: ChildProcess;
-  const apiUrl = 'http://localhost:3000';
-
   beforeAll(async () => {
-    // Start the server
-    serverProcess = spawn('npm', ['run', 'dev'], {
-      cwd: process.cwd(),
-      env: { ...process.env, PORT: '3000' },
-      detached: false
-    });
-
-    // Wait for server to be ready
-    await new Promise(resolve => setTimeout(resolve, 3000));
-  }, 10000);
+    // Ensure server is not already listening
+    if (server && server.listening) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
 
   afterAll(async () => {
-    // Kill the server process
-    if (serverProcess) {
-      serverProcess.kill();
+    // Close server after tests
+    if (server && server.listening) {
+      await new Promise((resolve) => server.close(resolve));
     }
   });
 
   describe('POST /api/optimize', () => {
     it('should optimize a prompt successfully', async () => {
-      const response = await request(apiUrl)
+      const response = await request(app)
         .post('/api/optimize')
         .send({
           prompt: 'Explain how AI works',
@@ -46,7 +37,7 @@ describe('API Endpoint Tests', () => {
     });
 
     it('should return 400 for missing prompt', async () => {
-      const response = await request(apiUrl)
+      const response = await request(app)
         .post('/api/optimize')
         .send({})
         .expect(400);
@@ -55,7 +46,7 @@ describe('API Endpoint Tests', () => {
     });
 
     it('should handle cost cap option', async () => {
-      const response = await request(apiUrl)
+      const response = await request(app)
         .post('/api/optimize')
         .send({
           prompt: 'Write a haiku about coding',
@@ -75,25 +66,21 @@ describe('API Endpoint Tests', () => {
   });
 
   describe('GET /api/optimize/stream', () => {
-    it('should stream optimization progress', (done) => {
-      request(apiUrl)
+    it('should stream optimization progress', async () => {
+      const response = await request(app)
         .get('/api/optimize/stream')
         .query({ prompt: 'Explain machine learning' })
         .expect(200)
-        .expect('Content-Type', /text\/event-stream/)
-        .end((err, res) => {
-          if (err) return done(err);
-          
-          // Check that we received SSE data
-          expect(res.text).toContain('data:');
-          done();
-        });
+        .expect('Content-Type', /text\/event-stream/);
+      
+      // Check that we received SSE data
+      expect(response.text).toContain('data:');
     });
   });
 
   describe('GET /health', () => {
     it('should return health status', async () => {
-      const response = await request(apiUrl)
+      const response = await request(app)
         .get('/health')
         .expect(200);
 
@@ -108,15 +95,15 @@ describe('API Endpoint Tests', () => {
   describe('GET /metrics', () => {
     it('should return basic metrics', async () => {
       // Make a few requests first
-      await request(apiUrl)
+      await request(app)
         .post('/api/optimize')
         .send({ prompt: 'Test prompt 1' });
       
-      await request(apiUrl)
+      await request(app)
         .post('/api/optimize')
         .send({ prompt: 'Test prompt 2' });
 
-      const response = await request(apiUrl)
+      const response = await request(app)
         .get('/metrics')
         .expect(200);
 

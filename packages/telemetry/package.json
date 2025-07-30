@@ -23,5 +23,8 @@
     "@promptdial/shared": "file:../shared",
     "express": "^4.21.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "vitest": "^2.1.9"
+  }
 }

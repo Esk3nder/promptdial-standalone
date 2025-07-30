@@ -35,7 +35,7 @@ function getDefaultModel(): string {
 }
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'healthy',
     service: 'promptdial-core',

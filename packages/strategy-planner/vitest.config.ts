@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { resolve } from 'path'
+import path from 'path'
 
 export default defineConfig({
   test: {
@@ -13,7 +13,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@promptdial/shared': resolve(__dirname, './tests/mocks/shared.ts'),
+      '@promptdial/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
 })

@@ -15,7 +15,7 @@ import { OptimizedVariant } from '../meta-prompt-designer'
 export { EvaluationMethod, OptimizationObjective, RetrievalTechnique }
 
 // Convert OptimizedVariant to PromptVariant
-export function toPromptVariant(variant: OptimizedVariant, index: number = 0): PromptVariant {
+export function toPromptVariant(variant: OptimizedVariant, _index: number = 0): PromptVariant {
   return {
     id: variant.id,
     technique: extractTechniqueName(variant),

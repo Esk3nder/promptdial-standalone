@@ -10,7 +10,8 @@ export const TECHNIQUES = {
   SELF_CONSISTENCY: 'SelfConsistency',
   REACT: 'ReAct',
   TREE_OF_THOUGHT: 'TreeOfThought',
-  IRCOT: 'IRCoT',
+  CHAIN_OF_THOUGHT: 'ChainOfThought',
+  IR_COT: 'IRCoT',
   DSPY_APE: 'DSPy_APE',
   DSPY_GRIPS: 'DSPy_GrIPS',
   AUTO_DICOT: 'AutoDiCoT',
@@ -26,57 +27,97 @@ export const EVALUATORS = {
   AUTO_COT: 'auto_cot',
 } as const
 
+// ============= Optimization Levels =============
+export const OPTIMIZATION_LEVELS = {
+  BASIC: 'basic',
+  ADVANCED: 'advanced',
+  EXPERT: 'expert',
+} as const
+
 // ============= Security Patterns =============
+export const SECURITY_PATTERNS = {
+  PROMPT_INJECTION: 'PromptInjection',
+  JAILBREAK: 'Jailbreak',
+  DATA_LEAKAGE: 'DataLeakage',
+  HARMFUL_CONTENT: 'HarmfulContent',
+  PII_EXPOSURE: 'PIIExposure',
+} as const
 
 // ============= Performance Thresholds =============
+export const PERFORMANCE_LIMITS = {
+  MAX_PROMPT_LENGTH: 10000,
+  MAX_OUTPUT_LENGTH: 4000,
+  MAX_CONCURRENT_REQUESTS: 10,
+  MAX_VARIANTS_PER_REQUEST: 10,
+  CACHE_TTL_SECONDS: 3600,
+} as const
 
 // ============= HTTP Status Codes =============
+export const STATUS_CODES = {
+  OK: 200,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  TIMEOUT: 408,
+  UNPROCESSABLE_ENTITY: 422,
+  TOO_MANY_REQUESTS: 429,
+  INTERNAL_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503,
+} as const
 
 // ============= Error Codes =============
 export const ERROR_CODES = {
   // Client errors
-  INVALID_PROMPT: 'INVALID_PROMPT',
-  BUDGET_EXCEEDED: 'BUDGET_EXCEEDED',
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  INVALID_PARAMETERS: 'INVALID_PARAMETERS',
+  INVALID_PROMPT: 'E001',
+  INVALID_MODEL: 'E002',
+  BUDGET_EXCEEDED: 'E003',
+  INSUFFICIENT_BUDGET: 'E004',
+  RATE_LIMIT_EXCEEDED: 'E005',
+  INVALID_PARAMETERS: 'E006',
 
   // Security errors
-  SECURITY_VIOLATION: 'SECURITY_VIOLATION',
-  PROMPT_INJECTION: 'PROMPT_INJECTION',
-  CONTENT_POLICY: 'CONTENT_POLICY',
-  SAFETY_CHECK_FAILED: 'SAFETY_CHECK_FAILED',
+  SECURITY_VIOLATION: 'E007',
+  SAFETY_VIOLATION: 'E008',
+  PROMPT_INJECTION: 'E009',
+  CONTENT_POLICY: 'E010',
+  SAFETY_CHECK_FAILED: 'E011',
 
   // System errors
-  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
-  TIMEOUT: 'TIMEOUT',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  DEPENDENCY_ERROR: 'DEPENDENCY_ERROR',
+  SERVICE_UNAVAILABLE: 'E012',
+  TIMEOUT: 'E013',
+  INTERNAL_ERROR: 'E014',
+  DEPENDENCY_ERROR: 'E015',
+  TECHNIQUE_ENGINE_ERROR: 'E016',
+  LLM_RUNNER_ERROR: 'E017',
+  EVALUATOR_ERROR: 'E018',
+  OPTIMIZATION_FAILED: 'E019',
 
   // Evaluation errors
-  EVALUATION_FAILED: 'EVALUATION_FAILED',
-  CALIBRATION_DRIFT: 'CALIBRATION_DRIFT',
+  EVALUATION_FAILED: 'E020',
+  CALIBRATION_DRIFT: 'E021',
 
   // Resource errors
-  INSUFFICIENT_QUOTA: 'INSUFFICIENT_QUOTA',
-  VECTOR_STORE_ERROR: 'VECTOR_STORE_ERROR',
+  INSUFFICIENT_QUOTA: 'E022',
+  MEMORY_LIMIT_EXCEEDED: 'E023',
 } as const
 
-// ============= Default Configurations =============
+// ============= Default Configuration =============
 export const DEFAULTS = {
-  MAX_VARIANTS: 6,
-  COST_CAP_USD: 0.2,
-  LATENCY_CAP_MS: 6000,
-  SECURITY_LEVEL: 'strict',
-  TEMPERATURE: 0.7,
-  TOP_K_RETRIEVAL: 5,
+  MAX_VARIANTS: 5,
+  TIMEOUT_MS: 30000,
+  MAX_RETRIES: 3,
+  COST_CAP: 1.0,
+  LATENCY_CAP_MS: 10000,
+  MIN_QUALITY_SCORE: 0.7,
   CONFIDENCE_LEVEL: 0.95,
-  MIN_EVALUATOR_AGREEMENT: 0.7,
 } as const
 
-// ============= Monitoring Metrics =============
+// ============= Telemetry Metrics =============
 export const METRICS = {
-  // Latency metrics
+  // Duration metrics
   REQUEST_DURATION: 'promptdial_request_duration_ms',
+  OPTIMIZATION_DURATION: 'promptdial_optimization_duration_ms',
   TECHNIQUE_DURATION: 'promptdial_technique_duration_ms',
   EVALUATION_DURATION: 'promptdial_evaluation_duration_ms',
 
@@ -96,4 +137,21 @@ export const METRICS = {
   // Security metrics
   SECURITY_VIOLATIONS: 'promptdial_security_violations_total',
   JAILBREAK_ATTEMPTS: 'promptdial_jailbreak_attempts_total',
+} as const
+
+// ============= Service Ports =============
+export const PORTS = {
+  API_GATEWAY: 3000,
+  CLASSIFIER: 3001,
+  TELEMETRY: 3002,
+  TECHNIQUE_ENGINE: 3003,
+  RETRIEVAL_HUB: 3004,
+  EVALUATOR: 3005,
+  SAFETY_GUARD: 3006,
+  OPTIMIZER: 3007,
+  STRATEGY_PLANNER: 3008,
+  LLM_RUNNER_OPENAI: 4001,
+  LLM_RUNNER_ANTHROPIC: 4002,
+  LLM_RUNNER_GOOGLE: 4003,
+  LLM_RUNNER_BASE: 4000,
 } as const

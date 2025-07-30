@@ -287,7 +287,7 @@ export const CONTEXT_MANIPULATION_PATTERNS: SecurityPattern[] = [
     id: 'instruction-sandwich',
     name: 'Instruction Sandwich',
     severity: 'high',
-    pattern: /[^.!?]+ignore[^.!?]+instructions[^.!?]+continue[^.!?]+/i,
+    pattern: /ignore.*instructions.*continue/i,
     description: 'Hidden instructions between legitimate content',
     action: 'block',
   },
