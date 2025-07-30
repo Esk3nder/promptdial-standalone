@@ -30,8 +30,17 @@
     "optimization",
     "llm"
   ],
-  "author": "",
+  "author": "PromptDial Team",
   "license": "MIT",
+  "homepage": "https://promptdial.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Esk3nder/promptdial.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/Esk3nder/promptdial/issues"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
     "@google/generative-ai": "^0.24.1",

@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "Enterprise-grade microservices platform for automatic prompt enhancement using advanced techniques and multi-objective optimization",
+  "homepage": "https://promptdial.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Esk3nder/promptdial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Esk3nder/promptdial/issues"
+  },
   "workspaces": [
     "packages/*"
   ],
