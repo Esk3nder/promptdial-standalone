@@ -10,6 +10,14 @@ import { ConfigManager } from './config.js'
 // Get directory path in CommonJS
 const __dirname = path.resolve()
 
+// Log deployment mode early
+const deploymentMode = process.env.PROMPTDIAL_MODE || 'monolithic'
+console.log(`
+🚀 Starting PromptDial Server
+📋 Deployment Mode: ${deploymentMode.toUpperCase()}
+🔧 Node Environment: ${process.env.NODE_ENV || 'development'}
+`)
+
 const app = express()
 const PORT = process.env.PORT || 3000
 

@@ -51,9 +51,9 @@ export class ConfigManager {
         telemetry: process.env.TELEMETRY_URL || 'http://localhost:3002'
       },
       features: {
-        useTechniqueEngine: process.env.USE_TECHNIQUE_ENGINE !== 'false',
-        useEvaluator: process.env.USE_EVALUATOR !== 'false',
-        useRetrieval: process.env.USE_RETRIEVAL !== 'false',
+        useTechniqueEngine: mode === 'microservices' ? process.env.USE_TECHNIQUE_ENGINE !== 'false' : false,
+        useEvaluator: mode === 'microservices' ? process.env.USE_EVALUATOR !== 'false' : false,
+        useRetrieval: mode === 'microservices' ? process.env.USE_RETRIEVAL !== 'false' : false,
         useParetoFilter: process.env.USE_PARETO_FILTER === 'true',
         useTelemetry: process.env.USE_TELEMETRY === 'true'
       },
