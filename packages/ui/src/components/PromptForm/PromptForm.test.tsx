@@ -16,7 +16,6 @@ describe('PromptForm', () => {
   })
 
   it('should render all form elements', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
     // Basic elements should be visible
@@ -25,32 +24,36 @@ describe('PromptForm', () => {
     expect(screen.getByText('Advanced Settings')).toBeInTheDocument()
 
     // Click to expand advanced settings
-    await user.click(screen.getByText('Advanced Settings'))
+    fireEvent.click(screen.getByText('Advanced Settings'))
 
-    // Now advanced fields should be visible
-    expect(screen.getByLabelText('Select target AI model')).toBeInTheDocument()
-    expect(screen.getByLabelText('Select optimization level')).toBeInTheDocument()
-    expect(screen.getByLabelText('Select output format')).toBeInTheDocument()
+    // Wait for advanced fields to be visible
+    await waitFor(() => {
+      expect(screen.getByLabelText('Select target AI model')).toBeInTheDocument()
+      expect(screen.getByLabelText('Select optimization level')).toBeInTheDocument()
+      expect(screen.getByLabelText('Select output format')).toBeInTheDocument()
+    })
   })
 
   it('should show character count', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
     const textarea = screen.getByLabelText('Enter your prompt')
-    await user.type(textarea, 'Test prompt')
+    fireEvent.change(textarea, { target: { value: 'Test prompt' } })
 
-    expect(screen.getByText('11 / 10,000')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('11 / 10,000')).toBeInTheDocument()
+    })
   })
 
   it('should validate empty prompt', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
     const button = screen.getByRole('button', { name: 'Refine prompt' })
-    await user.click(button)
+    fireEvent.click(button)
 
-    expect(screen.getByText('Please enter a prompt')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Please enter a prompt')).toBeInTheDocument()
+    })
     expect(mockOnSubmit).not.toHaveBeenCalled()
   })
 
@@ -134,12 +137,11 @@ describe('PromptForm', () => {
   })
 
   it('should reset form after successful submission', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
 
     const textarea = screen.getByLabelText('Enter your prompt')
-    await user.type(textarea, 'Test prompt')
-    await user.click(screen.getByRole('button', { name: 'Refine prompt' }))
+    fireEvent.change(textarea, { target: { value: 'Test prompt' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Refine prompt' }))
 
     // Should not clear prompt after submission (user might want to refine)
     expect(textarea).toHaveValue('Test prompt')
@@ -160,11 +162,14 @@ describe('PromptForm', () => {
   })
 
   it('should render all model options', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
     
     // Open advanced settings first
-    await user.click(screen.getByText('Advanced Settings'))
+    fireEvent.click(screen.getByText('Advanced Settings'))
+    
+    await waitFor(() => {
+      expect(screen.getByLabelText('Select target AI model')).toBeInTheDocument()
+    })
 
     const select = screen.getByLabelText('Select target AI model')
     // Check that model options exist in the select element
@@ -172,11 +177,14 @@ describe('PromptForm', () => {
   })
 
   it('should render all level options', async () => {
-    const user = userEvent.setup()
     render(<PromptForm {...defaultProps} />)
     
     // Open advanced settings first
-    await user.click(screen.getByText('Advanced Settings'))
+    fireEvent.click(screen.getByText('Advanced Settings'))
+    
+    await waitFor(() => {
+      expect(screen.getByLabelText('Select optimization level')).toBeInTheDocument()
+    })
 
     const select = screen.getByLabelText('Select optimization level')
     LEVEL_OPTIONS.forEach((option) => {
